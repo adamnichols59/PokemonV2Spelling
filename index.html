@@ -693,6 +693,7 @@ function initTitle(){
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
 
 function startGame(){
+  unlockAudio(); // iOS requires audio unlock on direct user gesture
   wordOrder=shuffle([...WORDS]);
   wordIdx=0;score=0;hearts=3;caught=[];isPerfect=true;
   initAudio();startBGM();
@@ -801,6 +802,12 @@ function loadWord(){
     inp.focus();
     updateCursor(0, w.w.length);
   }, 300);
+
+  // Pre-fetch TTS audio in background so it's ready when Hear It is tapped
+  setTimeout(()=>{
+    prefetchTTS(w.w);
+    prefetchTTS(w.s);
+  }, 500);
 }
 
 function liveType(target){
@@ -1321,56 +1328,79 @@ function showWin(){
 function setBtns(on){const b=document.getElementById('hearBtn');b.textContent=on?'🔊 Speaking…':'🔊 Hear It';b.disabled=on}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 
-async function puterSpeak(text){
-  // Try Puter TTS first
-  try{
+// iOS audio unlock — called on first user gesture
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  // Play a silent sound to unlock iOS audio
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = ctx.createBuffer(1, 1, 22050);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
+  ctx.resume();
+  // Also prime Web Speech
+  if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance('');
+    speechSynthesis.speak(u);
+    speechSynthesis.cancel();
+  }
+}
+
+// Pre-cache TTS audio blobs keyed by text
+const ttsCache = {};
+async function prefetchTTS(text) {
+  if (ttsCache[text]) return;
+  try {
     const result = await puter.ai.txt2speech(text);
-    console.log('puter result type:', typeof result, result);
+    ttsCache[text] = result;
+  } catch(e) {
+    console.warn('prefetch failed for:', text);
+  }
+}
 
-    // Handle different return types from puter
+async function puterSpeak(text){
+  try{
+    // Use cached result if available, otherwise fetch
+    const result = ttsCache[text] || await puter.ai.txt2speech(text);
+
     let audioEl = null;
-
-    if(result && result.play && typeof result.play === 'function'){
-      // It's already an audio element
+    if (result && typeof result.play === 'function') {
       audioEl = result;
-    } else if(result && result.src){
-      // Has a src property
+    } else if (result && result.src) {
       audioEl = new Audio(result.src);
-    } else if(typeof result === 'string'){
-      // Returned a URL string
+    } else if (typeof result === 'string') {
       audioEl = new Audio(result);
-    } else if(result instanceof Blob){
+    } else if (result instanceof Blob) {
       audioEl = new Audio(URL.createObjectURL(result));
     }
 
-    if(audioEl){
-      return new Promise(resolve=>{
-        const maxWait = Math.max(4000, text.length * 90);
-        const to = setTimeout(()=>{ resolve(); }, maxWait);
-        audioEl.onended = ()=>{ clearTimeout(to); resolve(); };
-        audioEl.onerror = ()=>{ clearTimeout(to); resolve(); };
-        // Attach to DOM for iOS
-        audioEl.style.cssText='position:fixed;width:0;height:0;opacity:0';
-        document.body.appendChild(audioEl);
-        audioEl.onended = ()=>{
+    if (audioEl) {
+      audioEl.style.cssText = 'position:fixed;width:0;height:0;opacity:0';
+      document.body.appendChild(audioEl);
+      return new Promise(resolve => {
+        const maxWait = Math.max(5000, text.length * 100);
+        const to = setTimeout(() => { cleanup(); resolve(); }, maxWait);
+        function cleanup() {
           clearTimeout(to);
-          try{ document.body.removeChild(audioEl); }catch(e){}
-          resolve();
+          try { document.body.removeChild(audioEl); } catch(e) {}
+        }
+        audioEl.onended = () => { cleanup(); resolve(); };
+        audioEl.onerror = () => {
+          cleanup();
+          webSpeech(text).then(resolve);
         };
-        audioEl.play().catch(err=>{
-          console.warn('play failed:', err);
-          clearTimeout(to);
-          try{ document.body.removeChild(audioEl); }catch(e){}
-          // Fall through to Web Speech below
+        audioEl.play().catch(() => {
+          cleanup();
           webSpeech(text).then(resolve);
         });
       });
     }
-  }catch(e){
-    console.warn('Puter TTS failed:', e);
+  } catch(e) {
+    console.warn('Puter TTS failed, using Web Speech:', e);
   }
-
-  // Fallback: Web Speech API
   return webSpeech(text);
 }
 
@@ -1394,6 +1424,7 @@ function webSpeech(text){
 }
 
 async function sayWord(){
+  unlockAudio(); // ensure unlocked on each tap
   if(speaking)return;
   speaking=true;setBtns(true);
   const w=wordOrder[wordIdx];
