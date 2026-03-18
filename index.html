@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bella's Spelling Adventure</title>
+<script src="https://js.puter.com/v2/"></script>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'Nunito',sans-serif}
+
+:root{
+  --pink:#ff7eb3;--dpink:#e8458a;
+  --purple:#9b5fd4;--lpurple:#edd5ff;
+  --yellow:#ffe040;--dyellow:#e6a800;
+  --green:#4dcf8a;--dgreen:#2a9c5e;
+  --red:#ff5252;--sky:#a8edff;
+  --dark:#1a0a2e;--panel:#16103a;
+  --white:#fff;
+}
+
+/* ═══════════════════════════════
+   BASE SCREEN SYSTEM
+═══════════════════════════════ */
+.screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  transition:opacity .35s ease,transform .35s ease;
+  z-index:1;
+}
+.screen.off{opacity:0;pointer-events:none;transform:scale(.96)}
+.screen.off-left{opacity:0;pointer-events:none;transform:translateX(-60px)}
+.screen.off-right{opacity:0;pointer-events:none;transform:translateX(60px)}
+
+/* ═══════════════════════════════
+   TITLE
+═══════════════════════════════ */
+#sTitle{background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);gap:18px;padding:28px}
+.title-h1{font-family:'Baloo 2',cursive;font-size:clamp(2rem,8vw,3rem);font-weight:800;text-align:center;line-height:1.1;
+  background:linear-gradient(135deg,var(--yellow),var(--pink),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 2px 12px #ff7eb355)}
+.title-sub{font-size:.85rem;font-weight:700;color:#aac4ff;text-align:center}
+.title-creatures{display:flex;gap:12px;justify-content:center}
+.btn-start{font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:var(--white);border:none;padding:16px 52px;border-radius:50px;cursor:pointer;
+  box-shadow:0 6px 0 #6622aa,0 8px 28px #9b5fd455;
+  animation:btnPulse 2s ease-in-out infinite}
+.btn-start:active{transform:translateY(4px);box-shadow:0 2px 0 #6622aa}
+@keyframes btnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+/* ═══════════════════════════════
+   SPELL SCREEN
+═══════════════════════════════ */
+#sSpell{
+  background:linear-gradient(180deg,#0d1a3a 0%,#0f2a1a 100%);
+  justify-content:flex-start;padding:0;
+  flex-direction:column;
+  transition:transform .25s ease, height .25s ease;
+}
+
+.spell-topbar{
+  width:100%;background:var(--panel);border-bottom:3px solid var(--yellow);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.spell-topbar-title{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;color:var(--yellow)}
+.spell-topbar-right{display:flex;gap:8px;align-items:center}
+.hchip{background:#0f3460;border:2px solid var(--yellow);border-radius:999px;
+  padding:4px 12px;font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;color:var(--yellow)}
+
+.spell-body{
+  flex:1;width:100%;max-width:480px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 18px 12px;gap:12px;overflow-y:auto;overflow-x:hidden;
+  min-height:0;
+}
+/* Input area anchored near bottom, above keyboard */
+.spell-input-area{
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:var(--panel);
+  border-top:2px solid rgba(255,224,64,.2);
+  padding:12px 16px 10px;
+  flex-shrink:0;
+}
+
+/* Creature preview in spell screen */
+.spell-creature-preview{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  animation:floatY 2.5s ease-in-out infinite;
+}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.spell-creature-name{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;
+  color:var(--yellow);background:rgba(0,0,0,.5);padding:3px 12px;border-radius:999px;border:1.5px solid var(--yellow)}
+.spell-encounter-tag{font-family:'Baloo 2',cursive;font-size:.7rem;color:#aac4ff;
+  background:#0a1a3a;padding:3px 10px;border-radius:6px;border:1px solid #2244aa}
+
+/* Definition */
+.def-card{
+  width:100%;background:#0a1030;border:2px solid #2244aa;border-radius:14px;
+  padding:12px 16px;font-size:.95rem;font-weight:700;color:#aac4ff;text-align:center;line-height:1.5;
+}
+
+/* Blanks — interactive letter tiles */
+.blanks-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;cursor:text}
+.blank{
+  width:40px;height:50px;
+  border:2.5px solid rgba(255,224,64,.4);
+  border-bottom:3px solid var(--yellow);
+  border-radius:8px;
+  background:rgba(255,224,64,.07);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;
+  color:var(--yellow);transition:all .2s;position:relative;
+}
+.blank.active-cursor::after{
+  content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  width:2px;height:22px;background:var(--yellow);
+  animation:blink .8s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.blank.filled{border-color:var(--yellow);background:rgba(255,224,64,.15)}
+.blank.good{border-color:var(--green);color:var(--green);background:rgba(77,207,138,.15)}
+.blank.bad{border-color:var(--red);color:var(--red);background:rgba(255,82,82,.1);animation:blkShk .3s}
+@keyframes blkShk{0%,100%{transform:translateX(0)}30%{transform:translateX(-5px)}70%{transform:translateX(5px)}}
+
+/* Input */
+.spell-inp{
+  width:100%;background:#070e24;border:3px solid var(--yellow);border-radius:12px;
+  padding:12px;font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;
+  letter-spacing:6px;text-align:center;color:var(--yellow);outline:none;transition:border-color .2s;
+}
+.spell-inp:focus{border-color:#aac4ff;box-shadow:0 0 0 3px rgba(170,196,255,.2)}
+.spell-inp.good{border-color:var(--green);color:var(--green);background:#071a0e}
+.spell-inp.bad{border-color:var(--red);color:var(--red);background:#1a0707;animation:blkShk .3s}
+
+/* Hint */
+.hint-box{background:#0a2010;border:1.5px solid var(--green);border-radius:8px;
+  padding:6px 12px;font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;
+  color:var(--green);display:none;text-align:center;width:100%}
+
+/* Action row */
+.spell-actions{display:flex;gap:8px;width:100%;justify-content:center;flex-wrap:wrap}
+.btn{font-family:'Nunito',sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;border:none;
+  padding:10px 18px;border-radius:999px;transition:all .15s}
+.btn:active{transform:translateY(2px)}
+.btn-check{background:linear-gradient(135deg,var(--pink),var(--dpink));color:var(--white);
+  box-shadow:0 4px 0 #aa1166;padding:12px 28px;font-size:.95rem}
+.btn-check:active{box-shadow:0 1px 0 #aa1166}
+.btn-hear{background:var(--purple);color:var(--white);box-shadow:0 4px 0 #5511aa}
+.btn-hear:disabled{opacity:.5;cursor:default}
+.btn-hint{background:#0f3460;color:var(--yellow);border:2px solid var(--yellow);box-shadow:0 3px 0 #0a2040}
+.btn-skip{background:#1a1040;color:#666;border:1.5px solid #333}
+
+/* ═══════════════════════════════
+   THROW SCREEN
+═══════════════════════════════ */
+#sThrow{
+  background:linear-gradient(180deg,#0a0830 0%,#0d2060 45%,#142808 100%);
+  justify-content:flex-start;overflow:hidden;
+}
+
+/* Stars bg */
+#sThrow::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(1.5px 1.5px at 10% 15%,white,transparent),
+    radial-gradient(1px 1px at 25% 8%,white,transparent),
+    radial-gradient(2px 2px at 55% 20%,rgba(255,255,255,.9),transparent),
+    radial-gradient(1px 1px at 78% 12%,white,transparent),
+    radial-gradient(1.5px 1.5px at 88% 22%,rgba(255,255,255,.8),transparent),
+    radial-gradient(1px 1px at 40% 30%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1px 1px at 65% 28%,rgba(255,255,255,.5),transparent);}
+
+.throw-header{
+  width:100%;background:rgba(0,0,0,.5);border-bottom:2px solid rgba(255,224,64,.3);
+  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:2;
+}
+.throw-word-badge{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+  color:var(--white);background:#0a1a3a;border:2px solid var(--yellow);border-radius:999px;
+  padding:5px 18px;letter-spacing:4px}
+.throw-instruction{font-family:'Baloo 2',cursive;font-size:.65rem;font-weight:800;
+  color:var(--yellow);animation:instrBlink 1.5s ease-in-out infinite}
+@keyframes instrBlink{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Creature in throw screen */
+.throw-creature-zone{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:8px;position:relative;z-index:3;padding-top:16px;
+}
+.throw-creature-anim{animation:floatY 2s ease-in-out infinite}
+.throw-creature-name{font-family:'Baloo 2',cursify;font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:800;
+  color:var(--yellow);background:rgba(0,0,0,.6);padding:4px 14px;border-radius:999px;border:1.5px solid var(--yellow)}
+
+/* HP bar */
+.hp-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;width:120px}
+.hp-bar{width:100%;height:10px;background:#333;border-radius:999px;overflow:hidden;border:1.5px solid #555}
+.hp-fill{height:100%;background:linear-gradient(90deg,var(--green),#a0ff60);border-radius:999px;transition:width .4s}
+
+/* Ground strip at bottom of arena */
+.throw-ground{
+  width:100%;height:80px;background:linear-gradient(180deg,#2d5a20,#1a3a10);
+  border-top:3px solid #4a8a30;flex-shrink:0;position:relative;z-index:1;
+}
+.throw-ground::before{content:'';position:absolute;top:-8px;left:0;right:0;height:12px;
+  background:repeating-linear-gradient(90deg,#4a8a30 0,#4a8a30 8px,#2d5a20 8px,#2d5a20 16px)}
+
+/* Ball launch zone */
+.ball-zone{
+  width:100%;height:140px;display:flex;align-items:flex-end;justify-content:center;
+  position:relative;flex-shrink:0;z-index:2;padding-bottom:18px;
+}
+.launch-hint{position:absolute;bottom:6px;width:100%;text-align:center;
+  font-family:'Baloo 2',cursive;font-size:.58rem;
+  color:rgba(255,255,255,.35);font-weight:800;pointer-events:none}
+
+/* THE BALL */
+.pokeball{
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(180deg,#ff5252 50%,#f5f5f5 50%);
+  border:4px solid #222;
+  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  box-shadow:0 6px 24px rgba(255,82,82,.6),inset 0 2px 4px rgba(255,255,255,.3);
+  cursor:grab;user-select:none;touch-action:none;
+  z-index:10;
+}
+.pokeball::before{content:'';position:absolute;top:50%;left:0;right:0;
+  height:4px;background:#222;transform:translateY(-50%)}
+.pokeball::after{content:'';position:absolute;top:50%;left:50%;
+  width:18px;height:18px;background:white;border:4px solid #222;
+  border-radius:50%;transform:translate(-50%,-50%)}
+.pokeball.ready{
+  box-shadow:0 0 0 8px rgba(255,224,64,.35),0 0 30px rgba(255,224,64,.5),0 6px 24px rgba(255,82,82,.5);
+  animation:ballReady 1.2s ease-in-out infinite;
+}
+@keyframes ballReady{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.1)}}
+.pokeball.dragging{cursor:grabbing;animation:none!important}
+.pokeball.thrown{cursor:default;animation:none!important}
+
+/* Trajectory dots */
+.traj-dot{position:absolute;border-radius:50%;background:rgba(255,255,255,.6);
+  pointer-events:none;transform:translate(-50%,-50%);transition:none}
+
+/* Throw result flash */
+.throw-result{
+  position:absolute;top:20%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Baloo 2',cursive;font-size:2.5rem;font-weight:800;
+  pointer-events:none;opacity:0;z-index:10;text-shadow:2px 2px 0 #0008;white-space:nowrap;
+}
+.throw-result.pop{animation:resultPop .9s ease forwards}
+@keyframes resultPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}
+  50%{opacity:1;transform:translate(-50%,-65%) scale(1.2)}
+  100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+
+/* ═══════════════════════════════
+   MAP SCREEN
+═══════════════════════════════ */
+#sMap{background:linear-gradient(180deg,#a8edff 0%,#c8f5ff 35%,#7ed96b 60%,#5cb84a 100%)}
+
+.map-scene{width:100%;max-width:500px;position:relative;height:100%;display:flex;flex-direction:column}
+
+/* Sky section */
+.map-sky{flex:1;position:relative;overflow:hidden}
+.cloud{position:absolute;background:rgba(255,255,255,.88);border-radius:50px}
+.map-hills{position:absolute;bottom:0;left:0;right:0;height:80px}
+
+/* Ground / path section */
+.map-ground{
+  height:160px;background:linear-gradient(180deg,#7ed96b,#5cb84a);
+  border-top:4px solid #3d8c3d;position:relative;flex-shrink:0;
+}
+.map-path{
+  position:absolute;top:20px;left:0;right:0;height:22px;
+  background:#f5e6c0;border-top:3px solid #d4b87a;border-bottom:3px solid #d4b87a;
+}
+/* Dashed center line */
+.map-path::before{content:'';position:absolute;top:50%;left:0;right:0;height:3px;
+  background:repeating-linear-gradient(90deg,#d4b87a 0,#d4b87a 12px,transparent 12px,transparent 24px);transform:translateY(-50%)}
+
+/* Node positions */
+.map-nodes{position:absolute;top:12px;left:0;right:0;height:34px}
+.mnode{
+  position:absolute;width:36px;height:36px;border-radius:50%;
+  border:3px solid #c4a96b;background:#f5e6c0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;transform:translateX(-50%);transition:all .5s;
+}
+.mnode.done{background:var(--yellow);border-color:var(--dyellow);box-shadow:0 0 12px var(--yellow)}
+.mnode.active{background:var(--pink);border-color:var(--dpink);box-shadow:0 0 18px var(--pink);
+  animation:nodeGlow 1s ease-in-out infinite}
+@keyframes nodeGlow{0%,100%{box-shadow:0 0 10px var(--pink)}50%{box-shadow:0 0 24px var(--pink),0 0 8px white}}
+.mnode.locked{opacity:.45}
+
+/* Player character */
+.map-player{position:absolute;top:0;font-size:1.8rem;transform:translateX(-50%);
+  transition:left 1.2s cubic-bezier(.68,-.55,.265,1.55);
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4));animation:playerBob .5s ease-in-out infinite alternate}
+@keyframes playerBob{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-4px)}}
+
+/* Trees */
+.tree{position:absolute;display:flex;flex-direction:column;align-items:center}
+.tree-top{border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:30px solid #3d8c3d}
+.tree-top2{border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:22px solid #4aa04a;margin-top:-10px}
+.tree-trunk{width:8px;height:12px;background:#8B5E3C}
+
+/* Map title card */
+.map-card{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.92);border:3px solid var(--yellow);border-radius:16px;
+  padding:14px 28px;text-align:center;font-family:'Baloo 2',cursive;font-weight:800;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);min-width:200px;
+}
+.map-card-title{font-size:1.3rem;color:var(--dpink);margin-bottom:4px}
+.map-card-sub{font-size:.75rem;color:#555}
+.map-card-progress{font-size:.7rem;color:var(--purple);margin-top:4px;font-weight:800}
+
+/* ═══════════════════════════════
+   CATCH OVERLAY
+═══════════════════════════════ */
+#oCatch{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#oCatch.show{opacity:1;pointer-events:all}
+.catch-box{
+  background:var(--panel);border:4px solid var(--yellow);border-radius:24px;
+  padding:28px 32px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  max-width:320px;width:90%;animation:popIn .5s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.catch-title{font-family:'Baloo 2',cursive;font-size:1.8rem;font-weight:800;color:var(--yellow);text-shadow:2px 2px 0 var(--dyellow)}
+.catch-creature{animation:floatY 1.5s ease-in-out infinite}
+.catch-word{font-family:'Baloo 2',cursive;font-size:1.1rem;letter-spacing:4px;
+  color:var(--white);background:#0a1a3a;padding:8px 20px;border-radius:10px;border:2px solid #2244aa}
+.catch-pts{font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:800;color:var(--green)}
+.catch-msg{font-size:.85rem;font-weight:700;color:#aac4ff;line-height:1.5}
+.btn-continue{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+  background:linear-gradient(135deg,var(--yellow),#ffb700);color:var(--dark);
+  border:none;padding:13px 36px;border-radius:50px;cursor:pointer;
+  box-shadow:0 5px 0 var(--dyellow)}
+.btn-continue:active{transform:translateY(3px);box-shadow:0 2px 0 var(--dyellow)}
+
+/* ═══════════════════════════════
+   PERFECT + WIN SCREENS
+═══════════════════════════════ */
+#sPerfect{background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);gap:16px;padding:24px;overflow-y:auto}
+.perfect-title{font-family:'Baloo 2',cursive;font-size:clamp(1.8rem,7vw,2.6rem);font-weight:800;
+  color:var(--yellow);text-align:center;text-shadow:0 0 30px #ffe04088,3px 3px 0 var(--dyellow);
+  animation:btnPulse 2s ease-in-out infinite}
+.dollar-card{background:linear-gradient(135deg,#0d2a00,#1a4a00);border:4px solid var(--green);border-radius:24px;
+  padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  box-shadow:0 0 40px rgba(77,207,138,.3);max-width:360px;width:100%}
+.dollar-amount{font-family:'Baloo 2',cursive;font-size:4.5rem;font-weight:800;color:var(--green);
+  text-shadow:3px 3px 0 #1a6040,0 0 30px rgba(77,207,138,.5)}
+.dollar-msg{font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:var(--yellow);text-align:center;line-height:1.8}
+.dollar-fine{font-size:.6rem;font-weight:700;color:#555;text-align:center;line-height:1.8;border-top:1px solid #333;padding-top:10px;width:100%}
+#sWin{background:linear-gradient(160deg,#0d0221,#1a0a3e);gap:14px;padding:24px;overflow-y:auto}
+.win-title{font-family:'Baloo 2',cursive;font-size:clamp(1.8rem,6vw,2.4rem);font-weight:800;
+  color:var(--yellow);text-align:center;text-shadow:3px 3px 0 var(--dyellow)}
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;width:100%;max-width:400px}
+.dex-card{background:#0f3460;border:2px solid var(--yellow);border-radius:12px;
+  padding:8px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+.dex-word{font-family:'Baloo 2',cursive;font-size:.48rem;font-weight:800;color:var(--yellow);word-break:break-all}
+.win-stats{background:#0f3460;border:2px solid var(--yellow);border-radius:12px;padding:14px 20px;width:100%;max-width:380px}
+.wstat{display:flex;justify-content:space-between;font-family:'Baloo 2',cursive;font-size:.72rem;
+  font-weight:800;color:var(--white);padding:5px 0;border-bottom:1px solid #222}
+.wstat:last-child{border:none}
+.wstat .v{color:var(--yellow)}
+
+/* Canvas */
+#cvs{position:fixed;inset:0;pointer-events:none;z-index:999}
+
+/* Responsive */
+@media(max-width:360px){.blank{width:28px;height:38px;font-size:.95rem}.pokeball{width:54px;height:54px}}
+</style>
+</head>
+<body>
+<canvas id="cvs"></canvas>
+
+<!-- ═══════════════════════ TITLE ═══════════════════════ -->
+<div class="screen" id="sTitle">
+  <div class="title-creatures" id="titleCreatures"></div>
+  <h1 class="title-h1">Bella's Spelling<br>Adventure!</h1>
+  <p class="title-sub">Unit 4 · Week 5 · Soft C &amp; G Words</p>
+  <button class="btn-start" onclick="startGame()">✨ Let's Go! ✨</button>
+</div>
+
+<!-- ═══════════════════════ SPELL ═══════════════════════ -->
+<div class="screen off" id="sSpell">
+  <div class="spell-topbar">
+    <div>
+      <div class="spell-topbar-title">🐱 BELLA'S ADVENTURE</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:.55rem;color:#aac4ff" id="locLabel">📍 Meadow Valley</div>
+    </div>
+    <div class="spell-topbar-right">
+      <div class="hchip">⭐ <span id="scoreEl">0</span></div>
+      <div class="hchip" id="heartsEl">❤️❤️❤️</div>
+      <div class="hchip" id="wordNumEl">1/20</div>
+      <button onclick="toggleSound()" id="sndBtn" style="background:none;border:none;font-size:1.1rem;cursor:pointer">🔈</button>
+    </div>
+  </div>
+  <!-- Scrollable upper area: creature + definition -->
+  <div class="spell-body" id="spellBody">
+    <div class="spell-creature-preview">
+      <div class="spell-encounter-tag" id="encounterTag">⚡ A wild creature appeared!</div>
+      <div id="spellCreature" style="width:110px;height:110px;display:block"></div>
+      <div class="spell-creature-name" id="spellCreatureName">???</div>
+    </div>
+    <div class="def-card" id="defCard">Loading…</div>
+  </div>
+  <!-- Sticky input area — stays above keyboard -->
+  <div class="spell-input-area" id="spellInputArea">
+    <!-- Hidden input captures keyboard -->
+    <input id="spellInp" type="text"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+    <div class="blanks-row" id="blanksRow"></div>
+    <div class="hint-box" id="hintBox"></div>
+    <div class="spell-actions">
+      <button class="btn btn-hear" id="hearBtn" onclick="sayWord()">🔊 Hear It</button>
+      <button class="btn btn-check" onclick="checkSpell()">✅ CHECK</button>
+      <button class="btn btn-hint" onclick="useHint()">💡 Hint</button>
+      <button class="btn btn-skip" onclick="skipWord()">⏭ Skip</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ THROW ═══════════════════════ -->
+<div class="screen off" id="sThrow">
+  <div class="throw-header">
+    <div class="throw-word-badge" id="throwWordBadge">POUNCE</div>
+    <div class="throw-instruction" id="throwInstr">⬆️ Swipe the ball up to throw!</div>
+  </div>
+  <div class="throw-creature-zone" id="throwCreatureZone">
+    <div class="hp-wrap">
+      <div class="creature-hp-label" style="font-family:'Baloo 2',cursive;font-size:.65rem;font-weight:800;color:var(--yellow)" id="throwCreatureName">Fluffkin</div>
+      <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+    </div>
+    <div style="position:relative;display:inline-block">
+    <div id="throwCreatureEl" style="width:160px;height:160px;display:block;position:relative;z-index:1"></div>
+    <div id="ringEl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      border-radius:50%;border:4px solid #4dcf8a;box-shadow:0 0 12px #4dcf8a;
+      width:120px;height:120px;pointer-events:none;z-index:2;display:none"></div>
+  </div>
+  </div>
+  <div class="throw-result" id="throwResult"></div>
+  <div class="throw-ground"></div>
+  <div class="ball-zone">
+    <div class="launch-hint">Swipe up ↑ to throw</div>
+  </div>
+  <!-- Ball is direct child of sThrow so it can travel freely over entire screen -->
+  <div class="pokeball" id="pokeball"></div>
+</div>
+
+<!-- ═══════════════════════ MAP ═══════════════════════ -->
+<div class="screen off" id="sMap">
+  <div class="map-scene">
+    <div class="map-sky" id="mapSky">
+      <div class="cloud" style="width:70px;height:26px;top:14%;left:8%"></div>
+      <div class="cloud" style="width:90px;height:30px;top:8%;left:38%"></div>
+      <div class="cloud" style="width:60px;height:20px;top:18%;left:68%"></div>
+      <div class="cloud" style="width:50px;height:18px;top:10%;left:82%"></div>
+    </div>
+    <div class="map-ground">
+      <!-- Trees -->
+      <div class="tree" style="position:absolute;left:5%;top:-30px"><div class="tree-top"></div><div class="tree-top2"></div><div class="tree-trunk"></div></div>
+      <div class="tree" style="position:absolute;left:18%;top:-24px"><div class="tree-top" style="border-bottom-width:24px;border-left-width:11px;border-right-width:11px"></div><div class="tree-trunk"></div></div>
+      <div class="tree" style="position:absolute;right:8%;top:-30px"><div class="tree-top"></div><div class="tree-top2"></div><div class="tree-trunk"></div></div>
+      <div class="tree" style="position:absolute;right:22%;top:-22px"><div class="tree-top" style="border-bottom-width:22px"></div><div class="tree-trunk"></div></div>
+      <div class="map-path">
+        <div class="map-nodes" id="mapNodes"></div>
+        <div class="map-player" id="mapPlayer">🧒</div>
+      </div>
+    </div>
+    <div class="map-card" id="mapCard">
+      <div class="map-card-title" id="mapCardTitle">🏡 Meadow Valley</div>
+      <div class="map-card-sub" id="mapCardSub">You caught Fluffkin!</div>
+      <div class="map-card-progress" id="mapCardProgress">Word 1 of 20</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PERFECT ═══════════════════════ -->
+<div class="screen off" id="sPerfect">
+  <div class="perfect-title">🌟 PERFECT SCORE! 🌟</div>
+  <div id="perfectRow" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
+  <div class="dollar-card">
+    <div style="font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:#aac4ff;line-height:1.8;text-align:center">
+      YOU ARE INCREDIBLE, BELLA!<br>Every word — first try, no hints!
+    </div>
+    <div class="dollar-amount">$1.00</div>
+    <div class="dollar-msg">Show this screen to Dad<br>to claim your prize! 🏆</div>
+    <div class="dollar-fine">* MAX $5.00 PER WEEK * ONE PERFECT GAME = ONE DOLLAR * DAD KEEPS TRACK 👀 *</div>
+  </div>
+  <button class="btn-continue" onclick="showWin()">See Your Pokédex ▶</button>
+</div>
+
+<!-- ═══════════════════════ WIN ═══════════════════════ -->
+<div class="screen off" id="sWin">
+  <div class="win-title">🏆 Journey Complete!</div>
+  <div style="font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:#aac4ff;text-align:center;line-height:1.8">You caught all the creatures, Bella!<br>You are AMAZING! ⭐</div>
+  <div class="dex-grid" id="dexGrid"></div>
+  <div class="win-stats" id="winStats"></div>
+  <button class="btn-continue" onclick="playAgain()" style="margin-top:4px">🔄 Play Again!</button>
+</div>
+
+<!-- ═══════════════════════ CATCH OVERLAY ═══════════════════════ -->
+<div id="oCatch">
+  <div class="catch-box">
+    <div class="catch-title">Gotcha! 🎉</div>
+    <div class="catch-creature" id="catchCreatureEl"></div>
+    <div class="catch-word" id="catchWordEl"></div>
+    <div class="catch-pts" id="catchPtsEl"></div>
+    <div class="catch-msg" id="catchMsgEl"></div>
+    <button class="btn-continue" onclick="afterCatch()">Continue ▶</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+const WORDS=[
+  {w:"pounce",  d:"Jump on something suddenly, like a cat! 🐱",         s:"The kitten will pounce on the toy mouse."},
+  {w:"placed",  d:"Past tense of place — put something somewhere 📍",    s:"She placed her shoes by the front door."},
+  {w:"dice",    d:"Plural of die — small numbered cubes for games 🎲",   s:"She rolled the dice and moved six spaces."},
+  {w:"cents",   d:"Small coins; 100 cents equals one dollar 🪙",         s:"The gumball costs twenty-five cents."},
+  {w:"price",   d:"The amount of money something costs 💰",              s:"The price of the book was three dollars."},
+  {w:"space",   d:"The area beyond Earth full of stars 🌌",              s:"The rocket flew up into outer space."},
+  {w:"mice",    d:"More than one mouse 🐭",                              s:"The cats chased the mice across the floor."},
+  {w:"office",  d:"A room where people do work 💼",                      s:"Dad works in an office with a big desk."},
+  {w:"wage",    d:"Money you earn for doing work 💵",                    s:"She earned a wage for walking the dog."},
+  {w:"age",     d:"How many years old something or someone is 🎂",       s:"Bella is the right age for third grade."},
+  {w:"gyms",    d:"More than one gym — rooms for exercise 🏋️",          s:"Both gyms at school have basketball hoops."},
+  {w:"giant",   d:"Extremely large — much bigger than normal 🌟",        s:"The giant elephant was bigger than the car."},
+  {w:"changes", d:"When something becomes different than before 🔄",     s:"The caterpillar changes into a butterfly."},
+  {w:"message", d:"Words sent from one person to another 💌",            s:"Bella wrote a message and put it in an envelope."},
+  {w:"pages",   d:"The sheets of paper inside a book 📖",                s:"The book had fifty pages of adventure."},
+  {w:"you",     d:"The word for the person you are talking to 👧",       s:"I hope you have a wonderful day today!"},
+  {w:"road",    d:"A paved path that cars and trucks drive on 🛣️",      s:"The long road led all the way to the beach."},
+  {w:"peace",   d:"A feeling of quiet, calm, and happiness 🕊️",         s:"The park was full of peace on Sunday morning."},
+  {w:"giraffe", d:"A very tall African animal with a long neck 🦒",      s:"The giraffe used its long neck to reach the leaves."},
+  {w:"peaceful",d:"Describes a calm, quiet, and gentle feeling 😸",      s:"The sleeping kitten looked so peaceful and cozy."}
+];
+
+const LOCATIONS=[
+  {name:"🏡 Meadow Valley",  emoji:"🏡"},
+  {name:"🌲 Whispering Woods",emoji:"🌲"},
+  {name:"⛰️ Crystal Cave",   emoji:"⛰️"},
+  {name:"💧 Rainbow Lake",   emoji:"💧"},
+  {name:"🌋 Star Summit",    emoji:"🌋"}
+];
+const NODE_PCT=[8,27,46,65,84];
+
+const CREATURES=[
+  {name:"Fluffkin", color:"#ffb3d9", fn:drawBunny},
+  {name:"Sparklox", color:"#ffe066", fn:drawFox},
+  {name:"Puddlum",  color:"#a0d8ff", fn:drawSeal},
+  {name:"Fernbit",  color:"#b3ffb3", fn:drawFrog},
+  {name:"Glimcat",  color:"#e0b3ff", fn:drawCat},
+  {name:"Coraluff", color:"#ffb3b3", fn:drawBear},
+  {name:"Driftail", color:"#b3e0ff", fn:drawDragon},
+  {name:"Peppin",   color:"#ffdfb3", fn:drawHamster},
+  {name:"Starwhirl",color:"#fff0a0", fn:drawStar},
+  {name:"Mossling", color:"#c8ffb3", fn:drawTurtle},
+  {name:"Twinkow",  color:"#ffd6f5", fn:drawUnicorn},
+  {name:"Boulbear", color:"#d4e0ff", fn:drawPanda},
+  {name:"Zipplet",  color:"#fffbb3", fn:drawChick},
+  {name:"Dazzlphin",color:"#b3f0ff", fn:drawDolphin},
+  {name:"Flameow",  color:"#ffcbb3", fn:drawFirecat},
+  {name:"Crystaloo",color:"#e8b3ff", fn:drawRaccoon},
+  {name:"Dewdrop",  color:"#b3f5e0", fn:drawAxolotl},
+  {name:"Puffy",    color:"#ffb3cc", fn:drawPig},
+  {name:"Shimmur",  color:"#ffedb3", fn:drawLion},
+  {name:"Lunabelle",color:"#cdb3ff", fn:drawOwl}
+];
+
+// ═══════════════════════════════════════════════════════════
+//  SVG CREATURES
+// ═══════════════════════════════════════════════════════════
+function svg(w,h,c){return`<svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${c}</svg>`}
+function drawBunny(c){return svg(90,100,`<ellipse cx="45" cy="62" rx="30" ry="28" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="34" cy="38" rx="8" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="56" cy="38" rx="8" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="36" cy="36" rx="5" ry="14" fill="#ffcce0"/><ellipse cx="58" cy="36" rx="5" ry="14" fill="#ffcce0"/><circle cx="38" cy="60" r="5" fill="#222"/><circle cx="52" cy="60" r="5" fill="#222"/><circle cx="39.5" cy="58.5" r="2" fill="white"/><circle cx="53.5" cy="58.5" r="2" fill="white"/><ellipse cx="45" cy="68" rx="7" ry="5" fill="#ffcce0"/><path d="M42 65 Q45 70 48 65" stroke="#222" stroke-width="1.5" fill="none"/><ellipse cx="45" cy="85" rx="18" ry="10" fill="${c}" stroke="#222" stroke-width="1.5"/>`)}
+function drawFox(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="28" ry="25" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="28,42 20,20 36,38" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="62,42 70,20 54,38" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="30,40 23,23 37,38" fill="#ff8844"/><polygon points="60,40 67,23 53,38" fill="#ff8844"/><ellipse cx="45" cy="58" rx="18" ry="15" fill="#fff0e0"/><circle cx="38" cy="60" r="5" fill="#222"/><circle cx="52" cy="60" r="5" fill="#222"/><circle cx="39.5" cy="58.5" r="2" fill="white"/><circle cx="53.5" cy="58.5" r="2" fill="white"/><ellipse cx="45" cy="68" rx="5" ry="4" fill="#ff8888"/><path d="M38 72 Q45 77 52 72" stroke="#222" stroke-width="1.5" fill="none"/><ellipse cx="15" cy="78" rx="6" ry="20" fill="${c}" stroke="#222" stroke-width="1.5" transform="rotate(-20,15,78)"/>`)}
+function drawSeal(c){return svg(100,90,`<ellipse cx="50" cy="55" rx="38" ry="28" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="50" cy="38" rx="20" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="42" cy="36" r="5" fill="#222"/><circle cx="58" cy="36" r="5" fill="#222"/><circle cx="43.5" cy="34.5" r="2" fill="white"/><circle cx="59.5" cy="34.5" r="2" fill="white"/><ellipse cx="50" cy="44" rx="7" ry="5" fill="#ffb3cc"/><path d="M45 42 Q50 48 55 42" stroke="#222" stroke-width="1.5" fill="none"/><ellipse cx="20" cy="72" rx="12" ry="7" fill="${c}" stroke="#222" stroke-width="1.5" transform="rotate(30,20,72)"/><ellipse cx="80" cy="72" rx="12" ry="7" fill="${c}" stroke="#222" stroke-width="1.5" transform="rotate(-30,80,72)"/>`)}
+function drawFrog(c){return svg(90,90,`<ellipse cx="45" cy="58" rx="30" ry="24" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="31" cy="36" rx="12" ry="12" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="59" cy="36" rx="12" ry="12" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="31" cy="36" r="7" fill="#222"/><circle cx="59" cy="36" r="7" fill="#222"/><circle cx="33" cy="34" r="3" fill="white"/><circle cx="61" cy="34" r="3" fill="white"/><ellipse cx="45" cy="65" rx="14" ry="8" fill="#b3ffb3"/><path d="M36 62 Q45 70 54 62" stroke="#222" stroke-width="2" fill="none"/><ellipse cx="18" cy="80" rx="14" ry="7" fill="${c}" stroke="#222" stroke-width="1.5"/><ellipse cx="72" cy="80" rx="14" ry="7" fill="${c}" stroke="#222" stroke-width="1.5"/>`)}
+function drawCat(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="28" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="45" cy="50" rx="22" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="26,38 18,16 36,34" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="64,38 72,16 54,34" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="28,36 22,19 36,33" fill="#ffb3cc"/><polygon points="62,36 68,19 54,33" fill="#ffb3cc"/><circle cx="38" cy="50" r="5.5" fill="#222"/><circle cx="52" cy="50" r="5.5" fill="#222"/><circle cx="39.5" cy="48.5" r="2.5" fill="white"/><circle cx="53.5" cy="48.5" r="2.5" fill="white"/><ellipse cx="45" cy="57" rx="5" ry="4" fill="#ff9999"/><path d="M40 54 Q45 60 50 54" stroke="#222" stroke-width="1.5" fill="none"/><line x1="25" y1="54" x2="10" y2="50" stroke="#222" stroke-width="1.5"/><line x1="25" y1="57" x2="10" y2="57" stroke="#222" stroke-width="1.5"/><line x1="65" y1="54" x2="80" y2="50" stroke="#222" stroke-width="1.5"/><line x1="65" y1="57" x2="80" y2="57" stroke="#222" stroke-width="1.5"/><path d="M62 82 Q75 70 72 88" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/>`)}
+function drawBear(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="30" ry="28" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="46" r="22" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="28" cy="30" r="11" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="62" cy="30" r="11" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="28" cy="30" r="7" fill="#ffcca0"/><circle cx="62" cy="30" r="7" fill="#ffcca0"/><ellipse cx="45" cy="55" rx="14" ry="10" fill="#ffcca0"/><circle cx="38" cy="46" r="5.5" fill="#222"/><circle cx="52" cy="46" r="5.5" fill="#222"/><circle cx="39.5" cy="44.5" r="2.5" fill="white"/><circle cx="53.5" cy="44.5" r="2.5" fill="white"/><circle cx="45" cy="56" r="5" fill="#cc8866"/><path d="M38 62 Q45 68 52 62" stroke="#222" stroke-width="2" fill="none"/>`)}
+function drawDragon(c){return svg(100,110,`<ellipse cx="50" cy="72" rx="28" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="50" cy="52" rx="20" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="32,40 24,16 42,38" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="68,40 76,16 58,38" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="34,39 27,19 42,37" fill="#ff9944"/><polygon points="66,39 73,19 58,37" fill="#ff9944"/><ellipse cx="78" cy="56" rx="14" ry="9" fill="${c}" stroke="#222" stroke-width="1.5" transform="rotate(-30,78,56)"/><ellipse cx="22" cy="56" rx="14" ry="9" fill="${c}" stroke="#222" stroke-width="1.5" transform="rotate(30,22,56)"/><circle cx="43" cy="50" r="6" fill="#222"/><circle cx="57" cy="50" r="6" fill="#222"/><circle cx="44.5" cy="48" r="2.5" fill="white"/><circle cx="58.5" cy="48" r="2.5" fill="white"/><ellipse cx="50" cy="60" rx="6" ry="4" fill="#ff6644"/><path d="M43 56 Q50 63 57 56" stroke="#222" stroke-width="1.5" fill="none"/><path d="M75 92 Q90 80 88 100" stroke="${c}" stroke-width="9" fill="none" stroke-linecap="round"/>`)}
+function drawHamster(c){return svg(90,90,`<ellipse cx="45" cy="60" rx="32" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="45" cy="48" rx="22" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="23" cy="64" rx="10" ry="8" fill="#ffddaa"/><ellipse cx="67" cy="64" rx="10" ry="8" fill="#ffddaa"/><circle cx="26" cy="32" r="8" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="64" cy="32" r="8" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="38" cy="47" r="5" fill="#222"/><circle cx="52" cy="47" r="5" fill="#222"/><circle cx="39.5" cy="45.5" r="2" fill="white"/><circle cx="53.5" cy="45.5" r="2" fill="white"/><ellipse cx="45" cy="55" rx="6" ry="4" fill="#ffaaaa"/><path d="M39 52 Q45 58 51 52" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawStar(c){return svg(100,100,`<polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="42" cy="44" r="5" fill="#222"/><circle cx="58" cy="44" r="5" fill="#222"/><circle cx="43.5" cy="42.5" r="2" fill="white"/><circle cx="59.5" cy="42.5" r="2" fill="white"/><ellipse cx="50" cy="53" rx="5" ry="3.5" fill="#ffaacc"/><path d="M44 50 Q50 56 56 50" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawTurtle(c){return svg(100,90,`<ellipse cx="50" cy="56" rx="34" ry="26" fill="#886644" stroke="#222" stroke-width="2"/><ellipse cx="50" cy="52" rx="28" ry="22" fill="${c}" stroke="#222" stroke-width="2"/><path d="M22 52 Q35 36 50 52 Q65 36 78 52 Q65 68 50 52 Q35 68 22 52" stroke="#222" stroke-width="1.5" fill="none"/><circle cx="50" cy="32" r="16" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="43" cy="30" r="5" fill="#222"/><circle cx="57" cy="30" r="5" fill="#222"/><circle cx="44.5" cy="28.5" r="2" fill="white"/><circle cx="58.5" cy="28.5" r="2" fill="white"/><ellipse cx="50" cy="38" rx="5" ry="3.5" fill="#ffaacc"/><path d="M44 35 Q50 41 56 35" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawUnicorn(c){return svg(90,110,`<ellipse cx="45" cy="68" rx="28" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="48" r="20" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="45,14 40,34 50,34" fill="#ffdd44" stroke="#222" stroke-width="1.5"/><ellipse cx="28" cy="32" rx="7" ry="9" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="62" cy="32" rx="7" ry="9" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="28" cy="32" rx="4" ry="6" fill="#ffccee"/><ellipse cx="62" cy="32" rx="4" ry="6" fill="#ffccee"/><circle cx="38" cy="48" r="5.5" fill="#222"/><circle cx="52" cy="48" r="5.5" fill="#222"/><circle cx="39.5" cy="46.5" r="2.5" fill="white"/><circle cx="53.5" cy="46.5" r="2.5" fill="white"/><ellipse cx="45" cy="57" rx="5" ry="3.5" fill="#ffb3cc"/><path d="M39 54 Q45 60 51 54" stroke="#222" stroke-width="1.5" fill="none"/><path d="M64 82 Q80 72 76 92" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/>`)}
+function drawPanda(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="30" ry="28" fill="white" stroke="#222" stroke-width="2"/><circle cx="45" cy="46" r="22" fill="white" stroke="#222" stroke-width="2"/><circle cx="28" cy="30" r="10" fill="#222" stroke="#222" stroke-width="2"/><circle cx="62" cy="30" r="10" fill="#222" stroke="#222" stroke-width="2"/><ellipse cx="35" cy="50" rx="8" ry="7" fill="#222"/><ellipse cx="55" cy="50" rx="8" ry="7" fill="#222"/><circle cx="36" cy="49" r="5" fill="#222"/><circle cx="54" cy="49" r="5" fill="#222"/><circle cx="37.5" cy="47.5" r="2" fill="white"/><circle cx="55.5" cy="47.5" r="2" fill="white"/><ellipse cx="45" cy="57" rx="5" ry="4" fill="#ffaaaa"/><path d="M38 54 Q45 60 52 54" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawChick(c){return svg(80,90,`<ellipse cx="40" cy="62" rx="26" ry="22" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="40" cy="44" r="19" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="40,28 34,22 46,22" fill="#ffaa22" stroke="#222" stroke-width="1.5"/><path d="M20 30 Q14 20 22 15 Q18 25 28 26" fill="${c}" stroke="#222" stroke-width="1.5"/><path d="M60 30 Q66 20 58 15 Q62 25 52 26" fill="${c}" stroke="#222" stroke-width="1.5"/><circle cx="33" cy="42" r="5" fill="#222"/><circle cx="47" cy="42" r="5" fill="#222"/><circle cx="34.5" cy="40.5" r="2" fill="white"/><circle cx="48.5" cy="40.5" r="2" fill="white"/>`)}
+function drawDolphin(c){return svg(110,90,`<ellipse cx="55" cy="52" rx="38" ry="20" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="28" cy="44" r="18" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="20" cy="38" rx="7" ry="12" fill="${c}" stroke="#222" stroke-width="1.5"/><polygon points="88,42 100,30 100,55" fill="${c}" stroke="#222" stroke-width="1.5"/><polygon points="55,70 45,85 65,85" fill="${c}" stroke="#222" stroke-width="1.5"/><ellipse cx="20" cy="52" rx="10" ry="6" fill="#c8f0ff"/><circle cx="22" cy="40" r="5.5" fill="#222"/><circle cx="22" cy="40" r="2.5" fill="white"/><ellipse cx="16" cy="47" rx="6" ry="4" fill="#ffb3cc"/><path d="M10 44 Q16 50 22 44" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawFirecat(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="28" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="46" r="21" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="28,36 20,14 38,34" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="62,36 70,14 52,34" fill="${c}" stroke="#222" stroke-width="2"/><polygon points="30,34 24,17 37,33" fill="#ff6622"/><polygon points="60,34 66,17 53,33" fill="#ff6622"/><path d="M36 18 Q45 8 54 18 Q50 4 45 2 Q40 4 36 18" fill="#ff8844"/><circle cx="38" cy="46" r="5.5" fill="#222"/><circle cx="52" cy="46" r="5.5" fill="#222"/><circle cx="39.5" cy="44.5" r="2.5" fill="white"/><circle cx="53.5" cy="44.5" r="2.5" fill="white"/><ellipse cx="45" cy="55" rx="5" ry="3.5" fill="#ff9999"/><path d="M39 52 Q45 58 51 52" stroke="#222" stroke-width="1.5" fill="none"/><path d="M63 82 Q78 70 74 92" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/><line x1="25" y1="50" x2="10" y2="46" stroke="#222" stroke-width="1.5"/><line x1="25" y1="53" x2="10" y2="53" stroke="#222" stroke-width="1.5"/><line x1="65" y1="50" x2="80" y2="46" stroke="#222" stroke-width="1.5"/><line x1="65" y1="53" x2="80" y2="53" stroke="#222" stroke-width="1.5"/>`)}
+function drawRaccoon(c){return svg(90,100,`<ellipse cx="45" cy="66" rx="28" ry="26" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="47" r="21" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="28" cy="30" r="10" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="62" cy="30" r="10" fill="${c}" stroke="#222" stroke-width="2"/><ellipse cx="36" cy="48" rx="9" ry="8" fill="#555"/><ellipse cx="54" cy="48" rx="9" ry="8" fill="#555"/><circle cx="36" cy="47" r="5.5" fill="#222"/><circle cx="54" cy="47" r="5.5" fill="#222"/><circle cx="37.5" cy="45.5" r="2.5" fill="white"/><circle cx="55.5" cy="45.5" r="2.5" fill="white"/><ellipse cx="45" cy="55" rx="8" ry="6" fill="#ccc"/><ellipse cx="45" cy="56" rx="5" ry="3.5" fill="#ffaaaa"/><path d="M38 53 Q45 59 52 53" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawAxolotl(c){return svg(100,90,`<ellipse cx="50" cy="58" rx="34" ry="22" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="34" cy="42" r="18" fill="${c}" stroke="#222" stroke-width="2"/><path d="M20 26 Q14 14 22 10 Q18 22 28 22" fill="#ff8888" stroke="#222" stroke-width="1.5"/><path d="M30 22 Q26 10 34 8 Q30 20 38 22" fill="#ff8888" stroke="#222" stroke-width="1.5"/><path d="M40 22 Q38 10 46 10 Q40 20 46 24" fill="#ff8888" stroke="#222" stroke-width="1.5"/><circle cx="28" cy="42" r="6" fill="#222"/><circle cx="40" cy="42" r="6" fill="#222"/><circle cx="29.5" cy="40.5" r="2.5" fill="white"/><circle cx="41.5" cy="40.5" r="2.5" fill="white"/><ellipse cx="34" cy="51" rx="5" ry="3.5" fill="#ffb3cc"/><path d="M28 48 Q34 54 40 48" stroke="#222" stroke-width="1.5" fill="none"/><ellipse cx="82" cy="62" rx="14" ry="8" fill="${c}" stroke="#222" stroke-width="1.5"/>`)}
+function drawPig(c){return svg(90,100,`<ellipse cx="45" cy="65" rx="30" ry="28" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="46" r="22" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="28" cy="30" r="10" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="62" cy="30" r="10" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="38" cy="46" r="5.5" fill="#222"/><circle cx="52" cy="46" r="5.5" fill="#222"/><circle cx="39.5" cy="44.5" r="2.5" fill="white"/><circle cx="53.5" cy="44.5" r="2.5" fill="white"/><ellipse cx="45" cy="56" rx="9" ry="7" fill="#ffaaaa"/><circle cx="42" cy="55" r="2.5" fill="#cc6688"/><circle cx="48" cy="55" r="2.5" fill="#cc6688"/><path d="M38 62 Q45 68 52 62" stroke="#222" stroke-width="1.5" fill="none"/>`)}
+function drawLion(c){return svg(100,100,`<circle cx="50" cy="50" r="34" fill="#ffbb44" opacity=".55" stroke="none"/><circle cx="50" cy="50" r="26" fill="#ffbb44" opacity=".35" stroke="none"/><ellipse cx="50" cy="66" rx="26" ry="24" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="50" cy="48" r="20" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="33" cy="30" r="9" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="67" cy="30" r="9" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="43" cy="47" r="5.5" fill="#222"/><circle cx="57" cy="47" r="5.5" fill="#222"/><circle cx="44.5" cy="45.5" r="2.5" fill="white"/><circle cx="58.5" cy="45.5" r="2.5" fill="white"/><ellipse cx="50" cy="55" rx="8" ry="6" fill="#ffddaa"/><ellipse cx="50" cy="56" rx="5" ry="3.5" fill="#ffaaaa"/><path d="M43 53 Q50 59 57 53" stroke="#222" stroke-width="1.5" fill="none"/><line x1="28" y1="52" x2="12" y2="48" stroke="#222" stroke-width="1.5"/><line x1="28" y1="55" x2="12" y2="55" stroke="#222" stroke-width="1.5"/><line x1="72" y1="52" x2="88" y2="48" stroke="#222" stroke-width="1.5"/><line x1="72" y1="55" x2="88" y2="55" stroke="#222" stroke-width="1.5"/>`)}
+function drawOwl(c){return svg(90,100,`<ellipse cx="45" cy="68" rx="26" ry="24" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="45" cy="46" r="24" fill="${c}" stroke="#222" stroke-width="2"/><path d="M26 28 Q20 14 30 12 Q26 24 38 26" fill="${c}" stroke="#222" stroke-width="2"/><path d="M64 28 Q70 14 60 12 Q64 24 52 26" fill="${c}" stroke="#222" stroke-width="2"/><circle cx="36" cy="44" r="10" fill="white" stroke="#222" stroke-width="1.5"/><circle cx="54" cy="44" r="10" fill="white" stroke="#222" stroke-width="1.5"/><circle cx="36" cy="44" r="6" fill="#222"/><circle cx="54" cy="44" r="6" fill="#222"/><circle cx="37.5" cy="42.5" r="2.5" fill="white"/><circle cx="55.5" cy="42.5" r="2.5" fill="white"/><polygon points="45,53 41,58 49,58" fill="#ffaa22" stroke="#222" stroke-width="1.5"/><ellipse cx="45" cy="68" rx="14" ry="10" fill="#fffde0" stroke="#222" stroke-width="1"/><path d="M28 75 Q22 82 20 92" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M62 75 Q68 82 70 92" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/>`)}
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let wordOrder=[],wordIdx=0,score=0,hearts=3;
+let hintUsed=false,attempts=0,isPerfect=true;
+let caught=[],speaking=false,soundEnabled=true;
+let throwReady=false,throwLocked=false;
+let audioCtx=null,bgmGain=null,sfxGain=null,bgmPlaying=false,bgmNodes=[],bgmSched=null;
+
+// ═══════════════════════════════════════════════════════════
+//  SCREEN TRANSITIONS
+// ═══════════════════════════════════════════════════════════
+let currentScreen='sTitle';
+function goTo(id,dir=''){
+  const cur=document.getElementById(currentScreen);
+  const nxt=document.getElementById(id);
+  cur.classList.add(dir==='left'?'off-left':dir==='right'?'off-right':'off');
+  nxt.classList.remove('off','off-left','off-right');
+  currentScreen=id;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  KEYBOARD HANDLER — push input area above keyboard on mobile
+// ═══════════════════════════════════════════════════════════
+function initKeyboardHandler() {
+  // Works via visualViewport on modern mobile browsers
+  // Translates the entire sSpell screen up by the keyboard height
+  function onViewportChange() {
+    if (currentScreen !== 'sSpell') return;
+    const screen = document.getElementById('sSpell');
+    if (!screen) return;
+
+    const vv = window.visualViewport;
+    const kbHeight = window.innerHeight - vv.height - vv.offsetTop;
+
+    if (kbHeight > 80) {
+      // Keyboard is open — shift whole screen up
+      screen.style.transform = `translateY(-${kbHeight}px)`;
+      screen.style.height = vv.height + 'px';
+    } else {
+      screen.style.transform = '';
+      screen.style.height = '';
+    }
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onViewportChange);
+    window.visualViewport.addEventListener('scroll', onViewportChange);
+  }
+
+  // Also handle focus/blur on the hidden input as fallback
+  document.addEventListener('focusin', () => {
+    setTimeout(onViewportChange, 300);
+  });
+  document.addEventListener('focusout', () => {
+    setTimeout(onViewportChange, 300);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TITLE INIT
+// ═══════════════════════════════════════════════════════════
+function initTitle(){
+  const row=document.getElementById('titleCreatures');
+  [4,0,10].forEach((i,j)=>{
+    const c=CREATURES[i];
+    const d=document.createElement('div');
+    d.style.cssText=`width:72px;height:72px;animation:floatY 2.2s ease-in-out infinite;animation-delay:${j*.3}s`;
+    d.innerHTML=c.fn(c.color);
+    row.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  START
+// ═══════════════════════════════════════════════════════════
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+function startGame(){
+  wordOrder=shuffle([...WORDS]);
+  wordIdx=0;score=0;hearts=3;caught=[];isPerfect=true;
+  initAudio();startBGM();
+  initKeyboardHandler();
+  buildMapNodes();
+  goTo('sSpell');
+  loadWord();
+}
+
+function playAgain(){
+  goTo('sTitle');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAP
+// ═══════════════════════════════════════════════════════════
+function buildMapNodes(){
+  const c=document.getElementById('mapNodes');
+  c.innerHTML='';
+  LOCATIONS.forEach((l,i)=>{
+    const n=document.createElement('div');
+    n.className='mnode locked';n.id='mn'+i;
+    n.style.left=NODE_PCT[i]+'%';
+    n.textContent=l.emoji;
+    c.appendChild(n);
+  });
+}
+
+function updateMapVisual(){
+  const locIdx=Math.min(Math.floor(wordIdx/4),4);
+  LOCATIONS.forEach((_,i)=>{
+    const n=document.getElementById('mn'+i);
+    if(!n)return;
+    if(i<locIdx)n.className='mnode done';
+    else if(i===locIdx)n.className='mnode active';
+    else n.className='mnode locked';
+  });
+  document.getElementById('mapPlayer').style.left=NODE_PCT[locIdx]+'%';
+  document.getElementById('locLabel').textContent='📍 '+LOCATIONS[locIdx].name.split(' ').slice(1).join(' ');
+}
+
+function showMapTransition(cb){
+  const locIdx=Math.min(Math.floor(wordIdx/4),4);
+  const loc=LOCATIONS[locIdx];
+  const lastCaught=caught[caught.length-1];
+  document.getElementById('mapCardTitle').textContent=loc.name;
+  document.getElementById('mapCardSub').textContent=lastCaught?`You caught ${lastCaught.name}!`:'Keep going!';
+  document.getElementById('mapCardProgress').textContent=`Word ${wordIdx} of 20`;
+  updateMapVisual();
+  goTo('sMap');
+  setTimeout(()=>{
+    goTo('sSpell');
+    if(cb)cb();
+  },2200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOAD WORD
+// ═══════════════════════════════════════════════════════════
+function loadWord(){
+  if(wordIdx>=20||hearts<=0){endGame();return}
+  hintUsed=false;attempts=0;throwReady=false;throwLocked=false;
+
+  const w=wordOrder[wordIdx];
+  const cr=CREATURES[wordIdx%CREATURES.length];
+
+  // Spell screen
+  document.getElementById('spellCreature').innerHTML=cr.fn(cr.color);
+  document.getElementById('spellCreatureName').textContent=cr.name;
+  document.getElementById('encounterTag').textContent='⚡ A wild '+cr.name+' appeared!';
+  document.getElementById('defCard').textContent=w.d;
+  document.getElementById('wordNumEl').textContent=(wordIdx+1)+'/20';
+  document.getElementById('locLabel').textContent='📍 '+LOCATIONS[Math.min(Math.floor(wordIdx/4),4)].name.split(' ').slice(1).join(' ');
+
+  // Build letter tiles
+  const br=document.getElementById('blanksRow');
+  br.innerHTML='';
+  for(let i=0;i<w.w.length;i++){
+    const d=document.createElement('div');
+    d.className='blank';d.id='bl'+i;
+    br.appendChild(d);
+  }
+
+  // Hidden input drives the blanks
+  const inp=document.getElementById('spellInp');
+  inp.value='';
+  inp.disabled=false;
+  inp.oninput=()=>liveType(w.w);
+  inp.onkeydown=e=>{
+    if(e.key==='Enter') checkSpell();
+    if(e.key==='Backspace') setTimeout(()=>liveType(w.w),0);
+  };
+
+  // Tap blanks or input area to focus keyboard
+  const inputArea = document.getElementById('spellInputArea');
+  if(inputArea) inputArea.onclick=()=>{ inp.focus(); };
+  document.getElementById('sSpell').onclick=()=>{ inp.focus(); };
+
+  document.getElementById('hintBox').style.display='none';
+  updateHUD();
+  updateCursor(0, w.w.length);
+
+  setTimeout(sayWord,700);
+  // Focus hidden input - delay so screen transition completes
+  setTimeout(()=>{
+    inp.focus();
+    updateCursor(0, w.w.length);
+  }, 300);
+}
+
+function liveType(target){
+  const inp=document.getElementById('spellInp');
+  const v=inp.value.toLowerCase().replace(/[^a-z]/g,'').slice(0,target.length);
+  inp.value=v;
+  for(let i=0;i<target.length;i++){
+    const b=document.getElementById('bl'+i);
+    if(!b) continue;
+    if(v[i]){
+      b.textContent=v[i].toUpperCase();
+      b.className='blank filled';
+    } else {
+      b.textContent='';
+      b.className='blank';
+    }
+  }
+  updateCursor(v.length, target.length);
+
+}
+
+function updateCursor(pos, len){
+  for(let i=0;i<len;i++){
+    const b=document.getElementById('bl'+i);
+    if(!b) continue;
+    if(i===pos && pos<len){
+      b.classList.add('active-cursor');
+    } else {
+      b.classList.remove('active-cursor');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHECK SPELL
+// ═══════════════════════════════════════════════════════════
+function checkSpell(){
+  const w=wordOrder[wordIdx];
+  const inp=document.getElementById('spellInp');
+  const val=inp.value.toLowerCase().trim();
+  if(!val)return;
+  attempts++;
+
+  for(let i=0;i<w.w.length;i++){
+    const b=document.getElementById('bl'+i);
+    if(b){b.textContent=(val[i]||'_').toUpperCase();b.className='blank '+(val[i]===w.w[i]?'good':'bad')}
+  }
+
+  if(val===w.w){
+    inp.disabled=true;
+    sfxCorrect();
+    // Transition to throw screen after brief pause
+    setTimeout(()=>goToThrow(),600);
+  } else {
+    setTimeout(()=>{
+      // Reset blank classes back to filled after shake
+      const v=inp.value;
+      for(let i=0;i<wordOrder[wordIdx].w.length;i++){
+        const b=document.getElementById('bl'+i);
+        if(b&&v[i]){b.className='blank filled';}
+      }
+    },500);
+    sfxWrong();
+    if(attempts===1){
+      isPerfect=false;useHint();setTimeout(sayWord,400);
+    } else {
+      isPerfect=false;hearts=Math.max(0,hearts-1);updateHUD();
+      if(hearts<=0){inp.disabled=true;setTimeout(()=>skipToNext(),2000)}
+    }
+  }
+}
+
+function useHint(){
+  hintUsed=true;isPerfect=false;
+  const w=wordOrder[wordIdx];
+  const h=w.w[0].toUpperCase()+' _ '.repeat(w.w.length-2).trim()+' '+w.w[w.w.length-1].toUpperCase();
+  const hb=document.getElementById('hintBox');
+  hb.style.display='block';
+  hb.textContent='💡 '+h+' ('+w.w.length+' letters)';
+  // Refocus the hidden input
+  document.getElementById('spellInp').focus();
+}
+
+function skipWord(){isPerfect=false;skipToNext()}
+function skipToNext(){
+  wordIdx++;
+  if(wordIdx>=20||hearts<=0){endGame();return}
+  // Show map briefly then next word
+  showMapTransition(()=>loadWord());
+}
+
+// ═══════════════════════════════════════════════════════════
+//  THROW SCREEN
+// ═══════════════════════════════════════════════════════════
+function goToThrow(){
+  const w=wordOrder[wordIdx];
+  const cr=CREATURES[wordIdx%CREATURES.length];
+
+  document.getElementById('throwWordBadge').textContent=w.w.toUpperCase();
+  document.getElementById('throwCreatureName').textContent=cr.name;
+  document.getElementById('hpFill').style.width='100%';
+  document.getElementById('throwInstr').textContent='⬆️ Swipe the ball up to throw!';
+  document.getElementById('throwResult').className='throw-result';
+
+  // Set creature SVG AFTER screen transition completes
+  // Also fully reset styles left over from previous catch animation
+  setTimeout(()=>{
+    const el = document.getElementById('throwCreatureEl');
+    el.style.transition = 'none';
+    el.style.transform  = '';
+    el.style.opacity    = '1';
+    el.style.display    = 'block';
+    el.innerHTML        = cr.fn(cr.color);
+  }, 400);
+
+  // Reset ball
+  const ball=document.getElementById('pokeball');
+  ball.className='pokeball ready';
+  ball.style.cssText='position:absolute;bottom:26px;left:50%;transform:translateX(-50%)';
+
+  goTo('sThrow');
+  sfxEncounter();
+
+  // Wait for creature to render, then start ring and throw
+  setTimeout(()=>{ startRing(); setupThrow(); }, 420);
+}
+
+// ── POKÉMON GO RING MECHANIC ──────────────────────────────
+// Uses a plain HTML div ring positioned over the creature.
+// No canvas — no z-index fights.
+let ringAnim = null;
+let ringSize = 1.0;      // 1.0 = full (miss zone), 0.0 = tiny (great)
+let ringShrinking = true;
+
+function startRing() {
+  const ring = document.getElementById('ringEl');
+  if (!ring) return;
+  ring.style.display = 'block';
+  ringSize = 1.0;
+  ringShrinking = true;
+  animateRing();
+}
+
+function stopRing() {
+  if (ringAnim) { cancelAnimationFrame(ringAnim); ringAnim = null; }
+  const ring = document.getElementById('ringEl');
+  if (ring) ring.style.display = 'none';
+}
+
+function animateRing() {
+  if (throwLocked) return;
+  const ring = document.getElementById('ringEl');
+  if (!ring) return;
+
+  // Size: oscillates between 24px (tiny/great) and 150px (full/miss)
+  const minPx = 24, maxPx = 150;
+  const px = minPx + (maxPx - minPx) * ringSize;
+
+  // Color
+  let color, glow;
+  if (ringSize < 0.30)      { color = '#4dcf8a'; glow = '#4dcf8a'; } // green = great
+  else if (ringSize < 0.60) { color = '#ffe040'; glow = '#ffe040'; } // yellow = nice
+  else                       { color = '#ff5252'; glow = '#ff5252'; } // red = miss
+
+  ring.style.width  = px + 'px';
+  ring.style.height = px + 'px';
+  ring.style.borderColor = color;
+  ring.style.boxShadow   = `0 0 14px ${glow}, 0 0 4px ${glow}`;
+
+  // Shrink/grow
+  const speed = 0.008;
+  if (ringShrinking) {
+    ringSize -= speed;
+    if (ringSize <= 0.04) { ringSize = 0.04; ringShrinking = false; }
+  } else {
+    ringSize += speed;
+    if (ringSize >= 1.0) { ringSize = 1.0; ringShrinking = true; }
+  }
+
+  ringAnim = requestAnimationFrame(animateRing);
+}
+
+function getRingResult() {
+  if (ringSize < 0.25) return 'great';
+  if (ringSize < 0.55) return 'nice';
+  if (ringSize < 0.80) return 'normal';
+  return 'miss';
+}
+
+// ── THROW SETUP ───────────────────────────────────────────
+let dragStart = null;
+let isDragging = false;
+
+function setupThrow() {
+  const ball = document.getElementById('pokeball');
+  // Make sure ball is at home position
+  ball.style.transition = 'none';
+  ball.style.left = '50%';
+  ball.style.bottom = '20px';
+  ball.style.transform = 'translateX(-50%)';
+  ball.style.opacity = '1';
+  void ball.offsetWidth; // force reflow
+
+  function onDown(e) {
+    e.preventDefault();
+    if (throwLocked) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const br = ball.getBoundingClientRect();
+    dragStart = {
+      x: pt.clientX,
+      y: pt.clientY,
+      ballCX: br.left + br.width / 2,
+      ballCY: br.top  + br.height / 2
+    };
+    isDragging = true;
+    ball.classList.add('dragging');
+    ball.classList.remove('ready');
+  }
+
+  function onMove(e) {
+    e.preventDefault();
+    if (!isDragging || throwLocked) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const dx = pt.clientX - dragStart.x;
+    const dy = pt.clientY - dragStart.y;
+    // Follow finger directly
+    ball.style.transform = `translateX(calc(-50% + ${dx}px)) translateY(${dy}px)`;
+    drawArcPreview(dx, dy);
+  }
+
+  function onUp(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    const pt = e.changedTouches ? e.changedTouches[0] : e;
+    const dx = pt.clientX - dragStart.x;
+    const dy = pt.clientY - dragStart.y;
+    clearArcPreview();
+    ball.classList.remove('dragging');
+
+    // Need upward swipe of at least 70px
+    if (dy < -70 && !throwLocked) {
+      throwLocked = true;
+      const result = getRingResult();
+      executeThrow(ball, dx, dy, result);
+    } else {
+      // Snap back
+      // Snap ball back to home position
+      ball.style.transition = 'left .25s, top .25s, transform .25s cubic-bezier(.25,.46,.45,.94)';
+      ball.style.top = 'auto';
+      ball.style.bottom = '36px';
+      ball.style.left = '50%';
+      ball.style.transform = 'translateX(-50%)';
+      setTimeout(() => {
+        ball.style.transition = 'none';
+        ball.classList.add('ready');
+      }, 260);
+    }
+    dragStart = null;
+  }
+
+  ball.addEventListener('mousedown', onDown);
+  ball.addEventListener('touchstart', onDown, {passive: false});
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+  document.addEventListener('touchmove', onMove, {passive: false});
+  document.addEventListener('touchend', onUp);
+
+  ball._cleanup = () => {
+    ball.removeEventListener('mousedown', onDown);
+    ball.removeEventListener('touchstart', onDown);
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+  };
+}
+
+// Arc preview dots
+let arcDots = [];
+function drawArcPreview(dx, dy) {
+  clearArcPreview();
+  if (dy >= 0) return;
+  const zone = document.getElementById('sThrow');
+  const ball = document.getElementById('pokeball');
+  const zr   = zone.getBoundingClientRect();
+  const br   = ball.getBoundingClientRect();
+
+  // Ball current center in zone coords
+  const bx = br.left - zr.left + br.width / 2;
+  const by = br.top  - zr.top  + br.height / 2;
+
+  // Bezier control point — arc curves upward and toward target
+  const endX = bx + dx * 1.4;
+  const endY = by + dy * 1.4;
+  const cpX  = bx + dx * 0.5;
+  const cpY  = by + dy * 1.6; // control point above midpoint for nice arc
+
+  for (let t = 0.1; t < 1.0; t += 0.1) {
+    // Quadratic bezier
+    const px = (1-t)*(1-t)*bx + 2*(1-t)*t*cpX + t*t*endX;
+    const py = (1-t)*(1-t)*by + 2*(1-t)*t*cpY + t*t*endY;
+    const size = 10 - t * 7; // shrinks as it goes up (perspective)
+    const dot = document.createElement('div');
+    dot.className = 'traj-dot';
+    dot.style.cssText = `left:${px}px;top:${py}px;width:${size}px;height:${size}px;opacity:${(1-t)*0.8}`;
+    zone.appendChild(dot);
+    arcDots.push(dot);
+  }
+}
+function clearArcPreview() {
+  arcDots.forEach(d => d.remove());
+  arcDots = [];
+}
+
+// ── EXECUTE THROW ─────────────────────────────────────────
+function executeThrow(ball, dx, dy, result) {
+  if (ball._cleanup) ball._cleanup();
+  clearArcPreview();
+  stopRing();
+  sfxThrow();
+
+  const zone    = document.getElementById('sThrow');
+  const czone   = document.getElementById('throwCreatureZone');
+  const zr      = zone.getBoundingClientRect();
+  const br      = ball.getBoundingClientRect();
+  const czr     = czone.getBoundingClientRect();
+
+  // Ball start in zone coords (center of ball)
+  const startX  = br.left  - zr.left  + br.width  / 2;
+  const startY  = br.top   - zr.top   + br.height / 2;
+
+  // Target = center of creature zone, upper half
+  const targetX = czr.left - zr.left  + czr.width  / 2;
+  const targetY = czr.top  - zr.top   + czr.height * 0.45;
+
+  // Horizontal influence from swipe
+  const swipeBias = dx * 0.35;
+
+  // Animate ball along bezier arc using rAF
+  ball.classList.remove('ready');
+  ball.style.transition = 'none';
+
+  const duration = 520; // ms
+  const startTime = performance.now();
+
+  // Control point for arc — peak is above both start and target
+  const cpX = (startX + targetX) / 2 + swipeBias;
+  const cpY = Math.min(startY, targetY) - Math.abs(targetY - startY) * 0.8 - 80;
+
+  function animBall(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease in-out
+
+    // Quadratic bezier
+    const px = (1-ease)*(1-ease)*startX + 2*(1-ease)*ease*cpX + ease*ease*targetX;
+    const py = (1-ease)*(1-ease)*startY + 2*(1-ease)*ease*cpY + ease*ease*targetY;
+
+    // Scale: starts 1.0, shrinks to 0.35 as it reaches target (depth illusion)
+    const scale = 1.0 - ease * 0.82; // shrinks to ~18% — strong depth illusion
+
+    // Spin
+    const rot = ease * 540;
+
+    // Ball is direct child of sThrow, so position in sThrow coords directly
+    ball.style.left      = px + 'px';
+    ball.style.bottom    = 'auto';
+    ball.style.top       = (py - br.height / 2) + 'px';
+    ball.style.transform = `translateX(-50%) scale(${scale}) rotate(${rot}deg)`;
+
+    if (t < 1) {
+      requestAnimationFrame(animBall);
+    } else {
+      onBallArrived(ball, result, targetX, targetY, zr, czr);
+    }
+  }
+  requestAnimationFrame(animBall);
+}
+
+function onBallArrived(ball, result, targetX, targetY, zr, czr) {
+  const cr = document.getElementById('throwCreatureEl');
+
+  if (result === 'miss') {
+    // Bounce off — ball deflects to side
+    sfxWrong();
+    const deflectX = targetX + (Math.random() > 0.5 ? 120 : -120);
+    const deflectY = targetY + 100;
+    ball.style.transition = 'left .3s ease-out, top .3s ease-out, transform .3s, opacity .3s';
+    ball.style.left    = deflectX + 'px';
+    ball.style.top     = (deflectY - 34) + 'px';
+    ball.style.opacity = '0';
+    ball.style.transform = 'translateX(-50%) scale(0.2) rotate(720deg)';
+
+    // Creature shake
+    if (cr) {
+      cr.style.transition = 'transform .15s';
+      cr.style.transform = 'rotate(-12deg) scale(1.08)';
+      setTimeout(() => { cr.style.transform = 'rotate(8deg)'; }, 150);
+      setTimeout(() => { cr.style.transform = ''; }, 300);
+    }
+
+    showThrowResult('Miss! 💨', '#ff5252');
+
+    // Reset ball for retry
+    setTimeout(() => {
+      ball.style.transition = 'none';
+      ball.style.top       = 'auto';
+      ball.style.left      = '50%';
+      ball.style.bottom    = '36px';
+      ball.style.transform = 'translateX(-50%)';
+      ball.style.opacity   = '1';
+      ball.className = 'pokeball ready';
+      throwLocked = false;
+      startRing();
+      setupThrow();
+    }, 1100);
+
+  } else {
+    // HIT — creature gets sucked into ball
+    if (cr) {
+      cr.style.transition = 'transform .4s ease-in, opacity .4s';
+      cr.style.transform  = 'scale(0) rotate(360deg)';
+      cr.style.opacity    = '0';
+    }
+    document.getElementById('hpFill').style.width = '0%';
+
+    // Ball pulses then shrinks
+    ball.style.transition = 'transform .2s';
+    ball.style.transform  = 'translateX(-50%) scale(1.4)';
+    setTimeout(() => {
+      ball.style.transform = 'translateX(-50%) scale(0)';
+      ball.style.transition = 'transform .25s ease-in';
+    }, 200);
+
+    const bonusPts = {great: 3, nice: 1, normal: 0};
+    const labels   = {great: 'Great Throw! 🌟', nice: 'Nice! ✨', normal: 'Caught! ✅'};
+    showThrowResult(labels[result], '#ffe040');
+    score += bonusPts[result];
+    setTimeout(() => showCatch(bonusPts[result]), 900);
+  }
+}
+
+function showThrowResult(msg, color) {
+  const el = document.getElementById('throwResult');
+  el.textContent = msg;
+  el.style.color = color;
+  el.className = 'throw-result pop';
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  CATCH OVERLAY
+// ═══════════════════════════════════════════════════════════
+function showCatch(throwBonus=0){
+  const w=wordOrder[wordIdx];
+  const cr=CREATURES[wordIdx%CREATURES.length];
+  const pts=(hintUsed?5:(attempts===1?10:7))+throwBonus;
+  score+=pts;
+  caught.push({name:cr.name,color:cr.color,fn:cr.fn,word:w.w});
+  sfxCatch();
+  confettiBurst(22);
+
+  document.getElementById('catchCreatureEl').innerHTML=`<div style="width:88px;height:88px;margin:auto">${cr.fn(cr.color)}</div>`;
+  document.getElementById('catchWordEl').textContent=w.w.toUpperCase();
+  document.getElementById('catchPtsEl').textContent='+'+pts+' points!';
+  document.getElementById('catchMsgEl').textContent=cr.name+' is now yours! 🎉';
+  document.getElementById('oCatch').classList.add('show');
+  updateHUD();
+}
+
+function afterCatch(){
+  stopRing();
+  document.getElementById('oCatch').classList.remove('show');
+  wordIdx++;
+  if(wordIdx>=20||hearts<=0){endGame();return}
+  // Show map transition, then next word
+  showMapTransition(()=>loadWord());
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HUD
+// ═══════════════════════════════════════════════════════════
+function updateHUD(){
+  document.getElementById('scoreEl').textContent=score;
+  document.getElementById('heartsEl').textContent='❤️'.repeat(hearts)+'🖤'.repeat(Math.max(0,3-hearts));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  END GAME
+// ═══════════════════════════════════════════════════════════
+function endGame(){
+  stopBGM();
+  if(isPerfect&&caught.length===20){
+    const row=document.getElementById('perfectRow');
+    row.innerHTML=caught.slice(0,10).map(c=>`<div style="width:46px;height:46px">${c.fn(c.color)}</div>`).join('');
+    goTo('sPerfect');
+    setTimeout(sfxVictory,400);
+    confettiBurst(60);setTimeout(()=>confettiBurst(40),1200);setTimeout(()=>confettiBurst(40),2400);
+  } else {
+    showWin();
+  }
+}
+
+function showWin(){
+  goTo('sWin');
+  setTimeout(sfxVictory,300);
+  const dex=document.getElementById('dexGrid');
+  dex.innerHTML=caught.map(c=>`<div class="dex-card"><div style="width:52px;height:52px">${c.fn(c.color)}</div><div class="dex-word">${c.word}</div></div>`).join('');
+  document.getElementById('winStats').innerHTML=`
+    <div class="wstat"><span>⭐ Score</span><span class="v">${score}</span></div>
+    <div class="wstat"><span>🎯 Caught</span><span class="v">${caught.length}/20</span></div>
+    <div class="wstat"><span>❤️ Hearts</span><span class="v">${'❤️'.repeat(hearts)||'—'}</span></div>`;
+  confettiBurst(30);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SPEECH
+// ═══════════════════════════════════════════════════════════
+function setBtns(on){const b=document.getElementById('hearBtn');b.textContent=on?'🔊 Speaking…':'🔊 Hear It';b.disabled=on}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+async function puterSpeak(text){
+  try{
+    const a=await puter.ai.txt2speech(text);
+    return new Promise(resolve=>{
+      const to=setTimeout(resolve,Math.max(3000,text.length*80));
+      a.onended=()=>{clearTimeout(to);resolve()};
+      a.onerror=()=>{clearTimeout(to);resolve()};
+      a.play().catch(()=>{clearTimeout(to);resolve()});
+    });
+  }catch(e){await sleep(800)}
+}
+
+async function sayWord(){
+  if(speaking)return;
+  speaking=true;setBtns(true);
+  const w=wordOrder[wordIdx];
+  try{
+    duckBGM(.03,300);await sleep(320);
+    await puterSpeak(w.w);await sleep(380);
+    await puterSpeak(w.s);await sleep(380);
+    await puterSpeak(w.w);await sleep(200);
+    duckBGM(.22,400);
+  }catch(e){duckBGM(.22,400)}
+  finally{speaking=false;setBtns(false)}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════
+function initAudio(){
+  if(audioCtx){if(audioCtx.state==='suspended')audioCtx.resume();return}
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const m=audioCtx.createGain();m.gain.value=.7;m.connect(audioCtx.destination);
+  bgmGain=audioCtx.createGain();bgmGain.gain.value=.22;bgmGain.connect(m);
+  sfxGain=audioCtx.createGain();sfxGain.gain.value=1;sfxGain.connect(m);
+}
+function duckBGM(v,ms){
+  if(!bgmGain)return;
+  const steps=20,iv=ms/steps,start=bgmGain.gain.value,delta=(v-start)/steps;
+  let s=0;const t=setInterval(()=>{s++;bgmGain.gain.value=Math.max(0,Math.min(.22,start+delta*s));if(s>=steps)clearInterval(t)},iv);
+}
+function tone(f,type,start,dur,vol,g){
+  const o=audioCtx.createOscillator(),gn=audioCtx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,start);
+  gn.gain.setValueAtTime(vol,start);gn.gain.exponentialRampToValueAtTime(.001,start+dur);
+  o.connect(gn);gn.connect(g||sfxGain);o.start(start);o.stop(start+dur+.01);
+}
+function slide(f1,f2,type,start,dur,vol){
+  const o=audioCtx.createOscillator(),gn=audioCtx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f1,start);o.frequency.linearRampToValueAtTime(f2,start+dur);
+  gn.gain.setValueAtTime(vol,start);gn.gain.exponentialRampToValueAtTime(.001,start+dur);
+  o.connect(gn);gn.connect(sfxGain);o.start(start);o.stop(start+dur+.01);
+}
+function sfxCorrect(){if(!audioCtx)return;const t=audioCtx.currentTime;[523,659,784,1047].forEach((f,i)=>tone(f,'square',t+i*.08,.18,.4));tone(1568,'sine',t+.28,.25,.2)}
+function sfxWrong(){if(!audioCtx)return;const t=audioCtx.currentTime;[311,233,175].forEach((f,i)=>tone(f,'sawtooth',t+i*.17,.15,.35))}
+function sfxEncounter(){if(!audioCtx)return;const t=audioCtx.currentTime;slide(80,600,'sawtooth',t,.12,.5);[[220,.15,.1],[277,.15,.1],[330,.15,.1]].forEach(([f,dt,d])=>{tone(f,'square',t+dt,d,.3);tone(f,'square',t+.28,d,.3);tone(f*2,'square',t+.42,.2,.25)});slide(440,880,'square',t+.45,.3,.4)}
+function sfxThrow(){if(!audioCtx)return;const t=audioCtx.currentTime;slide(800,200,'sawtooth',t,.15,.3);[.18,.34,.46].forEach((dt,i)=>{tone(150+i*20,'square',t+dt,.08,.4-i*.1);tone(300+i*20,'sine',t+dt,.06,.2)})}
+function sfxCatch(){if(!audioCtx)return;const t=audioCtx.currentTime;[523,659,784,1047,1568].forEach((f,i)=>tone(f,'square',t+i*.07,.2,.4));tone(2093,'sine',t+.4,.3,.2)}
+function sfxVictory(){
+  if(!audioCtx)return;stopBGM();const t=audioCtx.currentTime;
+  [[523,.0,.12],[659,.12,.12],[784,.24,.12],[1047,.36,.2],[784,.56,.1],[1047,.66,.45],[1175,1.12,.12],[1047,1.24,.12],[932,1.36,.12],[1047,1.48,.55]].forEach(([f,dt,d])=>tone(f,'square',t+dt,d,.45));
+  [[392,.0,.12],[494,.12,.12],[587,.24,.12],[784,.36,.2],[587,.56,.1],[784,.66,.45]].forEach(([f,dt,d])=>tone(f,'triangle',t+dt,d,.2));
+}
+const BGM_T=.16;
+const BGM_M=[[659,0],[523,1],[659,2],[784,3],[880,4],[784,5],[659,6],[523,7],[587,8],[494,9],[587,10],[698,11],[784,12],[698,13],[587,14],[494,15],[523,16],[659,17],[784,18],[1047,19],[880,20],[784,21],[659,22],[587,23],[523,24],[494,25],[523,26],[587,27],[659,28],[587,29],[523,30],[494,31]];
+const BGM_B=[[131,0],[131,4],[165,8],[165,12],[196,16],[196,20],[131,24],[131,28]];
+const BGM_C=[[[262,330,392],0,4],[[220,277,330],8,4],[[196,247,294],16,4],[[175,220,262],24,4]];
+function startBGM(){if(!soundEnabled||!audioCtx||bgmPlaying)return;bgmPlaying=true;schedBGM(audioCtx.currentTime+.1)}
+function schedBGM(ls){
+  if(!bgmPlaying)return;
+  BGM_M.forEach(([f,b])=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=ls+b*BGM_T;o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+BGM_T*.8);o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+BGM_T);bgmNodes.push(o)});
+  BGM_B.forEach(([f,b])=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=ls+b*BGM_T;o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.001,t+BGM_T*3.5);o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+BGM_T*4);bgmNodes.push(o)});
+  BGM_C.forEach(([fs,b,d])=>fs.forEach(f=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=ls+b*BGM_T;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+d*BGM_T*.9);o.connect(g);g.connect(bgmGain);o.start(t);o.stop(t+d*BGM_T);bgmNodes.push(o)}));
+  const ll=BGM_M.length*BGM_T,next=ls+ll;
+  bgmSched=setTimeout(()=>schedBGM(next),Math.max(50,(next-audioCtx.currentTime-.2)*1000));
+}
+function stopBGM(){bgmPlaying=false;clearTimeout(bgmSched);bgmNodes.forEach(n=>{try{n.stop()}catch(e){}});bgmNodes=[]}
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  if(!soundEnabled){stopBGM();if(audioCtx)audioCtx.suspend()}
+  else{if(audioCtx)audioCtx.resume();startBGM()}
+  document.getElementById('sndBtn').textContent=soundEnabled?'🔈':'🔇';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════════════════════
+const CVS=document.getElementById('cvs'),CTX=CVS.getContext('2d');
+let parts=[],animGoing=false;
+function confettiBurst(n=16){
+  CVS.width=window.innerWidth;CVS.height=window.innerHeight;
+  const cols=['#ffe040','#ff7eb3','#4dcf8a','#aac4ff','#ff9de2','#fff'];
+  for(let i=0;i<n;i++)parts.push({x:Math.random()*CVS.width,y:CVS.height*.5,vx:(Math.random()-.5)*8,vy:-(Math.random()*10+4),r:Math.random()*7+3,color:cols[Math.floor(Math.random()*cols.length)],life:1,decay:Math.random()*.018+.01,rot:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.25});
+  if(!animGoing)animConf();
+}
+function animConf(){
+  animGoing=true;CTX.clearRect(0,0,CVS.width,CVS.height);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy+2.5;p.vy+=.35;p.rot+=p.rs;p.life-=p.decay;CTX.save();CTX.globalAlpha=p.life;CTX.fillStyle=p.color;CTX.translate(p.x,p.y);CTX.rotate(p.rot);CTX.fillRect(-p.r,-p.r,p.r*2,p.r*2);CTX.restore()});
+  if(parts.length>0)requestAnimationFrame(animConf);else animGoing=false;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
+initTitle();
+</script>
+</body>
+</html>
