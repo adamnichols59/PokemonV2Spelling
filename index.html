@@ -1322,42 +1322,75 @@ function setBtns(on){const b=document.getElementById('hearBtn');b.textContent=on
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 
 async function puterSpeak(text){
+  // Try Puter TTS first
   try{
-    const a=await puter.ai.txt2speech(text);
-    return new Promise(resolve=>{
-      const maxWait=Math.max(4000,text.length*90);
-      const to=setTimeout(resolve,maxWait);
+    const result = await puter.ai.txt2speech(text);
+    console.log('puter result type:', typeof result, result);
 
-      a.onended=()=>{clearTimeout(to);resolve()};
-      a.onerror=(e)=>{console.warn('audio error',e);clearTimeout(to);resolve()};
+    // Handle different return types from puter
+    let audioEl = null;
 
-      // Attach to DOM — required for iOS Safari to actually play
-      a.style='position:fixed;width:0;height:0;opacity:0;pointer-events:none';
-      document.body.appendChild(a);
+    if(result && result.play && typeof result.play === 'function'){
+      // It's already an audio element
+      audioEl = result;
+    } else if(result && result.src){
+      // Has a src property
+      audioEl = new Audio(result.src);
+    } else if(typeof result === 'string'){
+      // Returned a URL string
+      audioEl = new Audio(result);
+    } else if(result instanceof Blob){
+      audioEl = new Audio(URL.createObjectURL(result));
+    }
 
-      const playPromise=a.play();
-      if(playPromise!==undefined){
-        playPromise
-          .then(()=>{ /* playing fine */ })
-          .catch(err=>{
-            console.warn('play() failed:',err);
-            clearTimeout(to);
-            document.body.removeChild(a);
-            resolve();
-          });
-      }
-
-      // Clean up element after it finishes
-      a.onended=()=>{
-        clearTimeout(to);
-        if(a.parentNode) a.parentNode.removeChild(a);
-        resolve();
-      };
-    });
+    if(audioEl){
+      return new Promise(resolve=>{
+        const maxWait = Math.max(4000, text.length * 90);
+        const to = setTimeout(()=>{ resolve(); }, maxWait);
+        audioEl.onended = ()=>{ clearTimeout(to); resolve(); };
+        audioEl.onerror = ()=>{ clearTimeout(to); resolve(); };
+        // Attach to DOM for iOS
+        audioEl.style.cssText='position:fixed;width:0;height:0;opacity:0';
+        document.body.appendChild(audioEl);
+        audioEl.onended = ()=>{
+          clearTimeout(to);
+          try{ document.body.removeChild(audioEl); }catch(e){}
+          resolve();
+        };
+        audioEl.play().catch(err=>{
+          console.warn('play failed:', err);
+          clearTimeout(to);
+          try{ document.body.removeChild(audioEl); }catch(e){}
+          // Fall through to Web Speech below
+          webSpeech(text).then(resolve);
+        });
+      });
+    }
   }catch(e){
-    console.warn('puterSpeak error:',e);
-    await sleep(800);
+    console.warn('Puter TTS failed:', e);
   }
+
+  // Fallback: Web Speech API
+  return webSpeech(text);
+}
+
+function webSpeech(text){
+  return new Promise(resolve=>{
+    if(!window.speechSynthesis){ resolve(); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+    // Pick best available voice
+    const voices = speechSynthesis.getVoices();
+    const best = voices.find(v=>v.name==='Samantha')||
+                 voices.find(v=>/en.US/i.test(v.lang)&&/enhanced|premium/i.test(v.name))||
+                 voices.find(v=>/en.US/i.test(v.lang))||
+                 voices[0];
+    if(best) u.voice = best;
+    u.onend = resolve;
+    u.onerror = resolve;
+    speechSynthesis.speak(u);
+  });
 }
 
 async function sayWord(){
