@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Bella's Spelling Adventure</title>
-<script src="https://js.puter.com/v2/"></script>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1328,111 +1327,78 @@ function showWin(){
 function setBtns(on){const b=document.getElementById('hearBtn');b.textContent=on?'🔊 Speaking…':'🔊 Hear It';b.disabled=on}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 
-// iOS audio unlock — called on first user gesture
+// ── SPEECH — Web Speech API, works on all platforms no login ──
 let audioUnlocked = false;
+
 function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
-  // Play a silent sound to unlock iOS audio
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const buf = ctx.createBuffer(1, 1, 22050);
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.connect(ctx.destination);
-  src.start(0);
-  ctx.resume();
-  // Also prime Web Speech
-  if (window.speechSynthesis) {
-    const u = new SpeechSynthesisUtterance('');
-    speechSynthesis.speak(u);
-    speechSynthesis.cancel();
-  }
+  if (!window.speechSynthesis) return;
+  // Prime Web Speech on first gesture so iOS doesn't block it
+  const u = new SpeechSynthesisUtterance('');
+  speechSynthesis.speak(u);
+  speechSynthesis.cancel();
+  // Also trigger voice list load
+  speechSynthesis.getVoices();
 }
 
-// Pre-cache TTS audio blobs keyed by text
-const ttsCache = {};
-async function prefetchTTS(text) {
-  if (ttsCache[text]) return;
-  try {
-    const result = await puter.ai.txt2speech(text);
-    ttsCache[text] = result;
-  } catch(e) {
-    console.warn('prefetch failed for:', text);
-  }
+function getBestVoice() {
+  const voices = speechSynthesis.getVoices();
+  return (
+    voices.find(v => v.name === 'Samantha') ||
+    voices.find(v => /en.US/i.test(v.lang) && /enhanced|premium/i.test(v.name)) ||
+    voices.find(v => v.name === 'Google US English') ||
+    voices.find(v => /en.US/i.test(v.lang)) ||
+    voices.find(v => /^en/i.test(v.lang)) ||
+    voices[0] || null
+  );
 }
 
-async function puterSpeak(text){
-  try{
-    // Use cached result if available, otherwise fetch
-    const result = ttsCache[text] || await puter.ai.txt2speech(text);
-
-    let audioEl = null;
-    if (result && typeof result.play === 'function') {
-      audioEl = result;
-    } else if (result && result.src) {
-      audioEl = new Audio(result.src);
-    } else if (typeof result === 'string') {
-      audioEl = new Audio(result);
-    } else if (result instanceof Blob) {
-      audioEl = new Audio(URL.createObjectURL(result));
-    }
-
-    if (audioEl) {
-      audioEl.style.cssText = 'position:fixed;width:0;height:0;opacity:0';
-      document.body.appendChild(audioEl);
-      return new Promise(resolve => {
-        const maxWait = Math.max(5000, text.length * 100);
-        const to = setTimeout(() => { cleanup(); resolve(); }, maxWait);
-        function cleanup() {
-          clearTimeout(to);
-          try { document.body.removeChild(audioEl); } catch(e) {}
-        }
-        audioEl.onended = () => { cleanup(); resolve(); };
-        audioEl.onerror = () => {
-          cleanup();
-          webSpeech(text).then(resolve);
-        };
-        audioEl.play().catch(() => {
-          cleanup();
-          webSpeech(text).then(resolve);
-        });
-      });
-    }
-  } catch(e) {
-    console.warn('Puter TTS failed, using Web Speech:', e);
-  }
-  return webSpeech(text);
-}
-
-function webSpeech(text){
-  return new Promise(resolve=>{
-    if(!window.speechSynthesis){ resolve(); return; }
+function speakText(text, rate = 0.88) {
+  return new Promise(resolve => {
+    if (!window.speechSynthesis) { resolve(); return; }
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
-    // Pick best available voice
-    const voices = speechSynthesis.getVoices();
-    const best = voices.find(v=>v.name==='Samantha')||
-                 voices.find(v=>/en.US/i.test(v.lang)&&/enhanced|premium/i.test(v.name))||
-                 voices.find(v=>/en.US/i.test(v.lang))||
-                 voices[0];
-    if(best) u.voice = best;
-    u.onend = resolve;
+    u.rate   = rate;
+    u.pitch  = 1.0;
+    u.volume = 1.0;
+    const v = getBestVoice();
+    if (v) u.voice = v;
+    u.onend   = resolve;
     u.onerror = resolve;
-    speechSynthesis.speak(u);
+    // iOS workaround: voices may not be loaded yet
+    const voices = speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      speechSynthesis.onvoiceschanged = () => {
+        speechSynthesis.onvoiceschanged = null;
+        const best = getBestVoice();
+        if (best) u.voice = best;
+        speechSynthesis.speak(u);
+      };
+    } else {
+      speechSynthesis.speak(u);
+    }
+    // Safety timeout
+    setTimeout(resolve, Math.max(4000, text.length * 100));
   });
 }
 
+function prefetchTTS() {} // no-op, kept for compatibility
+
 async function sayWord(){
+
   unlockAudio(); // ensure unlocked on each tap
   if(speaking)return;
   speaking=true;setBtns(true);
   const w=wordOrder[wordIdx];
   try{
-    duckBGM(.03,300);await sleep(320);
-    await puterSpeak(w.w);await sleep(380);
-    await puterSpeak(w.s);await sleep(380);
-    await puterSpeak(w.w);await sleep(200);
+    duckBGM(.03,300);await sleep(300);
+    await speakText(w.w, 0.78);
+    await sleep(380);
+    await speakText(w.s, 0.90);
+    await sleep(380);
+    await speakText(w.w, 0.78);
+    await sleep(200);
     duckBGM(.22,400);
   }catch(e){duckBGM(.22,400)}
   finally{speaking=false;setBtns(false)}
