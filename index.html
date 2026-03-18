@@ -59,7 +59,7 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   background:linear-gradient(180deg,#0d1a3a 0%,#0f2a1a 100%);
   justify-content:flex-start;padding:0;
   flex-direction:column;
-  transition:transform .25s ease, height .25s ease;
+  overflow-y:auto;
 }
 
 .spell-topbar{
@@ -413,10 +413,10 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   </div>
   <!-- Sticky input area — stays above keyboard -->
   <div class="spell-input-area" id="spellInputArea">
-    <!-- Hidden input captures keyboard -->
+    <!-- Hidden input — positioned at bottom of input area so browser auto-scrolls to it -->
     <input id="spellInp" type="text"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-      style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+      style="position:relative;opacity:0;pointer-events:none;width:100%;height:1px;margin:0;padding:0;border:none;font-size:16px">
     <div class="blanks-row" id="blanksRow"></div>
     <div class="hint-box" id="hintBox"></div>
     <div class="spell-actions">
@@ -628,38 +628,49 @@ function goTo(id,dir=''){
 //  KEYBOARD HANDLER — push input area above keyboard on mobile
 // ═══════════════════════════════════════════════════════════
 function initKeyboardHandler() {
-  // Works via visualViewport on modern mobile browsers
-  // Translates the entire sSpell screen up by the keyboard height
-  function onViewportChange() {
-    if (currentScreen !== 'sSpell') return;
-    const screen = document.getElementById('sSpell');
-    if (!screen) return;
+  // When the hidden input is focused, the keyboard opens.
+  // We scroll the input area into view smoothly.
+  const inp = document.getElementById('spellInp');
+  if (!inp) return;
 
-    const vv = window.visualViewport;
-    const kbHeight = window.innerHeight - vv.height - vv.offsetTop;
+  inp.addEventListener('focus', () => {
+    setTimeout(() => {
+      const inputArea = document.getElementById('spellInputArea');
+      if (inputArea) {
+        inputArea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 300);
+  });
 
-    if (kbHeight > 80) {
-      // Keyboard is open — shift whole screen up
-      screen.style.transform = `translateY(-${kbHeight}px)`;
-      screen.style.height = vv.height + 'px';
-    } else {
-      screen.style.transform = '';
-      screen.style.height = '';
-    }
-  }
-
+  // visualViewport approach as additional support
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', onViewportChange);
-    window.visualViewport.addEventListener('scroll', onViewportChange);
+    window.visualViewport.addEventListener('resize', () => {
+      if (currentScreen !== 'sSpell') return;
+      const vv = window.visualViewport;
+      const kbHeight = window.innerHeight - vv.height;
+      if (kbHeight > 80) {
+        const inputArea = document.getElementById('spellInputArea');
+        if (inputArea) {
+          inputArea.style.position = 'fixed';
+          inputArea.style.bottom = kbHeight + 'px';
+          inputArea.style.left = '0';
+          inputArea.style.right = '0';
+          inputArea.style.zIndex = '20';
+          inputArea.style.width = '100%';
+        }
+      } else {
+        const inputArea = document.getElementById('spellInputArea');
+        if (inputArea) {
+          inputArea.style.position = '';
+          inputArea.style.bottom = '';
+          inputArea.style.left = '';
+          inputArea.style.right = '';
+          inputArea.style.zIndex = '';
+          inputArea.style.width = '';
+        }
+      }
+    });
   }
-
-  // Also handle focus/blur on the hidden input as fallback
-  document.addEventListener('focusin', () => {
-    setTimeout(onViewportChange, 300);
-  });
-  document.addEventListener('focusout', () => {
-    setTimeout(onViewportChange, 300);
-  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1314,12 +1325,39 @@ async function puterSpeak(text){
   try{
     const a=await puter.ai.txt2speech(text);
     return new Promise(resolve=>{
-      const to=setTimeout(resolve,Math.max(3000,text.length*80));
+      const maxWait=Math.max(4000,text.length*90);
+      const to=setTimeout(resolve,maxWait);
+
       a.onended=()=>{clearTimeout(to);resolve()};
-      a.onerror=()=>{clearTimeout(to);resolve()};
-      a.play().catch(()=>{clearTimeout(to);resolve()});
+      a.onerror=(e)=>{console.warn('audio error',e);clearTimeout(to);resolve()};
+
+      // Attach to DOM — required for iOS Safari to actually play
+      a.style='position:fixed;width:0;height:0;opacity:0;pointer-events:none';
+      document.body.appendChild(a);
+
+      const playPromise=a.play();
+      if(playPromise!==undefined){
+        playPromise
+          .then(()=>{ /* playing fine */ })
+          .catch(err=>{
+            console.warn('play() failed:',err);
+            clearTimeout(to);
+            document.body.removeChild(a);
+            resolve();
+          });
+      }
+
+      // Clean up element after it finishes
+      a.onended=()=>{
+        clearTimeout(to);
+        if(a.parentNode) a.parentNode.removeChild(a);
+        resolve();
+      };
     });
-  }catch(e){await sleep(800)}
+  }catch(e){
+    console.warn('puterSpeak error:',e);
+    await sleep(800);
+  }
 }
 
 async function sayWord(){
