@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9GNH24NL8Q"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9GNH24NL8Q');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Creature Care</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Nunito',sans-serif;touch-action:none}
+:root{--yellow:#ffe040;--pink:#ff7eb3;--purple:#9b5fd4;--green:#4dcf8a;--white:#fff}
+#app{width:100%;height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.topbar{flex-shrink:0;z-index:30;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);
+  border-bottom:2px solid rgba(255,224,64,.35);padding:8px 14px;
+  display:flex;align-items:center;justify-content:space-between}
+.topbar-name{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:var(--yellow)}
+.topbar-sub{font-size:.62rem;font-weight:700;color:#aac4ff;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn-info-top,.btn-back{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;border-radius:999px;padding:6px 14px;cursor:pointer}
+.btn-info-top{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);color:var(--white)}
+.btn-back{background:#0f3460;color:var(--yellow);border:2px solid var(--yellow)}
+#bg{position:absolute;inset:0;z-index:0;width:100%;height:100%}
+.happy-wrap{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:20;
+  display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.happy-track{width:130px;height:11px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;border:1.5px solid rgba(255,255,255,.25)}
+.happy-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--yellow));transition:width .5s}
+.happy-lbl{font-size:.5rem;font-weight:800;color:rgba(255,255,255,.65)}
+#lore{position:absolute;top:68px;right:10px;z-index:25;background:rgba(10,5,30,.92);
+  border:2px solid rgba(255,224,64,.4);border-radius:14px;padding:12px 14px;width:175px;
+  display:none;flex-direction:column;gap:5px;backdrop-filter:blur(6px)}
+#lore.show{display:flex}
+.lore-title{font-family:'Baloo 2',cursive;font-size:.7rem;color:var(--yellow);font-weight:800}
+.lore-desc{font-size:.5rem;color:#aac4ff;line-height:1.6;margin-bottom:4px}
+.stat-row{display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.stat-row:last-of-type{border:none}
+.stat-name{font-size:.48rem;font-weight:800;color:#888;width:28px}
+.stat-bar{flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:999px}
+.stat-val{font-size:.48rem;font-weight:800;color:var(--yellow);width:20px;text-align:right}
+.lore-footer{font-size:.46rem;color:#666;margin-top:4px;line-height:1.7}
+#stage{position:absolute;z-index:10;pointer-events:none;transform-origin:center bottom}
+#stage svg{overflow:visible;display:block}
+#speech{position:absolute;z-index:25;background:var(--white);border:2.5px solid #ddd;
+  border-radius:18px 18px 18px 5px;padding:9px 14px;font-size:.78rem;font-weight:800;color:#333;
+  max-width:210px;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,.28);
+  opacity:0;transition:opacity .3s;pointer-events:none}
+#speech::after{content:'';position:absolute;bottom:-11px;left:18px;border:6px solid transparent;border-top-color:var(--white)}
+#speech.show{opacity:1}
+.tray{position:absolute;bottom:0;left:0;right:0;z-index:30;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(10px);border-top:2px solid rgba(255,224,64,.25);
+  padding:10px 12px 22px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tray-lbl{font-size:.52rem;font-weight:800;color:rgba(255,224,64,.5);letter-spacing:.08em}
+.tray-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tool{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.09);
+  border:2px solid rgba(255,255,255,.18);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;cursor:grab;user-select:none;touch-action:none;transition:all .2s}
+.tool.on{background:rgba(255,224,64,.18);border-color:var(--yellow);box-shadow:0 0 16px rgba(255,224,64,.35);transform:scale(1.1)}
+.ti{font-size:1.7rem;pointer-events:none}
+.tl{font-size:.42rem;font-weight:800;color:#aac4ff;pointer-events:none}
+#ghost{position:fixed;z-index:200;font-size:2.2rem;pointer-events:none;
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .15s;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+#ghost.on{opacity:1}
+.sp{position:fixed;pointer-events:none;z-index:199;animation:spAnim .9s ease forwards}
+@keyframes spAnim{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-50%) scale(2);opacity:0}}
+.heart{position:fixed;pointer-events:none;z-index:50;animation:heartUp 1.1s ease forwards}
+@keyframes heartUp{0%{transform:translateY(0) scale(.5);opacity:1}100%{transform:translateY(-80px) scale(1.4);opacity:0}}
+#accPick{
+  position:fixed;bottom:148px;left:0;right:0;
+  z-index:35;background:rgba(8,4,24,.97);border-top:2px solid var(--yellow);
+  border-radius:20px 20px 0 0;padding:12px 12px 18px;display:none;
+  flex-direction:column;align-items:center;gap:10px;backdrop-filter:blur(12px);
+  max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+#accPick.show{display:flex}
+.acc-title-row{display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 2px}
+.acc-title{font-family:'Baloo 2',cursive;font-size:.72rem;color:var(--yellow);font-weight:800}
+.btn-clear-all{font-family:'Baloo 2',cursive;font-size:.55rem;font-weight:800;
+  background:rgba(255,60,60,.2);border:1.5px solid rgba(255,80,80,.5);
+  color:#ff8888;border-radius:999px;padding:4px 12px;cursor:pointer}
+.acc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.acc-opt{
+  cursor:pointer;border-radius:12px;border:2px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 4px 6px;transition:all .18s;position:relative;
+}
+.acc-opt.on{
+  border-color:var(--yellow);background:rgba(255,224,64,.15);
+  box-shadow:0 0 12px rgba(255,224,64,.25);
+}
+.acc-opt.on::after{content:'✓';position:absolute;top:3px;right:5px;
+  font-size:.5rem;font-weight:900;color:var(--yellow)}
+.acc-opt:active{transform:scale(.9)}
+.acc-opt svg{display:block}
+.acc-opt-label{font-size:.4rem;font-weight:800;color:#8899cc;text-align:center;
+  line-height:1.3;padding:0 2px;}
+.acc-opt.on .acc-opt-label{color:var(--yellow)}
+.zzz{position:absolute;top:-20px;right:-25px;font-size:1.2rem;z-index:15;
+  animation:zzzFloat 1.8s ease-in-out infinite alternate;pointer-events:none}
+@keyframes zzzFloat{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-10px) rotate(8deg)}}
+/* Accessories are now inline SVG - no floating div needed */
+.part{position:absolute;pointer-events:none;z-index:3;font-size:.85rem;opacity:.7;animation:partFloat linear infinite}
+@keyframes partFloat{0%{transform:translateY(0) rotate(0deg);opacity:.7}100%{transform:translateY(-50px) rotate(30deg);opacity:0}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div><div class="topbar-name" id="topName">Fluffkin</div><div class="topbar-sub" id="topSub">🌿 Meadow Creature • Lv. 5</div></div>
+    <div class="topbar-right">
+      <button class="btn-info-top" onclick="toggleLore()">ℹ Stats</button>
+      <button class="btn-back" id="btnBack">← Back</button>
+    </div>
+  </div>
+  <canvas id="bg"></canvas>
+  <div class="happy-wrap">
+    <div class="happy-lbl">Happiness ✨</div>
+    <div class="happy-track"><div class="happy-fill" id="hFill" style="width:50%"></div></div>
+  </div>
+  <div id="lore">
+    <div class="lore-title" id="loreName"></div>
+    <div class="lore-desc" id="loreDesc"></div>
+    <div id="loreStats"></div>
+    <div class="lore-footer" id="loreFoot"></div>
+  </div>
+  <div id="stage"></div>
+  <div id="speech"></div>
+  <div id="accPick">
+    <div class="acc-title-row">
+      <div class="acc-title">✨ Accessories</div>
+      <button class="btn-clear-all" onclick="removeAllAcc()">Remove All</button>
+    </div>
+    <div class="acc-grid" id="accRow"></div>
+  </div>
+  <div class="tray">
+    <div class="tray-lbl">DRAG A TOOL TO YOUR CREATURE</div>
+    <div class="tray-row" id="toolsRow"></div>
+  </div>
+</div>
+<div id="ghost"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CREATURE DATA
+// ═══════════════════════════════════════════
+const CD = {
+  Fluffkin:{type:"Normal",habitat:"Meadow",climate:"Temperate",lv:5,hp:45,atk:30,def:35,spd:40,
+    desc:"A gentle meadow spirit that loves morning dew and clover patches. Its soft ears can hear flowers blooming.",
+    food:"🥕",sleepMsg:"Fluffkin curls into a fluffy ball 💤",furry:true,bgType:"meadow",parts:["🌸","🍀","🌼"],
+    moods:{pet:"Ooh yes right there! 🥰",feed:"Crunch crunch! My favourite! 😋",
+      brush:"My fur is SO silky now! ✨",cuddle:"*happy bunny noises* 💕",acc:"Do I look cute? 🌸",sparkle:"N/A"}},
+  Sparklox:{type:"Fire",habitat:"Forest Edge",climate:"Warm",lv:8,hp:52,atk:48,def:32,spd:65,
+    desc:"A cunning fox who collects shiny objects. Its golden fur glows at sunset. Loyal to those who earn its trust.",
+    food:"🍓",sleepMsg:"Sparklox tucks its glowing tail around itself 💤",furry:true,bgType:"forest",parts:["🍂","🍁","✨"],
+    moods:{pet:"Hmph… okay that's nice 😌",feed:"I'll accept these berries! 😋",
+      brush:"My tail looks magnificent! 🦊",cuddle:"Don't tell anyone I purred 💤",acc:"Obviously I look fabulous 😎",sparkle:"N/A"}},
+  Puddlum:{type:"Water",habitat:"Ocean Shore",climate:"Coastal",lv:6,hp:60,atk:25,def:50,spd:38,
+    desc:"A cheerful ocean spirit who loves clapping its flippers. It can predict weather by watching wave patterns.",
+    food:"🐟",sleepMsg:"Puddlum floats peacefully on its back 💤",furry:false,bgType:"ocean",parts:["💧","🫧","🐚"],
+    moods:{pet:"ARF ARF! More please! 😄",feed:"FISH! MY FAVOURITE! 🐟",
+      brush:"N/A",cuddle:"Floating on my back 💙",acc:"Cutest seal! 🎀",sparkle:"Look how I shine! ✨"}},
+  Driftail:{type:"Dragon",habitat:"Volcanic Cave",climate:"Scorching",lv:14,hp:65,atk:80,def:55,spd:60,
+    desc:"An ancient cave dragon born from lava bubbles. Its scales shimmer like embers. Secretly loves belly rubs.",
+    food:"🔥",sleepMsg:"Driftail folds its wings breathing tiny flame snores 💤",furry:false,bgType:"volcano",parts:["🔥","✨","💎"],
+    moods:{pet:"*pretends not to like it* …okay fine 😊",feed:"FIRE! NOM NOM! 🔥",
+      brush:"N/A",cuddle:"*tiny flame snores* 💤",acc:"Most fearsome dragon with a bow 😤🎀",sparkle:"I shall GLOW! ✨"}},
+  Lunabelle:{type:"Psychic",habitat:"Moonlit Treetops",climate:"Cool",lv:11,hp:45,atk:55,def:38,spd:65,
+    desc:"A wise owl spirit who has watched the moon for a thousand years. Knows all the stars by name. Never wrong.",
+    food:"🐭",sleepMsg:"Lunabelle tucks her beak under her wing 💤",furry:true,bgType:"nightsky",parts:["🌙","⭐","🦉"],
+    moods:{pet:"Hoo… very well 🦉",feed:"A fine mouse. Acceptable 🐭",
+      brush:"My feathers are immaculate 🦉",cuddle:"Hoo… nap time 💤",acc:"A mortarboard! Wisest of all! 🎓",sparkle:"N/A"}},
+  Glimcat:{type:"Psychic",habitat:"Moonlit Meadow",climate:"Mild",lv:9,hp:48,atk:42,def:38,spd:72,
+    desc:"A mysterious cat that reads emotions. Its purple fur shimmers under moonlight. Always knows what you're thinking.",
+    food:"🐟",sleepMsg:"Glimcat purrs with tiny glowing zzzs 💤",furry:true,bgType:"meadow",parts:["🌙","⭐","💜"],
+    moods:{pet:"I knew you were going to do that 😏",feed:"Acceptable. 😌",
+      brush:"My coat is perfect now 💅",cuddle:"Purr… purr… 💜",acc:"Obviously I chose this look myself 👑",sparkle:"N/A"}},
+  Coraluff:{type:"Normal",habitat:"Mountain Forest",climate:"Cool",lv:7,hp:80,atk:55,def:60,spd:25,
+    desc:"A gentle giant with a heart full of love. Despite its size it moves quietly and never breaks a twig.",
+    food:"🍯",sleepMsg:"Coraluff's belly rises and falls like a mountain 💤",furry:true,bgType:"mountain",parts:["🍂","🌲","🍯"],
+    moods:{pet:"Ooooh don't stop! 🐻",feed:"HONEY! *happy bear noises* 🍯",
+      brush:"I am now the fluffiest bear! 🐻",cuddle:"*big bear snores* 💤",acc:"A fashionable bear! 🎩",sparkle:"N/A"}},
+  Peppin:{type:"Normal",habitat:"Oak Tree Burrow",climate:"Temperate",lv:5,hp:38,atk:28,def:32,spd:68,
+    desc:"The speediest cheek-stuffer in the forest! Can carry its own weight in acorns. Runs on pure happy energy.",
+    food:"🌰",sleepMsg:"Peppin stuffs its cheeks and dozes mid-chew 💤",furry:true,bgType:"forest",parts:["🌰","🍂","🌿"],
+    moods:{pet:"Squeak squeak! 😄",feed:"*stuffing cheeks intensifies* 🌰",
+      brush:"My fur is so round and smooth! 🐹",cuddle:"Zzz *cheeks still full* 💤",acc:"Tiny cute hamster with accessories! 🎀",sparkle:"N/A"}},
+  Starwhirl:{type:"Fairy",habitat:"Night Sky",climate:"Cosmic",lv:11,hp:42,atk:45,def:28,spd:85,
+    desc:"Born from a shooting star's tail. Wanders the night sky leaving trails of golden light. Grants wishes to kind hearts.",
+    food:"✨",sleepMsg:"Starwhirl dims its points and drifts among the stars 💤",furry:false,bgType:"nightsky",parts:["⭐","✨","💫"],
+    moods:{pet:"*sparkles with joy* ✨",feed:"Stardust! Yum! 💫",
+      brush:"N/A",cuddle:"Floating on a cloud of dreams… 💤",acc:"The most dazzling star! ⭐",sparkle:"YES! SPARKLE ME! ✨✨✨"}},
+  Mossling:{type:"Grass",habitat:"Ancient Pond",climate:"Humid",lv:6,hp:55,atk:30,def:70,spd:15,
+    desc:"An ancient tortoise spirit whose shell has grown its own tiny garden. Takes things slow but never gives up.",
+    food:"🥬",sleepMsg:"Mossling retreats into its shell garden and dozes 💤",furry:false,bgType:"forest",parts:["🍃","🌿","🐢"],
+    moods:{pet:"… … … that is nice.",feed:"Slowly… but surely… eating. 🥬",
+      brush:"N/A",cuddle:"Shell is cozy… 💤",acc:"A garden on my shell and a bow! 🌿🎀",sparkle:"I gleam like a pond! ✨"}},
+  Twinkow:{type:"Fairy",habitat:"Rainbow Clouds",climate:"Magical",lv:12,hp:50,atk:40,def:40,spd:80,
+    desc:"A unicorn spirit who gallops across rainbows. Its mane changes colour with its mood. Leaves flower footprints.",
+    food:"🌈",sleepMsg:"Twinkow glows softly, mane shimmering as it sleeps 💤",furry:true,bgType:"nightsky",parts:["🌈","🌸","✨"],
+    moods:{pet:"Neigh! I love you! 🦄",feed:"Rainbow drops are my FAVOURITE 🌈",
+      brush:"My mane is gorgeous! 💕",cuddle:"Dreaming of rainbow fields… 💤",acc:"A crown fit for a unicorn! 👑",sparkle:"N/A"}},
+  Boulbear:{type:"Normal",habitat:"Bamboo Mountains",climate:"Cool",lv:8,hp:75,atk:45,def:65,spd:20,
+    desc:"A round peaceful panda spirit who meditates by bamboo groves. Eats bamboo all day and is very content with that.",
+    food:"🎋",sleepMsg:"Boulbear hugs a bamboo stalk and snores loudly 💤",furry:true,bgType:"mountain",parts:["🎋","🍃","❄️"],
+    moods:{pet:"Ah… very relaxing. 🐼",feed:"BAMBOO! *happy munching* 🎋",
+      brush:"Round and fluffy! 🐼",cuddle:"*content panda snores* 💤",acc:"Fashionable panda! 🎀",sparkle:"N/A"}},
+  Zipplet:{type:"Normal",habitat:"Sunny Farmyard",climate:"Warm",lv:3,hp:32,atk:20,def:25,spd:60,
+    desc:"The most enthusiastic chick in the world! Peeps constantly and chases everything that moves. Full of joy.",
+    food:"🌾",sleepMsg:"Zipplet fluffs up its feathers into a tiny yellow ball 💤",furry:true,bgType:"meadow",parts:["🌾","☀️","🌼"],
+    moods:{pet:"PEEP PEEP PEEP! 🐥",feed:"SEEDS! *frantic pecking* 🌾",
+      brush:"My feathers! So smooth! 🐥",cuddle:"Peep… zzz… 💤",acc:"Tiniest most stylish chick 🎀",sparkle:"N/A"}},
+  Dazzlphin:{type:"Water",habitat:"Coral Sea",climate:"Tropical",lv:10,hp:58,atk:52,def:44,spd:88,
+    desc:"The fastest swimmer in the crystal sea. Leaps 30 feet in the air for fun. Has a smile that lights up the ocean.",
+    food:"🐠",sleepMsg:"Dazzlphin sways in an imaginary warm wave 💤",furry:false,bgType:"ocean",parts:["🌊","🐚","💙"],
+    moods:{pet:"EEE EEE! *happy clicks* 😄",feed:"Tropical fish! SPLASH! 🐠",
+      brush:"N/A",cuddle:"Floating on warm currents… 💤",acc:"Stylish dolphin! 🎀",sparkle:"Watch me glitter! ✨"}},
+  Flameow:{type:"Fire",habitat:"Volcanic Island",climate:"Scorching",lv:10,hp:52,atk:70,def:35,spd:75,
+    desc:"A fire cat that leaves tiny flame pawprints. Its purring sounds like a crackling fire. Sleeps on warm volcanic rocks.",
+    food:"🌶️",sleepMsg:"Flameow curls on a warm rock, tiny flames flickering 💤",furry:true,bgType:"volcano",parts:["🔥","✨","🌋"],
+    moods:{pet:"Purr crackle purr 🔥",feed:"SPICY! PERFECT! 🌶️",
+      brush:"My fiery fur! Gorgeous! 🔥",cuddle:"*tiny flame snores* 💤",acc:"Fire and fashion! 🎀🔥",sparkle:"N/A"}},
+  Crystaloo:{type:"Dark",habitat:"Twilight Forest",climate:"Cool",lv:9,hp:48,atk:55,def:42,spd:70,
+    desc:"A mischievous raccoon who collects glittery things at night. Its masked eyes miss nothing. Secretly very cuddly.",
+    food:"🍬",sleepMsg:"Crystaloo wraps its striped tail around itself like a blanket 💤",furry:true,bgType:"forest",parts:["🌙","✨","🍂"],
+    moods:{pet:"*pretends to resist* okay fine 😤",feed:"CANDY! My precious! 🍬",
+      brush:"My stripes are perfect now 🦝",cuddle:"*tail wrap* 💤",acc:"A raccoon of culture! 🎩",sparkle:"N/A"}},
+  Dewdrop:{type:"Water",habitat:"Crystal Cave Stream",climate:"Cool",lv:7,hp:50,atk:35,def:48,spd:45,
+    desc:"A gentle axolotl spirit born in an underground spring. Its feathery gills sense every ripple in the water.",
+    food:"🦐",sleepMsg:"Dewdrop's gills wave gently as it drifts in a slow current 💤",furry:false,bgType:"ocean",parts:["💧","🫧","🌊"],
+    moods:{pet:"*happy gill wiggle* 💕",feed:"Shrimpy! My fave! 🦐",
+      brush:"N/A",cuddle:"Floating in a gentle current… 💤",acc:"Cute water friend! 🎀",sparkle:"I glimmer like a cave crystal! ✨"}},
+  Puffy:{type:"Normal",habitat:"Rolling Meadow Farm",climate:"Temperate",lv:4,hp:58,atk:25,def:45,spd:22,
+    desc:"A round rosy pig spirit who finds treasure by sniffing the earth. Loves muddy puddles and belly scratches.",
+    food:"🌽",sleepMsg:"Puffy oinks softly and curls its little tail 💤",furry:true,bgType:"meadow",parts:["🌼","🌾","💕"],
+    moods:{pet:"OINK OINK! *wiggles* 🐷",feed:"CORN! *happy oinking* 🌽",
+      brush:"My pink fur! So soft! 🐷",cuddle:"Oink… zzz… 💤",acc:"The fanciest piggy! 🎀",sparkle:"N/A"}},
+  Shimmur:{type:"Normal",habitat:"Golden Savanna",climate:"Hot",lv:13,hp:78,atk:72,def:55,spd:58,
+    desc:"The proud guardian of the golden plains. Its mane glows like sunlight. Deeply loyal and fiercely protective.",
+    food:"🥩",sleepMsg:"Shimmur yawns a big roar and rests its golden mane 💤",furry:true,bgType:"mountain",parts:["☀️","🌾","✨"],
+    moods:{pet:"…I allow this. 😌",feed:"*noble lion eating noises* 🥩",
+      brush:"My mane is majestic! 🦁",cuddle:"*rumbling lion purr* 💤",acc:"A crowned lion! All shall bow! 👑",sparkle:"N/A"}},
+};
+
+// Archetype fallback (empty - all creatures now have own builders)
+const ARCHETYPE = {};
+
+// Per-creature accessories — SVG snippets injected directly onto the creature
+// Each entry: {id, label, svg(color) function returning SVG to inject}
+const CREATURE_ACCESSORIES = {
+
+  Fluffkin:[
+    {id:'flower_crown',label:'Flower Crown',
+     preview:`<circle cx="30" cy="32" r="9" fill="#ff6eb4"/><circle cx="30" cy="32" r="5" fill="#ffe040"/><circle cx="14" cy="36" r="7" fill="#ff5252"/><circle cx="14" cy="36" r="3.5" fill="#ffe040"/><circle cx="46" cy="36" r="7" fill="#9b5fd4"/><circle cx="46" cy="36" r="3.5" fill="#ffe040"/><circle cx="22" cy="22" r="6" fill="#4dcf8a"/><circle cx="22" cy="22" r="3" fill="#ffe040"/><circle cx="38" cy="22" r="6" fill="#ffb3d9"/><circle cx="38" cy="22" r="3" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_flower_crown"><circle cx="76" cy="62" r="8" fill="#ff6eb4"/><circle cx="76" cy="62" r="4" fill="#ffe040"/><circle cx="88" cy="57" r="7" fill="#ff5252"/><circle cx="88" cy="57" r="3.5" fill="#ffe040"/><circle cx="100" cy="55" r="9" fill="#ffe040"/><circle cx="100" cy="55" r="4.5" fill="#ff6eb4"/><circle cx="112" cy="57" r="7" fill="#4dcf8a"/><circle cx="112" cy="57" r="3.5" fill="#ffe040"/><circle cx="124" cy="62" r="8" fill="#9b5fd4"/><circle cx="124" cy="62" r="4" fill="#ffe040"/></g>`},
+    {id:'bow_tie',label:'Bow Tie',
+     preview:`<polygon points="12,18 30,28 12,38" fill="#ff5252"/><polygon points="48,18 30,28 48,38" fill="#ff5252"/><circle cx="30" cy="28" r="7" fill="#ff8888"/><circle cx="30" cy="28" r="3.5" fill="#ff5252"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_bow_tie"><polygon points="82,188 100,198 82,208" fill="#ff5252"/><polygon points="118,188 100,198 118,208" fill="#ff5252"/><circle cx="100" cy="198" r="7" fill="#ff8888"/><circle cx="100" cy="198" r="3.5" fill="#ff5252"/></g>`},
+    {id:'pink_ribbon',label:'Head Ribbon',
+     preview:`<path d="M 12 30 Q 30 20 48 30" fill="none" stroke="#ff7eb3" stroke-width="5" stroke-linecap="round"/><circle cx="30" cy="26" r="9" fill="#ff7eb3"/><path d="M 22 26 Q 30 16 38 26 Q 30 36 22 26 Z" fill="#ffb3d9"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_pink_ribbon"><path d="M 86 62 Q 100 54 114 62" fill="none" stroke="#ff7eb3" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="59" r="8" fill="#ff7eb3"/><path d="M 93 59 Q 100 51 107 59 Q 100 67 93 59 Z" fill="#ffb3d9"/></g>`},
+    {id:'bunny_glasses',label:'Glasses',
+     preview:`<rect x="6" y="20" width="20" height="14" rx="7" fill="rgba(255,224,64,.2)" stroke="#ffe040" stroke-width="2.5"/><rect x="34" y="20" width="20" height="14" rx="7" fill="rgba(255,224,64,.2)" stroke="#ffe040" stroke-width="2.5"/><line x1="26" y1="27" x2="34" y2="27" stroke="#ffe040" stroke-width="2"/><line x1="6" y1="27" x2="2" y2="25" stroke="#ffe040" stroke-width="2"/><line x1="54" y1="27" x2="58" y2="25" stroke="#ffe040" stroke-width="2"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_bunny_glasses"><rect x="70" y="110" width="26" height="18" rx="9" fill="rgba(255,224,64,.15)" stroke="#ffe040" stroke-width="2"/><rect x="104" y="110" width="26" height="18" rx="9" fill="rgba(255,224,64,.15)" stroke="#ffe040" stroke-width="2"/><line x1="96" y1="119" x2="104" y2="119" stroke="#ffe040" stroke-width="2"/><line x1="70" y1="119" x2="64" y2="116" stroke="#ffe040" stroke-width="1.5"/><line x1="130" y1="119" x2="136" y2="116" stroke="#ffe040" stroke-width="1.5"/></g>`},
+    {id:'star_collar',label:'Star Collar',
+     preview:`<path d="M 8 32 Q 30 42 52 32" fill="none" stroke="#ffe040" stroke-width="4" stroke-linecap="round"/><polygon points="30,40 27,30 30,24 33,30" fill="#ffe040"/><circle cx="16" cy="37" r="4" fill="#ff5252"/><circle cx="44" cy="37" r="4" fill="#9b5fd4"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_star_collar"><path d="M 70 188 Q 100 200 130 188" fill="none" stroke="#ffe040" stroke-width="5" stroke-linecap="round"/><path d="M 70 188 Q 100 200 130 188" fill="none" stroke="#ffee88" stroke-width="2" stroke-linecap="round"/><polygon points="100,196 96,210 100,216 104,210" fill="#ffe040"/><circle cx="82" cy="195" r="5" fill="#ff5252"/><circle cx="118" cy="195" r="5" fill="#9b5fd4"/></g>`},
+    {id:'carrot_bag',label:'Carrot Bag',
+     preview:`<rect x="16" y="14" width="28" height="34" rx="4" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><path d="M 20 14 Q 30 6 40 14" fill="none" stroke="#8B5E3C" stroke-width="2"/><ellipse cx="30" cy="28" rx="9" ry="12" fill="#ff8844" stroke="#cc5522" stroke-width="1"/><path d="M 26 18 L 30 14 L 34 18" fill="none" stroke="#4dcf8a" stroke-width="2"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_carrot_bag"><rect x="148" y="185" width="28" height="34" rx="5" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><path d="M 152 185 Q 162 175 172 185" fill="none" stroke="#8B5E3C" stroke-width="2.5"/><ellipse cx="162" cy="202" rx="10" ry="12" fill="#ff8844" stroke="#cc5522" stroke-width="1"/><path d="M 158 194 L 162 190 L 166 194" fill="none" stroke="#4dcf8a" stroke-width="2"/></g>`},
+    {id:'daisy_chain',label:'Daisy Chain',
+     preview:`<path d="M 6 36 Q 30 44 54 36" fill="none" stroke="rgba(180,220,180,.5)" stroke-width="1"/><circle cx="10" cy="36" r="5" fill="white" stroke="#ccc" stroke-width="1"/><circle cx="10" cy="36" r="2.5" fill="#ffe040"/><circle cx="21" cy="34" r="5" fill="white" stroke="#ccc" stroke-width="1"/><circle cx="21" cy="34" r="2.5" fill="#ffe040"/><circle cx="30" cy="32" r="5" fill="white" stroke="#ccc" stroke-width="1"/><circle cx="30" cy="32" r="2.5" fill="#ffe040"/><circle cx="39" cy="34" r="5" fill="white" stroke="#ccc" stroke-width="1"/><circle cx="39" cy="34" r="2.5" fill="#ffe040"/><circle cx="50" cy="36" r="5" fill="white" stroke="#ccc" stroke-width="1"/><circle cx="50" cy="36" r="2.5" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_daisy_chain"><circle cx="68" cy="192" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="68" cy="192" r="3" fill="#ffe040"/><circle cx="81" cy="196" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="81" cy="196" r="3" fill="#ffe040"/><circle cx="94" cy="198" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="94" cy="198" r="3" fill="#ffe040"/><circle cx="107" cy="199" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="107" cy="199" r="3" fill="#ffe040"/><circle cx="120" cy="198" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="120" cy="198" r="3" fill="#ffe040"/><circle cx="133" cy="196" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="133" cy="196" r="3" fill="#ffe040"/><circle cx="146" cy="192" r="6" fill="white" stroke="#ddd" stroke-width="1"/><circle cx="146" cy="192" r="3" fill="#ffe040"/></g>`},
+    {id:'fairy_wings',label:'Fairy Wings',
+     preview:`<path d="M 30 28 Q 6 16 4 28 Q 6 42 30 38 Z" fill="rgba(200,180,255,.55)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 30 28 Q 54 16 56 28 Q 54 42 30 38 Z" fill="rgba(200,180,255,.55)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 10 26 Q 18 22 24 26" fill="none" stroke="rgba(180,140,255,.4)" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fairy_wings"><path d="M 100 178 Q 60 152 55 174 Q 60 200 100 190 Z" fill="rgba(200,180,255,.45)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 100 178 Q 140 152 145 174 Q 140 200 100 190 Z" fill="rgba(200,180,255,.45)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 68 162 Q 78 156 88 162" fill="none" stroke="rgba(180,140,255,.4)" stroke-width="1.2"/><path d="M 112 162 Q 122 156 132 162" fill="none" stroke="rgba(180,140,255,.4)" stroke-width="1.2"/></g>`},
+    {id:'clover_pin',label:'Lucky Clover',
+     preview:`<circle cx="30" cy="22" r="9" fill="#4dcf8a"/><circle cx="20" cy="30" r="9" fill="#4dcf8a"/><circle cx="40" cy="30" r="9" fill="#4dcf8a"/><circle cx="30" cy="30" r="7" fill="#4dcf8a"/><line x1="30" y1="36" x2="30" y2="50" stroke="#2a9c5e" stroke-width="3" stroke-linecap="round"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_clover_pin"><circle cx="92" cy="148" r="7" fill="#4dcf8a"/><circle cx="84" cy="156" r="7" fill="#4dcf8a"/><circle cx="100" cy="156" r="7" fill="#4dcf8a"/><circle cx="92" cy="156" r="5" fill="#4dcf8a"/><line x1="92" y1="160" x2="92" y2="170" stroke="#2a9c5e" stroke-width="2" stroke-linecap="round"/></g>`},
+    {id:'heart_wand',label:'Heart Wand',
+     preview:`<line x1="14" y1="50" x2="36" y2="16" stroke="#ff7eb3" stroke-width="3" stroke-linecap="round"/><path d="M 36 16 Q 31 8 36 12 Q 41 8 46 12 Q 48 18 42 23 Q 36 26 30 20 Z" fill="#ff5252"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_heart_wand"><line x1="140" y1="235" x2="164" y2="175" stroke="#ff7eb3" stroke-width="3.5" stroke-linecap="round"/><path d="M 164 175 Q 158 165 164 169 Q 170 165 176 169 Q 178 177 170 183 Q 164 186 158 180 Z" fill="#ff5252" stroke="#cc2244" stroke-width="1"/></g>`},
+  ],
+
+  Sparklox:[
+    {id:'gold_collar',label:'Gold Collar',
+     preview:`<path d="M 8 30 Q 30 42 52 30" fill="none" stroke="#ddaa00" stroke-width="7" stroke-linecap="round"/><path d="M 8 30 Q 30 42 52 30" fill="none" stroke="#ffe040" stroke-width="3.5" stroke-linecap="round"/><polygon points="30,40 26,52 30,58 34,52" fill="#ddaa00"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_gold_collar"><path d="M 72 188 Q 110 200 148 188" fill="none" stroke="#ddaa00" stroke-width="6" stroke-linecap="round"/><path d="M 72 188 Q 110 200 148 188" fill="none" stroke="#ffe040" stroke-width="3" stroke-linecap="round"/><circle cx="90" cy="195" r="5" fill="#ffe040" stroke="#aa8800" stroke-width="1"/><circle cx="110" cy="198" r="6" fill="#ffe040" stroke="#aa8800" stroke-width="1"/><circle cx="130" cy="195" r="5" fill="#ffe040" stroke="#aa8800" stroke-width="1"/><polygon points="110,202 106,214 110,220 114,214" fill="#ddaa00"/></g>`},
+    {id:'feather_plume',label:'Plume',
+     preview:`<path d="M 38 52 Q 26 28 30 8 Q 37 18 38 34 Q 42 20 46 10 Q 48 24 40 48 Z" fill="#ff6eb4"/><path d="M 38 50 Q 30 30 32 12" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/><circle cx="30" cy="10" r="5" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_feather_plume" transform="rotate(-15,142,72)"><path d="M 142 108 Q 130 80 134 52 Q 142 38 150 55 Q 154 74 142 108 Z" fill="#ff6eb4" stroke="#cc4488" stroke-width="1"/><path d="M 142 108 Q 136 82 138 55" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/><circle cx="134" cy="52" r="6" fill="#ffe040"/></g>`},
+    {id:'red_scarf',label:'Red Scarf',
+     preview:`<path d="M 6 22 Q 30 34 54 22 Q 50 33 30 42 Q 10 33 6 22 Z" fill="#ff5252"/><path d="M 6 22 Q 30 31 54 22" fill="none" stroke="#cc2222" stroke-width="1.5"/><rect x="44" y="22" width="14" height="26" rx="3" fill="#ff5252" transform="rotate(8,51,35)"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_red_scarf"><path d="M 68 185 Q 110 196 152 185 Q 148 194 110 204 Q 72 194 68 185 Z" fill="#ff5252"/><path d="M 68 185 Q 110 193 152 185" fill="none" stroke="#cc2222" stroke-width="1.5"/><rect x="148" y="184" width="14" height="30" rx="3" fill="#ff5252" transform="rotate(8,155,199)"/></g>`},
+    {id:'explorer_hat',label:'Explorer Hat',
+     preview:`<ellipse cx="30" cy="40" rx="26" ry="9" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><path d="M 10 40 Q 12 20 30 16 Q 48 20 50 40 Z" fill="#cc9944" stroke="#8B5E3C" stroke-width="1.5"/><path d="M 14 30 Q 30 26 46 30" fill="none" stroke="rgba(140,90,0,.35)" stroke-width="1.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_explorer_hat"><ellipse cx="110" cy="90" rx="44" ry="10" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><path d="M 74 90 Q 76 62 110 56 Q 144 62 146 90 Z" fill="#cc9944" stroke="#8B5E3C" stroke-width="1.5"/><path d="M 78 76 Q 110 70 142 76" fill="none" stroke="rgba(140,90,0,.3)" stroke-width="1.5"/></g>`},
+    {id:'gem_tiara',label:'Gem Tiara',
+     preview:`<path d="M 6 34 Q 30 22 54 34" fill="none" stroke="#ffe040" stroke-width="2.5" stroke-linecap="round"/><polygon points="30,34 26,18 34,18" fill="#ffe040"/><circle cx="30" cy="16" r="8" fill="#ff5252" stroke="#cc2222" stroke-width="1"/><circle cx="12" cy="30" r="5" fill="#4dcf8a"/><circle cx="48" cy="30" r="5" fill="#9b5fd4"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_gem_tiara"><path d="M 72 108 Q 110 96 148 108" fill="none" stroke="#ffe040" stroke-width="2.5" stroke-linecap="round"/><polygon points="110,108 106,90 114,90" fill="#ffe040"/><circle cx="110" cy="87" r="9" fill="#ff5252" stroke="#cc2222" stroke-width="1.5"/><circle cx="88" cy="104" r="6" fill="#4dcf8a" stroke="#2a9c5e" stroke-width="1"/><circle cx="132" cy="104" r="6" fill="#9b5fd4" stroke="#6622aa" stroke-width="1"/></g>`},
+    {id:'fox_cape',label:'Cape',
+     preview:`<path d="M 4 22 Q 0 40 6 56 Q 18 48 22 34 Q 14 42 4 22 Z" fill="#9b5fd4" stroke="#6622aa" stroke-width="1.5"/><ellipse cx="13" cy="22" rx="9" ry="6" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fox_cape"><path d="M 52 168 Q 42 194 50 222 Q 72 212 82 190 Q 74 180 52 168 Z" fill="#9b5fd4" stroke="#6622aa" stroke-width="1.5"/><ellipse cx="58" cy="168" rx="10" ry="7" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/></g>`},
+    {id:'star_earrings',label:'Star Earrings',
+     preview:`<polygon points="13,22 15,12 17,22 8,17 22,17" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><line x1="13" y1="22" x2="13" y2="30" stroke="#ccaa00" stroke-width="1.5"/><circle cx="13" cy="32" r="4" fill="#ff5252"/><polygon points="47,22 49,12 51,22 42,17 56,17" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><line x1="47" y1="22" x2="47" y2="30" stroke="#ccaa00" stroke-width="1.5"/><circle cx="47" cy="32" r="4" fill="#ff5252"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_star_earrings"><polygon points="64,136 66,126 68,136 58,131 74,131" fill="#ffe040"/><line x1="64" y1="136" x2="64" y2="146" stroke="#ccaa00" stroke-width="2"/><circle cx="64" cy="149" r="4" fill="#ff5252"/><polygon points="156,136 158,126 160,136 150,131 166,131" fill="#ffe040"/><line x1="156" y1="136" x2="156" y2="146" stroke="#ccaa00" stroke-width="2"/><circle cx="156" cy="149" r="4" fill="#ff5252"/></g>`},
+    {id:'bone_necklace',label:'Bone Necklace',
+     preview:`<path d="M 6 30 Q 30 40 54 30" fill="none" stroke="#ddd" stroke-width="2"/><rect x="8" y="26" width="8" height="12" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="21" y="25" width="8" height="12" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="34" y="25" width="8" height="12" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="47" y="26" width="8" height="12" rx="3" fill="white" stroke="#bbb" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_bone_necklace"><path d="M 68 188 Q 110 200 152 188" fill="none" stroke="#ddd" stroke-width="2"/><rect x="72" y="185" width="10" height="14" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="88" y="183" width="10" height="14" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="104" y="182" width="10" height="14" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="120" y="183" width="10" height="14" rx="3" fill="white" stroke="#bbb" stroke-width="1"/><rect x="136" y="185" width="10" height="14" rx="3" fill="white" stroke="#bbb" stroke-width="1"/></g>`},
+    {id:'tail_bow',label:'Tail Bow',
+     preview:`<polygon points="20,18 30,28 20,38" fill="#ff5252"/><polygon points="40,18 30,28 40,38" fill="#ff5252"/><circle cx="30" cy="28" r="7" fill="#ff8888"/><circle cx="30" cy="28" r="3.5" fill="#ff5252"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_tail_bow"><polygon points="28,196 42,204 28,212" fill="#ff5252"/><polygon points="56,196 42,204 56,212" fill="#ff5252"/><circle cx="42" cy="204" r="6" fill="#ff8888"/><circle cx="42" cy="204" r="3" fill="#ff5252"/></g>`},
+    {id:'fox_mask',label:'Fox Mask',
+     preview:`<ellipse cx="30" cy="32" rx="22" ry="16" fill="#ffe066" stroke="#cc9900" stroke-width="1.5"/><ellipse cx="14" cy="22" rx="7" ry="11" fill="#ffe066" stroke="#cc9900" stroke-width="1.5"/><ellipse cx="46" cy="22" rx="7" ry="11" fill="#ffe066" stroke="#cc9900" stroke-width="1.5"/><ellipse cx="20" cy="34" rx="7" ry="6" fill="#ff8844"/><ellipse cx="40" cy="34" rx="7" ry="6" fill="#ff8844"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fox_mask"><ellipse cx="110" cy="138" rx="40" ry="28" fill="#ffe066" stroke="#cc9900" stroke-width="1.5" opacity=".9"/><ellipse cx="82" cy="118" rx="10" ry="18" fill="#ffe066" stroke="#cc9900" stroke-width="1.5"/><ellipse cx="138" cy="118" rx="10" ry="18" fill="#ffe066" stroke="#cc9900" stroke-width="1.5"/><ellipse cx="94" cy="140" rx="11" ry="9" fill="#ff8844"/><ellipse cx="126" cy="140" rx="11" ry="9" fill="#ff8844"/></g>`},
+  ],
+
+  Puddlum:[
+    {id:'sailor_hat',label:'Sailor Hat',
+     preview:`<ellipse cx="30" cy="38" rx="24" ry="8" fill="white" stroke="#2244aa" stroke-width="2"/><rect x="8" y="20" width="44" height="20" rx="4" fill="white" stroke="#2244aa" stroke-width="2"/><rect x="8" y="20" width="44" height="9" rx="3" fill="#2244aa"/><circle cx="30" cy="10" r="6" fill="#ff5252"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_sailor_hat"><ellipse cx="115" cy="58" rx="44" ry="12" fill="white" stroke="#2244aa" stroke-width="2.5"/><rect x="80" y="38" width="70" height="22" rx="4" fill="white" stroke="#2244aa" stroke-width="2"/><rect x="80" y="38" width="70" height="8" rx="2" fill="#2244aa"/><line x1="115" y1="38" x2="115" y2="32" stroke="#ff5252" stroke-width="2"/><circle cx="115" cy="30" r="5" fill="#ff5252"/></g>`},
+    {id:'pearl_necklace',label:'Pearls',
+     preview:`<circle cx="8" cy="30" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="18" cy="28" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="28" cy="26" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="38" cy="28" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="48" cy="30" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_pearl_necklace"><circle cx="78" cy="130" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="90" cy="126" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="102" cy="124" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="114" cy="123" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="126" cy="124" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="138" cy="126" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/><circle cx="150" cy="130" r="5" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/></g>`},
+    {id:'fish_bow',label:'Fish Bow',
+     preview:`<ellipse cx="22" cy="30" rx="16" ry="9" fill="#4dcf8a" stroke="#2a9c5e" stroke-width="1.5"/><polygon points="38,30 52,22 52,38" fill="#4dcf8a" stroke="#2a9c5e" stroke-width="1"/><circle cx="24" cy="27" r="4" fill="rgba(255,255,255,.5)"/><circle cx="22" cy="30" r="4" fill="#ffe040" stroke="#cc9900" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fish_bow"><ellipse cx="100" cy="54" rx="22" ry="10" fill="#4dcf8a" stroke="#2a9c5e" stroke-width="1.5"/><polygon points="122,54 138,44 138,64" fill="#4dcf8a" stroke="#2a9c5e" stroke-width="1"/><circle cx="104" cy="50" r="4" fill="rgba(255,255,255,.5)"/><circle cx="100" cy="54" r="5" fill="#ffe040" stroke="#cc9900" stroke-width="1"/></g>`},
+    {id:'wave_crown',label:'Wave Crown',
+     preview:`<path d="M 4 26 Q 12 14 20 26 Q 28 14 36 26 Q 44 14 52 26" fill="none" stroke="#4dcf8a" stroke-width="4" stroke-linecap="round"/><path d="M 4 32 Q 12 20 20 32 Q 28 20 36 32 Q 44 20 52 32" fill="none" stroke="#b3f0ff" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_wave_crown"><path d="M 72 52 Q 82 38 92 52 Q 102 38 115 52 Q 128 38 138 52 Q 148 38 158 52" fill="none" stroke="#4dcf8a" stroke-width="5" stroke-linecap="round"/><path d="M 72 60 Q 82 46 92 60 Q 102 46 115 60 Q 128 46 138 60 Q 148 46 158 60" fill="none" stroke="#b3f0ff" stroke-width="3" stroke-linecap="round" opacity=".65"/></g>`},
+    {id:'seashell_clip',label:'Shell Clip',
+     preview:`<path d="M 30 12 Q 12 16 10 30 Q 12 46 30 48 Q 48 46 50 30 Q 48 16 30 12 Z" fill="#ffb3cc" stroke="#cc6688" stroke-width="1.5"/><path d="M 30 12 L 30 48" fill="none" stroke="#cc6688" stroke-width="1.2" opacity=".5"/><path d="M 10 30 L 50 30" fill="none" stroke="#cc6688" stroke-width="1.2" opacity=".5"/><circle cx="26" cy="16" r="3" fill="rgba(255,255,255,.5)"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_seashell_clip"><path d="M 100 46 Q 76 52 74 68 Q 76 88 100 90 Q 124 88 126 68 Q 124 52 100 46 Z" fill="#ffb3cc" stroke="#cc6688" stroke-width="1.5"/><path d="M 100 46 L 100 90" fill="none" stroke="#cc6688" stroke-width="1.2" opacity=".5"/><path d="M 74 68 L 126 68" fill="none" stroke="#cc6688" stroke-width="1.2" opacity=".5"/></g>`},
+    {id:'bubble_tiara',label:'Bubble Tiara',
+     preview:`<circle cx="14" cy="30" r="10" fill="rgba(180,240,255,.6)" stroke="#b3f0ff" stroke-width="2"/><circle cx="30" cy="22" r="13" fill="rgba(180,240,255,.6)" stroke="#b3f0ff" stroke-width="2"/><circle cx="46" cy="30" r="10" fill="rgba(180,240,255,.6)" stroke="#b3f0ff" stroke-width="2"/><circle cx="12" cy="26" r="4" fill="white" opacity=".55"/><circle cx="27" cy="18" r="5" fill="white" opacity=".55"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_bubble_tiara"><circle cx="86" cy="58" r="12" fill="rgba(180,240,255,.55)" stroke="#b3f0ff" stroke-width="2"/><circle cx="115" cy="50" r="16" fill="rgba(180,240,255,.55)" stroke="#b3f0ff" stroke-width="2"/><circle cx="144" cy="58" r="12" fill="rgba(180,240,255,.55)" stroke="#b3f0ff" stroke-width="2"/><circle cx="83" cy="54" r="5" fill="white" opacity=".55"/><circle cx="112" cy="46" r="6" fill="white" opacity=".55"/></g>`},
+    {id:'anchor',label:'Anchor',
+     preview:`<line x1="30" y1="10" x2="30" y2="50" stroke="#2244aa" stroke-width="3"/><ellipse cx="30" cy="12" rx="12" ry="4" fill="none" stroke="#2244aa" stroke-width="2.5"/><path d="M 18 46 Q 10 36 18 28" fill="none" stroke="#2244aa" stroke-width="2.5" stroke-linecap="round"/><path d="M 42 46 Q 50 36 42 28" fill="none" stroke="#2244aa" stroke-width="2.5" stroke-linecap="round"/><line x1="16" y1="46" x2="44" y2="46" stroke="#2244aa" stroke-width="2.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_anchor" opacity=".85"><line x1="115" y1="155" x2="115" y2="200" stroke="#2244aa" stroke-width="3"/><ellipse cx="115" cy="157" rx="14" ry="5" fill="none" stroke="#2244aa" stroke-width="2.5"/><path d="M 101 196 Q 92 184 101 172" fill="none" stroke="#2244aa" stroke-width="2.5" stroke-linecap="round"/><path d="M 129 196 Q 138 184 129 172" fill="none" stroke="#2244aa" stroke-width="2.5" stroke-linecap="round"/><line x1="99" y1="196" x2="131" y2="196" stroke="#2244aa" stroke-width="2.5"/></g>`},
+    {id:'flipper_bows',label:'Flipper Bows',
+     preview:`<polygon points="6,18 18,28 6,38" fill="#ff7eb3"/><polygon points="30,18 18,28 30,38" fill="#ff7eb3"/><circle cx="18" cy="28" r="6" fill="#ffb3d9"/><circle cx="18" cy="28" r="3" fill="#ff7eb3"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_flipper_bows"><polygon points="26,162 38,172 26,182" fill="#ff7eb3"/><polygon points="50,162 38,172 50,182" fill="#ff7eb3"/><circle cx="38" cy="172" r="6" fill="#ffb3d9"/><circle cx="38" cy="172" r="3" fill="#ff7eb3"/><polygon points="180,162 192,172 180,182" fill="#ff7eb3"/><polygon points="204,162 192,172 204,182" fill="#ff7eb3"/><circle cx="192" cy="172" r="6" fill="#ffb3d9"/><circle cx="192" cy="172" r="3" fill="#ff7eb3"/></g>`},
+    {id:'captain_coat',label:'Captain Coat',
+     preview:`<rect x="2" y="18" width="24" height="38" rx="3" fill="#2244aa" stroke="#1133aa" stroke-width="1.5"/><line x1="14" y1="18" x2="14" y2="56" stroke="#ffe040" stroke-width="2"/><circle cx="14" cy="26" r="3" fill="#ffe040"/><circle cx="14" cy="36" r="3" fill="#ffe040"/><circle cx="14" cy="46" r="3" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_captain_coat"><path d="M 56 190 Q 48 218 58 246 Q 76 236 84 210 Q 78 198 56 190 Z" fill="#2244aa" stroke="#1133aa" stroke-width="1.5"/><line x1="62" y1="192" x2="72" y2="240" stroke="#ffe040" stroke-width="2"/><circle cx="65" cy="204" r="3.5" fill="#ffe040"/><circle cx="68" cy="220" r="3.5" fill="#ffe040"/></g>`},
+    {id:'fish_hat',label:'Fish Hat',
+     preview:`<ellipse cx="30" cy="30" rx="24" ry="14" fill="#a0d8ff" stroke="#4488cc" stroke-width="1.5"/><path d="M 6 30 Q 0 22 0 30 Q 0 38 6 30 Z" fill="#a0d8ff" stroke="#4488cc" stroke-width="1"/><circle cx="38" cy="24" r="6" fill="white" opacity=".45"/><path d="M 12 36 Q 22 40 32 37" fill="none" stroke="#2266aa" stroke-width="1.2" opacity=".5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fish_hat"><ellipse cx="115" cy="54" rx="38" ry="22" fill="#a0d8ff" stroke="#4488cc" stroke-width="2"/><path d="M 77 54 Q 58 40 58 54 Q 58 68 77 54 Z" fill="#a0d8ff" stroke="#4488cc" stroke-width="1.5"/><circle cx="130" cy="46" r="8" fill="white" opacity=".4"/></g>`},
+  ],
+
+  Driftail:[
+    {id:'dragon_crown',label:'Dragon Crown',
+     preview:`<path d="M 10 40 L 6 18 L 18 28 L 30 10 L 42 28 L 54 18 L 50 40 Z" fill="#ddaa00" stroke="#aa7700" stroke-width="1.5"/><path d="M 13 40 L 9 21 L 20 30 L 30 13 L 40 30 L 51 21 L 47 40 Z" fill="#ffe040"/><circle cx="30" cy="12" r="8" fill="#ff5252"/><circle cx="18" cy="29" r="5" fill="#4dcf8a"/><circle cx="42" cy="29" r="5" fill="#9b5fd4"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_dragon_crown"><path d="M 88 68 L 84 44 L 96 56 L 120 38 L 144 56 L 156 44 L 152 68 Z" fill="#ddaa00" stroke="#aa7700" stroke-width="1.5"/><path d="M 92 68 L 88 48 L 98 58 L 120 42 L 142 58 L 152 48 L 148 68 Z" fill="#ffe040"/><circle cx="120" cy="42" r="8" fill="#ff5252"/><circle cx="96" cy="58" r="5" fill="#4dcf8a"/><circle cx="144" cy="58" r="5" fill="#9b5fd4"/></g>`},
+    {id:'gem_collar',label:'Gem Collar',
+     preview:`<path d="M 6 28 Q 30 40 54 28" fill="none" stroke="#4488bb" stroke-width="6" stroke-linecap="round"/><path d="M 6 28 Q 30 40 54 28" fill="none" stroke="#88ccff" stroke-width="3" stroke-linecap="round"/><polygon points="30,38 26,50 30,56 34,50" fill="#88ccff"/><circle cx="14" cy="35" r="5" fill="#b3e0ff"/><circle cx="46" cy="35" r="5" fill="#b3e0ff"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_gem_collar"><path d="M 76 200 Q 120 214 164 200" fill="none" stroke="#4488bb" stroke-width="5" stroke-linecap="round"/><path d="M 76 200 Q 120 214 164 200" fill="none" stroke="#88ccff" stroke-width="2.5" stroke-linecap="round"/><polygon points="120,208 115,222 120,228 125,222" fill="#88ccff" stroke="#4488bb" stroke-width="1"/><circle cx="96" cy="207" r="5" fill="#b3e0ff"/><circle cx="144" cy="207" r="5" fill="#b3e0ff"/></g>`},
+    {id:'fire_crown',label:'Fire Crown',
+     preview:`<path d="M 14 40 Q 10 22 18 10 Q 22 20 20 36" fill="#ff6600"/><path d="M 20 38 Q 18 18 28 8 Q 32 20 30 36" fill="#ff4400"/><path d="M 30 36 Q 30 14 40 6 Q 44 18 42 36" fill="#ffaa00"/><path d="M 40 38 Q 40 18 46 10 Q 50 22 48 38" fill="#ff6600"/><path d="M 22 38 Q 28 18 36 8 Q 40 20 36 36" fill="#ffdd00" opacity=".6"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_fire_crown"><path d="M 96 72 Q 92 52 100 40 Q 106 52 104 68" fill="#ff6600"/><path d="M 100 40 Q 108 28 116 40 Q 118 54 114 68" fill="#ff4400"/><path d="M 114 68 Q 120 50 128 40 Q 132 52 130 70" fill="#ffaa00"/><path d="M 98 70 Q 104 44 114 36 Q 122 46 116 68" fill="#ffdd00" opacity=".7"/></g>`},
+    {id:'scale_armor',label:'Scale Armor',
+     preview:`<path d="M 8 22 Q 30 32 52 22 Q 52 44 30 48 Q 8 44 8 22 Z" fill="#4488bb" stroke="#2266aa" stroke-width="1.5"/><path d="M 10 32 Q 30 40 50 32" fill="none" stroke="#2266aa" stroke-width="1.5" opacity=".5"/><path d="M 12 42 Q 30 48 48 42" fill="none" stroke="#2266aa" stroke-width="1.2" opacity=".4"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_scale_armor"><path d="M 82 178 Q 120 192 158 178 Q 158 215 120 222 Q 82 215 82 178 Z" fill="#4488bb" stroke="#2266aa" stroke-width="1.5"/><path d="M 84 188 Q 120 200 156 188" fill="none" stroke="#2266aa" stroke-width="1.5" opacity=".5"/><path d="M 86 202 Q 120 214 154 202" fill="none" stroke="#2266aa" stroke-width="1.5" opacity=".4"/></g>`},
+    {id:'wing_bands',label:'Wing Bands',
+     preview:`<ellipse cx="16" cy="30" rx="12" ry="7" fill="none" stroke="#ffe040" stroke-width="3"/><ellipse cx="16" cy="30" rx="12" ry="7" fill="none" stroke="#ffee88" stroke-width="1.5" opacity=".6"/><ellipse cx="44" cy="30" rx="12" ry="7" fill="none" stroke="#ffe040" stroke-width="3"/><ellipse cx="44" cy="30" rx="12" ry="7" fill="none" stroke="#ffee88" stroke-width="1.5" opacity=".6"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_wing_bands"><ellipse cx="52" cy="130" rx="14" ry="8" fill="none" stroke="#ffe040" stroke-width="3" transform="rotate(-30,52,130)"/><ellipse cx="52" cy="130" rx="14" ry="8" fill="none" stroke="#ffee88" stroke-width="1.5" opacity=".6" transform="rotate(-30,52,130)"/><ellipse cx="188" cy="130" rx="14" ry="8" fill="none" stroke="#ffe040" stroke-width="3" transform="rotate(30,188,130)"/><ellipse cx="188" cy="130" rx="14" ry="8" fill="none" stroke="#ffee88" stroke-width="1.5" opacity=".6" transform="rotate(30,188,130)"/></g>`},
+    {id:'horn_rings',label:'Horn Rings',
+     preview:`<line x1="18" y1="8" x2="18" y2="52" stroke="#5a7a9a" stroke-width="5" stroke-linecap="round"/><ellipse cx="18" cy="18" rx="10" ry="3.5" fill="none" stroke="#ffe040" stroke-width="2.5"/><ellipse cx="18" cy="30" rx="8" ry="3" fill="none" stroke="#ff5252" stroke-width="2"/><ellipse cx="18" cy="42" rx="5" ry="2.5" fill="none" stroke="#4dcf8a" stroke-width="2"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_horn_rings"><ellipse cx="100" cy="53" rx="12" ry="4" fill="none" stroke="#ffe040" stroke-width="2.5"/><ellipse cx="100" cy="62" rx="9" ry="3.5" fill="none" stroke="#ff5252" stroke-width="2"/><ellipse cx="100" cy="70" rx="6" ry="3" fill="none" stroke="#4dcf8a" stroke-width="2"/><ellipse cx="132" cy="53" rx="12" ry="4" fill="none" stroke="#ffe040" stroke-width="2.5"/><ellipse cx="132" cy="62" rx="9" ry="3.5" fill="none" stroke="#ff5252" stroke-width="2"/></g>`},
+    {id:'lava_crown',label:'Lava Crown',
+     preview:`<path d="M 6 40 L 4 22 L 14 30 L 30 12 L 46 30 L 56 22 L 54 40 Z" fill="#cc3300" stroke="#aa2200" stroke-width="1.5"/><path d="M 8 40 L 7 24 L 16 32 L 30 15 L 44 32 L 53 24 L 52 40 Z" fill="#ff6600"/><circle cx="30" cy="14" r="7" fill="#ffaa00"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_lava_crown"><path d="M 86 70 L 82 46 L 96 58 L 120 38 L 144 58 L 158 46 L 154 70 Z" fill="#cc3300" stroke="#aa2200" stroke-width="1.5"/><path d="M 90 70 L 86 50 L 98 60 L 120 42 L 142 60 L 154 50 L 150 70 Z" fill="#ff6600"/><circle cx="120" cy="40" r="9" fill="#ffaa00"/></g>`},
+    {id:'treasure_pile',label:'Gold Pile',
+     preview:`<circle cx="20" cy="44" r="8" fill="#ffe040" stroke="#ddaa00" stroke-width="1"/><circle cx="32" cy="42" r="9" fill="#ffe040" stroke="#ddaa00" stroke-width="1"/><circle cx="12" cy="42" r="7" fill="#ddaa00"/><circle cx="42" cy="44" r="7" fill="#ddaa00"/><polygon points="32,30 27,40 37,40" fill="#ff5252" stroke="#cc2222" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_treasure_pile"><circle cx="105" cy="252" r="10" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><circle cx="122" cy="250" r="12" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><circle cx="92" cy="252" r="9" fill="#ddaa00"/><circle cx="136" cy="253" r="9" fill="#ddaa00"/><polygon points="122,238 116,248 128,248" fill="#ff5252" stroke="#cc2222" stroke-width="1"/></g>`},
+    {id:'crystal_spikes',label:'Crystal Spikes',
+     preview:`<polygon points="10" fill="#88ccff"/><polygon points="10,42 7,22 13,22" fill="#88ccff" stroke="#4488bb" stroke-width="1"/><polygon points="20,40 17,18 23,18" fill="#b3e0ff" stroke="#4488bb" stroke-width="1"/><polygon points="30,38 27,14 33,14" fill="#88ccff" stroke="#4488bb" stroke-width="1"/><polygon points="40,40 37,18 43,18" fill="#b3e0ff" stroke="#4488bb" stroke-width="1"/><polygon points="50,42 47,22 53,22" fill="#88ccff" stroke="#4488bb" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_crystal_spikes"><polygon points="86,72 80,48 92,48" fill="#88ccff" stroke="#4488bb" stroke-width="1.5"/><polygon points="100,68 94,42 106,42" fill="#b3e0ff" stroke="#4488bb" stroke-width="1.5"/><polygon points="120,65 114,38 126,38" fill="#88ccff" stroke="#4488bb" stroke-width="1.5"/><polygon points="140,68 134,42 146,42" fill="#b3e0ff" stroke="#4488bb" stroke-width="1.5"/><polygon points="154,72 148,48 160,48" fill="#88ccff" stroke="#4488bb" stroke-width="1.5"/></g>`},
+    {id:'battle_paint',label:'War Paint',
+     preview:`<line x1="14" y1="14" x2="22" y2="42" stroke="#ff4400" stroke-width="3" stroke-linecap="round" opacity=".75"/><line x1="18" y1="12" x2="24" y2="40" stroke="#ff6600" stroke-width="1.5" stroke-linecap="round" opacity=".5"/><line x1="36" y1="14" x2="44" y2="42" stroke="#ff4400" stroke-width="3" stroke-linecap="round" opacity=".75"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_battle_paint" opacity=".8"><line x1="105" y1="108" x2="115" y2="148" stroke="#ff4400" stroke-width="3" stroke-linecap="round"/><line x1="110" y1="106" x2="118" y2="146" stroke="#ff6600" stroke-width="1.8" stroke-linecap="round" opacity=".6"/><line x1="130" y1="108" x2="138" y2="148" stroke="#ff4400" stroke-width="3" stroke-linecap="round"/></g>`},
+  ],
+
+  Lunabelle:[
+    {id:'grad_cap',label:'Grad Cap',
+     preview:`<rect x="16" y="30" width="28" height="12" rx="2" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/><polygon points="30,14 48,26 30,38 12,26" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/><polygon points="30,16 46,27 30,36 14,27" fill="#2a1a4e"/><line x1="46" y1="26" x2="54" y2="38" stroke="#ffe040" stroke-width="1.5"/><circle cx="54" cy="40" r="4" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_grad_cap"><rect x="84" y="64" width="52" height="12" rx="3" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/><polygon points="110,48 140,60 110,72 80,60" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/><polygon points="110,50 138,61 110,70 82,61" fill="#2a1a4e"/><line x1="138" y1="61" x2="148" y2="74" stroke="#ffe040" stroke-width="2"/><circle cx="148" cy="76" r="5" fill="#ffe040"/></g>`},
+    {id:'moon_pendant',label:'Moon Pendant',
+     preview:`<path d="M 8 28 Q 30 38 52 28" fill="none" stroke="#cdb3ff" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="34" x2="30" y2="46" stroke="#cdb3ff" stroke-width="2"/><path d="M 23 52 Q 19 42 23 36 Q 34 36 36 44 Q 32 54 23 52 Z" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_moon_pendant"><path d="M 78 188 Q 110 200 142 188" fill="none" stroke="#cdb3ff" stroke-width="2.5" stroke-linecap="round"/><line x1="110" y1="196" x2="110" y2="210" stroke="#cdb3ff" stroke-width="2"/><path d="M 104 218 Q 100 210 104 204 Q 114 204 116 212 Q 112 220 104 218 Z" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/></g>`},
+    {id:'star_glasses',label:'Star Glasses',
+     preview:`<polygon points="15,26 18,14 21,26 10,20 26,20" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><polygon points="45,26 48,14 51,26 40,20 56,20" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><line x1="26" y1="20" x2="40" y2="20" stroke="#cdb3ff" stroke-width="2"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_star_glasses"><polygon points="88,126 92,114 96,126 84,118 100,118" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><polygon points="132,126 136,114 140,126 128,118 144,118" fill="#ffe040" stroke="#ccaa00" stroke-width="1"/><line x1="100" y1="120" x2="128" y2="120" stroke="#cdb3ff" stroke-width="2"/></g>`},
+    {id:'star_crown',label:'Star Crown',
+     preview:`<path d="M 6 38 L 4 20 L 16 28 L 30 10 L 44 28 L 56 20 L 54 38 Z" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/><circle cx="30" cy="11" r="6" fill="#ffe040"/><circle cx="14" cy="27" r="4" fill="#cdb3ff"/><circle cx="46" cy="27" r="4" fill="#cdb3ff"/><ellipse cx="30" cy="38" rx="24" ry="6" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_star_crown"><path d="M 76 80 L 70 55 L 88 68 L 110 45 L 132 68 L 150 55 L 144 80 Z" fill="#1a0a2e" stroke="#ffe040" stroke-width="2"/><circle cx="110" cy="47" r="9" fill="#ffe040"/><circle cx="86" cy="68" r="6" fill="#cdb3ff"/><circle cx="134" cy="68" r="6" fill="#cdb3ff"/><ellipse cx="110" cy="80" rx="36" ry="7" fill="#1a0a2e" stroke="#ffe040" stroke-width="1.5"/></g>`},
+    {id:'book_satchel',label:'Book Bag',
+     preview:`<rect x="10" y="16" width="30" height="38" rx="3" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><rect x="12" y="20" width="26" height="16" rx="2" fill="#cc9944"/><line x1="12" y1="28" x2="38" y2="28" stroke="#8B5E3C" stroke-width="1"/><circle cx="25" cy="42" r="4" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_book_satchel"><rect x="148" y="188" width="32" height="42" rx="4" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><path d="M 150 188 Q 164 180 178 188" fill="none" stroke="#8B5E3C" stroke-width="2"/><rect x="151" y="194" width="28" height="18" rx="2" fill="#cc9944"/><line x1="151" y1="204" x2="179" y2="204" stroke="#8B5E3C" stroke-width="1"/><circle cx="164" cy="216" r="4" fill="#ffe040"/></g>`},
+    {id:'halo_ring',label:'Halo',
+     preview:`<ellipse cx="30" cy="16" rx="24" ry="8" fill="none" stroke="#ffe040" stroke-width="4"/><ellipse cx="30" cy="16" rx="24" ry="8" fill="none" stroke="#ffee88" stroke-width="2" opacity=".6"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_halo_ring"><ellipse cx="110" cy="46" rx="38" ry="11" fill="none" stroke="#ffe040" stroke-width="4.5"/><ellipse cx="110" cy="46" rx="38" ry="11" fill="none" stroke="#ffee88" stroke-width="2" opacity=".6"/></g>`},
+    {id:'feather_wings',label:'Feather Wings',
+     preview:`<path d="M 30 28 Q 6 18 4 28 Q 6 42 30 38 Z" fill="rgba(200,180,255,.55)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 30 28 Q 54 18 56 28 Q 54 42 30 38 Z" fill="rgba(200,180,255,.55)" stroke="#9b5fd4" stroke-width="1.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_feather_wings"><path d="M 110 200 Q 68 172 62 194 Q 68 220 110 212 Z" fill="rgba(200,180,255,.5)" stroke="#9b5fd4" stroke-width="1.5"/><path d="M 110 200 Q 152 172 158 194 Q 152 220 110 212 Z" fill="rgba(200,180,255,.5)" stroke="#9b5fd4" stroke-width="1.5"/></g>`},
+    {id:'telescope',label:'Telescope',
+     preview:`<rect x="8" y="24" width="32" height="12" rx="3" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5"/><rect x="36" y="26" width="16" height="9" rx="2" fill="#aaa" stroke="#888" stroke-width="1"/><circle cx="10" cy="30" r="8" fill="rgba(100,180,255,.35)" stroke="#4488bb" stroke-width="1.5"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_telescope"><rect x="112" y="192" width="50" height="14" rx="4" fill="#8B5E3C" stroke="#6a4420" stroke-width="1.5" transform="rotate(-25,137,199)"/><rect x="156" y="190" width="20" height="10" rx="3" fill="#aaa" stroke="#888" stroke-width="1" transform="rotate(-25,166,195)"/><circle cx="118" cy="204" r="10" fill="rgba(100,180,255,.3)" stroke="#4488bb" stroke-width="2" transform="rotate(-25,118,204)"/></g>`},
+    {id:'star_scarf',label:'Star Scarf',
+     preview:`<path d="M 4 22 Q 30 34 56 22 Q 52 34 30 44 Q 8 34 4 22 Z" fill="#1a0a2e" stroke="#cdb3ff" stroke-width="1"/><polygon points="16,27 14,20 18,20" fill="#ffe040"/><polygon points="28,25 26,18 30,18" fill="#cdb3ff"/><polygon points="40,25 38,18 42,18" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_star_scarf"><path d="M 65 185 Q 110 198 155 185 Q 150 196 110 206 Q 70 196 65 185 Z" fill="#1a0a2e" stroke="#cdb3ff" stroke-width="1"/><polygon points="82,190 79,182 86,182" fill="#ffe040"/><polygon points="98,188 95,180 102,180" fill="#cdb3ff"/><polygon points="116,188 113,180 120,180" fill="#ffe040"/><polygon points="132,190 129,182 136,182" fill="#cdb3ff"/></g>`},
+    {id:'night_cape',label:'Night Cape',
+     preview:`<path d="M 2 16 Q 0 34 6 50 Q 18 44 22 28 Q 14 36 2 16 Z" fill="#1a0a2e" stroke="#cdb3ff" stroke-width="1.5"/><circle cx="6" cy="24" r="3" fill="#ffe040"/><circle cx="12" cy="32" r="2.5" fill="#cdb3ff"/><circle cx="7" cy="42" r="2.5" fill="#ffe040"/>`,
+     svg:(c)=>`<g class="acc-item" id="acc_night_cape"><path d="M 52 178 Q 42 206 50 234 Q 72 224 80 198 Q 74 188 52 178 Z" fill="#1a0a2e" stroke="#cdb3ff" stroke-width="1.5"/><circle cx="58" cy="190" r="3.5" fill="#ffe040"/><circle cx="62" cy="205" r="3" fill="#cdb3ff"/><circle cx="58" cy="220" r="3" fill="#ffe040"/></g>`},
+  ],
+
+};
+
+// ═══════════════════════════════════════════
+//  SVG CREATURE BUILDERS
+//  Geometric style, enhanced with gradients & detail
+// ═══════════════════════════════════════════
+
+function svg(w,h,c){return`<svg id="cSvg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" overflow="visible" style="width:100%;height:100%">${c}</svg>`}
+
+function buildFluffkin(c='#ffb3d9'){
+  return svg(200,230,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#ffeef8"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#d9608a"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#fff6fc"/><stop offset="100%" stop-color="#ffd6ee"/></radialGradient>
+  <radialGradient id="earIn" cx="50%" cy="55%" r="50%"><stop offset="0%" stop-color="#ffb8d8"/><stop offset="100%" stop-color="#ff7ab0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(180,60,110,.3)"/></filter>
+</defs>
+<ellipse cx="100" cy="225" rx="58" ry="9" fill="rgba(0,0,0,.14)"/>
+<g id="tail" style="transform-origin:38px 192px">
+  <ellipse cx="28" cy="200" rx="26" ry="18" fill="#d9608a" transform="rotate(-18,28,200)"/>
+  <ellipse cx="24" cy="196" rx="20" ry="14" fill="${c}" transform="rotate(-18,24,196)"/>
+  <ellipse cx="20" cy="192" rx="14" ry="10" fill="#ffd6ee" transform="rotate(-18,20,192)"/>
+  <ellipse cx="13" cy="187" rx="10" ry="8" fill="#fff0f8" transform="rotate(-15,13,187)"/>
+</g>
+<g id="bodyGroup" style="transform-origin:100px 182px">
+  <ellipse cx="100" cy="178" rx="68" ry="62" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="100" cy="188" rx="42" ry="36" fill="url(#bg2)"/>
+  <ellipse cx="78" cy="152" rx="16" ry="9" fill="rgba(255,255,255,.32)" transform="rotate(-25,78,152)"/>
+  <ellipse cx="120" cy="145" rx="8" ry="5" fill="rgba(255,255,255,.18)" transform="rotate(15,120,145)"/>
+</g>
+<g id="earL" style="transform-origin:62px 72px">
+  <ellipse cx="62" cy="52" rx="18" ry="44" fill="${c}" stroke="rgba(180,60,110,.35)" stroke-width="1.5"/>
+  <ellipse cx="62" cy="56" rx="11" ry="32" fill="url(#earIn)"/>
+  <ellipse cx="62" cy="55" rx="7" ry="22" fill="rgba(255,220,240,.5)"/>
+</g>
+<g id="earR" style="transform-origin:138px 72px">
+  <ellipse cx="138" cy="52" rx="18" ry="44" fill="${c}" stroke="rgba(180,60,110,.35)" stroke-width="1.5"/>
+  <ellipse cx="138" cy="56" rx="11" ry="32" fill="url(#earIn)"/>
+  <ellipse cx="138" cy="55" rx="7" ry="22" fill="rgba(255,220,240,.5)"/>
+</g>
+<ellipse cx="100" cy="120" rx="56" ry="52" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="80" cy="100" rx="14" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-22,80,100)"/>
+<g id="eyeL" style="transform-origin:82px 116px">
+  <ellipse cx="82" cy="116" rx="13" ry="15" fill="white" stroke="rgba(80,0,40,.2)" stroke-width="1"/>
+  <ellipse cx="82" cy="118" rx="8.5" ry="10.5" fill="#2a1040"/>
+  <ellipse cx="82" cy="117" rx="5.5" ry="7.5" fill="#5533aa"/>
+  <circle cx="82" cy="118" r="4" fill="#111"/>
+  <circle cx="87" cy="112" r="3.2" fill="white"/>
+  <circle cx="79" cy="122" r="1.8" fill="rgba(255,255,255,.65)"/>
+  <ellipse id="lidL" cx="82" cy="103" rx="13" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 70 108 Q 82 103 94 108" fill="none" stroke="rgba(80,0,40,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:118px 116px">
+  <ellipse cx="118" cy="116" rx="13" ry="15" fill="white" stroke="rgba(80,0,40,.2)" stroke-width="1"/>
+  <ellipse cx="118" cy="118" rx="8.5" ry="10.5" fill="#2a1040"/>
+  <ellipse cx="118" cy="117" rx="5.5" ry="7.5" fill="#5533aa"/>
+  <circle cx="118" cy="118" r="4" fill="#111"/>
+  <circle cx="123" cy="112" r="3.2" fill="white"/>
+  <circle cx="115" cy="122" r="1.8" fill="rgba(255,255,255,.65)"/>
+  <ellipse id="lidR" cx="118" cy="103" rx="13" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 106 108 Q 118 103 130 108" fill="none" stroke="rgba(80,0,40,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="100" cy="133" rx="8" ry="6" fill="#e05878" stroke="rgba(180,40,80,.4)" stroke-width="1"/>
+<ellipse cx="98" cy="131" rx="3" ry="2" fill="rgba(255,255,255,.55)"/>
+<g id="mouth">
+  <path id="mn" d="M 91 141 Q 96 147 100 145 Q 104 147 109 141" stroke="rgba(160,40,80,.7)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none">
+    <path d="M 89 140 Q 100 158 111 140 Q 106 152 100 154 Q 94 152 89 140 Z" fill="#e05878"/>
+    <ellipse cx="100" cy="149" rx="8" ry="5" fill="#b03060"/>
+    <rect x="93" y="140" width="5" height="4.5" rx="1.5" fill="white"/>
+    <rect x="102" y="140" width="5" height="4.5" rx="1.5" fill="white"/>
+  </g>
+</g>
+<ellipse cx="70" cy="136" rx="13" ry="8" fill="rgba(255,140,170,.4)"/>
+<ellipse cx="130" cy="136" rx="13" ry="8" fill="rgba(255,140,170,.4)"/>
+<line x1="88" y1="130" x2="52" y2="124" stroke="rgba(180,80,130,.4)" stroke-width="1.5"/>
+<line x1="88" y1="136" x2="50" y2="136" stroke="rgba(180,80,130,.4)" stroke-width="1.5"/>
+<line x1="112" y1="130" x2="148" y2="124" stroke="rgba(180,80,130,.4)" stroke-width="1.5"/>
+<line x1="112" y1="136" x2="150" y2="136" stroke="rgba(180,80,130,.4)" stroke-width="1.5"/>
+<g id="paws">
+  <ellipse cx="72" cy="218" rx="21" ry="13" fill="url(#bg1)"/>
+  <ellipse cx="128" cy="218" rx="21" ry="13" fill="url(#bg1)"/>
+  <circle cx="65" cy="222" r="4" fill="#ffd6ee"/><circle cx="73" cy="225" r="4" fill="#ffd6ee"/><circle cx="81" cy="222" r="3.5" fill="#ffd6ee"/>
+  <circle cx="121" cy="222" r="4" fill="#ffd6ee"/><circle cx="129" cy="225" r="4" fill="#ffd6ee"/><circle cx="137" cy="222" r="3.5" fill="#ffd6ee"/>
+</g>
+<g id="heartEyes" style="display:none">
+  <ellipse cx="82" cy="116" rx="13" ry="15" fill="#ff5090"/>
+  <text x="82" y="122" font-size="14" text-anchor="middle" fill="white">♥</text>
+  <ellipse cx="118" cy="116" rx="13" ry="15" fill="#ff5090"/>
+  <text x="118" y="122" font-size="14" text-anchor="middle" fill="white">♥</text>
+</g>`);
+}
+
+function buildSparklox(c='#ffe066'){
+  return svg(220,250,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#fff8d0"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc9900"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fff8e8"/><stop offset="100%" stop-color="#ffe8a0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(160,120,0,.25)"/></filter>
+</defs>
+<ellipse cx="110" cy="244" rx="62" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="tail" style="transform-origin:52px 198px">
+  <ellipse cx="32" cy="208" rx="36" ry="26" fill="#cc9900" transform="rotate(-22,32,208)"/>
+  <ellipse cx="28" cy="204" rx="29" ry="21" fill="${c}" transform="rotate(-22,28,204)"/>
+  <ellipse cx="24" cy="200" rx="21" ry="15" fill="#fff8d0" transform="rotate(-22,24,200)"/>
+  <ellipse cx="16" cy="194" rx="16" ry="12" fill="white" transform="rotate(-25,16,194)"/>
+  <ellipse cx="12" cy="191" rx="10" ry="8" fill="#fffff8" transform="rotate(-25,12,191)"/>
+</g>
+<g id="bodyGroup" style="transform-origin:110px 190px">
+  <ellipse cx="110" cy="186" rx="65" ry="60" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="110" cy="198" rx="38" ry="32" fill="url(#bg2)"/>
+  <ellipse cx="88" cy="158" rx="16" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-25,88,158)"/>
+</g>
+<g id="earL" style="transform-origin:76px 88px">
+  <polygon points="60,112 76,52 92,112" fill="${c}" stroke="rgba(160,120,0,.3)" stroke-width="1.5"/>
+  <polygon points="66,106 76,60 87,106" fill="#ff8844"/>
+  <polygon points="70,104 76,68 82,104" fill="rgba(255,180,100,.6)"/>
+</g>
+<g id="earR" style="transform-origin:144px 88px">
+  <polygon points="128,112 144,52 160,112" fill="${c}" stroke="rgba(160,120,0,.3)" stroke-width="1.5"/>
+  <polygon points="133,106 144,60 154,106" fill="#ff8844"/>
+  <polygon points="137,104 144,68 150,104" fill="rgba(255,180,100,.6)"/>
+</g>
+<ellipse cx="110" cy="138" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="110" cy="152" rx="32" ry="24" fill="url(#bg2)"/>
+<ellipse cx="88" cy="115" rx="14" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-22,88,115)"/>
+<g id="eyeL" style="transform-origin:90px 130px">
+  <ellipse cx="90" cy="130" rx="12" ry="14" fill="white" stroke="rgba(100,70,0,.2)" stroke-width="1"/>
+  <ellipse cx="90" cy="132" rx="8" ry="10" fill="#3a2000"/>
+  <ellipse cx="90" cy="131" rx="5" ry="7" fill="#6a4000"/>
+  <circle cx="90" cy="132" r="3.5" fill="#111"/>
+  <circle cx="95" cy="126" r="3" fill="white"/>
+  <circle cx="87" cy="136" r="1.6" fill="rgba(255,255,255,.6)"/>
+  <ellipse id="lidL" cx="90" cy="118" rx="12" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 79 122 Q 90 117 101 122" fill="none" stroke="rgba(100,70,0,.45)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:130px 130px">
+  <ellipse cx="130" cy="130" rx="12" ry="14" fill="white" stroke="rgba(100,70,0,.2)" stroke-width="1"/>
+  <ellipse cx="130" cy="132" rx="8" ry="10" fill="#3a2000"/>
+  <ellipse cx="130" cy="131" rx="5" ry="7" fill="#6a4000"/>
+  <circle cx="130" cy="132" r="3.5" fill="#111"/>
+  <circle cx="135" cy="126" r="3" fill="white"/>
+  <circle cx="127" cy="136" r="1.6" fill="rgba(255,255,255,.6)"/>
+  <ellipse id="lidR" cx="130" cy="118" rx="12" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 119 122 Q 130 117 141 122" fill="none" stroke="rgba(100,70,0,.45)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<path d="M 102 152 L 118 152 L 110 161 Z" fill="#222" stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="106" cy="153" r="2.5" fill="rgba(255,255,255,.4)"/>
+<g id="mouth">
+  <path id="mn" d="M 110 161 Q 103 168 98 165 M 110 161 Q 117 168 122 165" stroke="rgba(80,50,0,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none">
+    <path d="M 96 160 Q 110 180 124 160 Q 118 174 110 176 Q 102 174 96 160 Z" fill="#cc6633"/>
+    <ellipse cx="110" cy="170" rx="10" ry="6" fill="#aa4422"/>
+  </g>
+</g>
+<ellipse cx="74" cy="148" rx="13" ry="8" fill="rgba(255,140,60,.35)"/>
+<ellipse cx="146" cy="148" rx="13" ry="8" fill="rgba(255,140,60,.35)"/>
+<line x1="100" y1="146" x2="64" y2="139" stroke="rgba(150,110,0,.4)" stroke-width="1.5"/>
+<line x1="100" y1="153" x2="62" y2="153" stroke="rgba(150,110,0,.4)" stroke-width="1.5"/>
+<line x1="120" y1="146" x2="156" y2="139" stroke="rgba(150,110,0,.4)" stroke-width="1.5"/>
+<line x1="120" y1="153" x2="158" y2="153" stroke="rgba(150,110,0,.4)" stroke-width="1.5"/>
+<ellipse cx="80" cy="232" rx="23" ry="14" fill="url(#bg1)"/>
+<ellipse cx="140" cy="232" rx="23" ry="14" fill="url(#bg1)"/>
+<g id="heartEyes" style="display:none">
+  <ellipse cx="90" cy="130" rx="12" ry="14" fill="#ff9900"/>
+  <text x="90" y="136" font-size="13" text-anchor="middle" fill="white">♥</text>
+  <ellipse cx="130" cy="130" rx="12" ry="14" fill="#ff9900"/>
+  <text x="130" y="136" font-size="13" text-anchor="middle" fill="white">♥</text>
+</g>`);
+}
+
+function buildPuddlum(c='#a0d8ff'){
+  return svg(230,210,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#dff5ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#4a9acc"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="42%" r="52%"><stop offset="0%" stop-color="#f0faff"/><stop offset="100%" stop-color="#b8e8ff"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(0,80,180,.22)"/></filter>
+</defs>
+<ellipse cx="115" cy="204" rx="72" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="bodyGroup" style="transform-origin:115px 148px">
+  <ellipse cx="115" cy="144" rx="82" ry="68" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="115" cy="156" rx="52" ry="44" fill="url(#bg2)"/>
+  <circle cx="96" cy="135" r="9" fill="rgba(180,230,255,.38)"/>
+  <circle cx="118" cy="155" r="7" fill="rgba(180,230,255,.32)"/>
+  <circle cx="132" cy="132" r="8" fill="rgba(180,230,255,.35)"/>
+  <ellipse cx="86" cy="110" rx="20" ry="11" fill="rgba(255,255,255,.34)" transform="rotate(-22,86,110)"/>
+</g>
+<g id="flipL" style="transform-origin:24px 158px">
+  <ellipse cx="22" cy="160" rx="26" ry="14" fill="${c}" stroke="rgba(0,80,160,.2)" stroke-width="1.5" transform="rotate(28,22,160)"/>
+  <ellipse cx="18" cy="165" rx="17" ry="9" fill="#c0e8ff" transform="rotate(28,18,165)"/>
+</g>
+<g id="flipR" style="transform-origin:206px 158px">
+  <ellipse cx="208" cy="160" rx="26" ry="14" fill="${c}" stroke="rgba(0,80,160,.2)" stroke-width="1.5" transform="rotate(-28,208,160)"/>
+  <ellipse cx="212" cy="165" rx="17" ry="9" fill="#c0e8ff" transform="rotate(-28,212,165)"/>
+</g>
+<g id="tailFlip" style="transform-origin:115px 202px">
+  <ellipse cx="88" cy="200" rx="28" ry="15" fill="${c}" stroke="rgba(0,80,160,.15)" stroke-width="1.5" transform="rotate(-16,88,200)"/>
+  <ellipse cx="142" cy="200" rx="28" ry="15" fill="${c}" stroke="rgba(0,80,160,.15)" stroke-width="1.5" transform="rotate(16,142,200)"/>
+  <ellipse cx="88" cy="202" rx="18" ry="9" fill="#c0e8ff" transform="rotate(-16,88,202)"/>
+  <ellipse cx="142" cy="202" rx="18" ry="9" fill="#c0e8ff" transform="rotate(16,142,202)"/>
+</g>
+<ellipse cx="115" cy="82" rx="54" ry="50" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="92" cy="60" rx="16" ry="9" fill="rgba(255,255,255,.34)" transform="rotate(-22,92,60)"/>
+<g id="eyeL" style="transform-origin:94px 80px">
+  <ellipse cx="94" cy="80" rx="16" ry="18" fill="white" stroke="rgba(0,60,140,.15)" stroke-width="1"/>
+  <ellipse cx="94" cy="82" rx="11" ry="13" fill="#1a2a5a"/>
+  <ellipse cx="94" cy="81" rx="7" ry="9.5" fill="#2244aa"/>
+  <circle cx="94" cy="82" r="5" fill="#0a0a2a"/>
+  <circle cx="101" cy="74" r="4.5" fill="white"/>
+  <circle cx="89" cy="87" r="2.5" fill="rgba(255,255,255,.65)"/>
+  <circle cx="100" cy="87" r="1.8" fill="rgba(255,255,255,.45)"/>
+  <ellipse id="lidL" cx="94" cy="64" rx="16" ry="3.5" fill="${c}" style="display:none"/>
+  <path d="M 79 70 Q 94 63 109 70" fill="none" stroke="rgba(0,40,120,.4)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:136px 80px">
+  <ellipse cx="136" cy="80" rx="16" ry="18" fill="white" stroke="rgba(0,60,140,.15)" stroke-width="1"/>
+  <ellipse cx="136" cy="82" rx="11" ry="13" fill="#1a2a5a"/>
+  <ellipse cx="136" cy="81" rx="7" ry="9.5" fill="#2244aa"/>
+  <circle cx="136" cy="82" r="5" fill="#0a0a2a"/>
+  <circle cx="143" cy="74" r="4.5" fill="white"/>
+  <circle cx="131" cy="87" r="2.5" fill="rgba(255,255,255,.65)"/>
+  <circle cx="142" cy="87" r="1.8" fill="rgba(255,255,255,.45)"/>
+  <ellipse id="lidR" cx="136" cy="64" rx="16" ry="3.5" fill="${c}" style="display:none"/>
+  <path d="M 121 70 Q 136 63 151 70" fill="none" stroke="rgba(0,40,120,.4)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<ellipse cx="115" cy="104" rx="11" ry="8" fill="#111" stroke="rgba(0,0,0,.3)" stroke-width="1"/>
+<circle cx="111" cy="101" r="3.5" fill="rgba(255,255,255,.45)"/>
+<g id="mouth">
+  <path id="mn" d="M 104 114 Q 110 122 115 120 Q 120 122 126 114" stroke="rgba(0,40,120,.5)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none">
+    <path d="M 102 113 Q 115 132 128 113 Q 122 127 115 129 Q 108 127 102 113 Z" fill="#5590cc"/>
+    <ellipse cx="115" cy="122" rx="10" ry="6" fill="#3368aa"/>
+  </g>
+</g>
+<ellipse cx="76" cy="102" rx="15" ry="9" fill="rgba(100,190,255,.38)"/>
+<ellipse cx="154" cy="102" rx="15" ry="9" fill="rgba(100,190,255,.38)"/>
+<line x1="104" y1="98" x2="68" y2="91" stroke="rgba(0,60,150,.32)" stroke-width="1.5"/>
+<line x1="104" y1="106" x2="66" y2="106" stroke="rgba(0,60,150,.32)" stroke-width="1.5"/>
+<line x1="126" y1="98" x2="162" y2="91" stroke="rgba(0,60,150,.32)" stroke-width="1.5"/>
+<line x1="126" y1="106" x2="164" y2="106" stroke="rgba(0,60,150,.32)" stroke-width="1.5"/>
+<g id="heartEyes" style="display:none">
+  <ellipse cx="94" cy="80" rx="16" ry="18" fill="#2288ff"/>
+  <text x="94" y="87" font-size="16" text-anchor="middle" fill="white">♥</text>
+  <ellipse cx="136" cy="80" rx="16" ry="18" fill="#2288ff"/>
+  <text x="136" y="87" font-size="16" text-anchor="middle" fill="white">♥</text>
+</g>`);
+}
+
+function buildDriftail(c='#b3e0ff'){
+  return svg(240,270,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#e0f4ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#4488bb"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fff8f0"/><stop offset="100%" stop-color="#ffd4a0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(0,60,160,.22)"/></filter>
+  <filter id="fg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="120" cy="264" rx="65" ry="9" fill="rgba(0,0,0,.14)"/>
+<g id="tail" style="transform-origin:120px 224px">
+  <path d="M 86 222 Q 62 242 54 264 Q 78 250 104 244 Q 112 242 120 238 Q 128 242 136 244 Q 162 250 186 264 Q 178 242 154 222 Q 138 212 120 210 Q 102 212 86 222 Z" fill="${c}" stroke="rgba(0,60,160,.2)" stroke-width="1.5"/>
+  <ellipse cx="58" cy="252" rx="16" ry="11" fill="#ff6600" transform="rotate(-20,58,252)" filter="url(#fg)"/>
+  <ellipse cx="62" cy="254" rx="10" ry="7" fill="#ffaa00" transform="rotate(-20,62,254)"/>
+  <ellipse cx="182" cy="252" rx="16" ry="11" fill="#ff6600" transform="rotate(20,182,252)" filter="url(#fg)"/>
+  <ellipse cx="178" cy="254" rx="10" ry="7" fill="#ffaa00" transform="rotate(20,178,254)"/>
+</g>
+<g id="wingL" style="transform-origin:42px 138px">
+  <path d="M 62 158 Q 18 128 10 92 Q 6 70 18 55 Q 32 44 46 58 Q 56 72 56 100 Q 44 76 52 64 Q 62 56 68 70 Q 76 90 68 130 Q 66 146 62 158 Z" fill="${c}" opacity=".9" stroke="rgba(0,60,160,.2)" stroke-width="1.5"/>
+  <path d="M 62 158 Q 22 124 16 90" fill="none" stroke="rgba(0,80,180,.25)" stroke-width="1.5"/>
+  <path d="M 62 150 Q 28 122 22 94" fill="none" stroke="rgba(0,80,180,.2)" stroke-width="1.2"/>
+</g>
+<g id="wingR" style="transform-origin:198px 138px">
+  <path d="M 178 158 Q 222 128 230 92 Q 234 70 222 55 Q 208 44 194 58 Q 184 72 184 100 Q 196 76 188 64 Q 178 56 172 70 Q 164 90 172 130 Q 174 146 178 158 Z" fill="${c}" opacity=".9" stroke="rgba(0,60,160,.2)" stroke-width="1.5"/>
+  <path d="M 178 158 Q 218 124 224 90" fill="none" stroke="rgba(0,80,180,.25)" stroke-width="1.5"/>
+  <path d="M 178 150 Q 212 122 218 94" fill="none" stroke="rgba(0,80,180,.2)" stroke-width="1.2"/>
+</g>
+<g id="bodyGroup" style="transform-origin:120px 185px">
+  <ellipse cx="120" cy="182" rx="66" ry="62" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="120" cy="194" rx="40" ry="37" fill="url(#bg2)"/>
+  <path d="M 96 174 Q 120 178 144 174" fill="none" stroke="rgba(180,100,40,.3)" stroke-width="1.5"/>
+  <path d="M 92 190 Q 120 195 148 190" fill="none" stroke="rgba(180,100,40,.25)" stroke-width="1.5"/>
+  <path d="M 95 207 Q 120 213 145 207" fill="none" stroke="rgba(180,100,40,.22)" stroke-width="1.5"/>
+  <ellipse cx="96" cy="152" rx="18" ry="10" fill="rgba(255,255,255,.28)" transform="rotate(-25,96,152)"/>
+</g>
+<g id="horns">
+  <polygon points="100,72 92,44 110,72" fill="#5a7a9a"/>
+  <polygon points="102,70 94,48 108,70" fill="rgba(255,255,255,.22)"/>
+  <polygon points="140,72 130,44 150,72" fill="#5a7a9a"/>
+  <polygon points="142,70 132,48 148,70" fill="rgba(255,255,255,.22)"/>
+</g>
+<ellipse cx="120" cy="118" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<circle cx="100" cy="106" r="14" fill="rgba(0,60,160,.08)"/>
+<circle cx="140" cy="106" r="14" fill="rgba(0,60,160,.08)"/>
+<ellipse cx="96" cy="90" rx="16" ry="9" fill="rgba(255,255,255,.28)" transform="rotate(-22,96,90)"/>
+<g id="eyeL" style="transform-origin:96px 112px">
+  <ellipse cx="96" cy="112" rx="14" ry="16" fill="white" stroke="rgba(0,40,120,.2)" stroke-width="1"/>
+  <ellipse cx="96" cy="114" rx="9.5" ry="12" fill="#2a0000"/>
+  <ellipse cx="96" cy="113" rx="6.5" ry="9" fill="#cc2200"/>
+  <ellipse cx="96" cy="113" rx="2.5" ry="7" fill="#111"/>
+  <circle cx="103" cy="106" r="3.8" fill="rgba(255,255,255,.85)"/>
+  <circle cx="91" cy="119" r="2" fill="rgba(255,255,255,.5)"/>
+  <ellipse id="lidL" cx="96" cy="98" rx="14" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 83 102 Q 96 96 109 102" fill="none" stroke="rgba(0,40,120,.45)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:144px 112px">
+  <ellipse cx="144" cy="112" rx="14" ry="16" fill="white" stroke="rgba(0,40,120,.2)" stroke-width="1"/>
+  <ellipse cx="144" cy="114" rx="9.5" ry="12" fill="#2a0000"/>
+  <ellipse cx="144" cy="113" rx="6.5" ry="9" fill="#cc2200"/>
+  <ellipse cx="144" cy="113" rx="2.5" ry="7" fill="#111"/>
+  <circle cx="151" cy="106" r="3.8" fill="rgba(255,255,255,.85)"/>
+  <circle cx="139" cy="119" r="2" fill="rgba(255,255,255,.5)"/>
+  <ellipse id="lidR" cx="144" cy="98" rx="14" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 131 102 Q 144 96 157 102" fill="none" stroke="rgba(0,40,120,.45)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<ellipse cx="114" cy="134" rx="5" ry="3.5" fill="rgba(0,0,0,.3)" transform="rotate(-15,114,134)"/>
+<ellipse cx="126" cy="134" rx="5" ry="3.5" fill="rgba(0,0,0,.3)" transform="rotate(15,126,134)"/>
+<g id="mouth">
+  <path id="mn" d="M 108 144 Q 120 153 132 144" stroke="rgba(0,40,120,.55)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none">
+    <path d="M 106 143 Q 120 162 134 143 Q 128 157 120 159 Q 112 157 106 143 Z" fill="#dd4400"/>
+    <ellipse cx="120" cy="153" rx="10" ry="6" fill="#aa2200"/>
+    <rect x="112" y="143" width="6" height="5.5" rx="1.5" fill="white"/>
+    <rect x="122" y="143" width="6" height="5.5" rx="1.5" fill="white"/>
+    <ellipse cx="120" cy="170" rx="7" ry="14" fill="#ff6600" opacity=".7" filter="url(#fg)"/>
+    <ellipse cx="120" cy="175" rx="4" ry="9" fill="#ffaa00" opacity=".8"/>
+  </g>
+</g>
+<ellipse cx="80" cy="128" rx="14" ry="9" fill="rgba(100,160,255,.3)"/>
+<ellipse cx="160" cy="128" rx="14" ry="9" fill="rgba(100,160,255,.3)"/>
+<g id="heartEyes" style="display:none">
+  <ellipse cx="96" cy="112" rx="14" ry="16" fill="#ff4400"/>
+  <text x="96" y="118" font-size="15" text-anchor="middle" fill="white">♥</text>
+  <ellipse cx="144" cy="112" rx="14" ry="16" fill="#ff4400"/>
+  <text x="144" y="118" font-size="15" text-anchor="middle" fill="white">♥</text>
+</g>`);
+}
+
+function buildLunabelle(c='#cdb3ff'){
+  return svg(220,250,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#eee0ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#7744cc"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fff8f0"/><stop offset="100%" stop-color="#ffeedd"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(80,40,160,.22)"/></filter>
+  <filter id="mg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="110" cy="245" rx="62" ry="9" fill="rgba(0,0,0,.13)"/>
+<ellipse id="moonHalo" cx="110" cy="75" rx="78" ry="18" fill="none" stroke="rgba(255,220,80,.28)" stroke-width="4" filter="url(#mg)"/>
+<g id="wingL" style="transform-origin:34px 165px">
+  <path d="M 52 195 Q 16 172 12 138 Q 8 112 20 96 Q 34 80 48 94 Q 58 108 56 136 Q 44 112 52 100 Q 62 92 68 106 Q 76 126 68 162 Q 62 180 52 195 Z" fill="${c}" opacity=".9" stroke="rgba(80,40,160,.2)" stroke-width="1.5"/>
+  <path d="M 22 150 Q 40 145 56 152" fill="none" stroke="rgba(100,50,200,.25)" stroke-width="1.5"/>
+  <path d="M 18 165 Q 38 162 56 165" fill="none" stroke="rgba(100,50,200,.2)" stroke-width="1.2"/>
+</g>
+<g id="wingR" style="transform-origin:186px 165px">
+  <path d="M 168 195 Q 204 172 208 138 Q 212 112 200 96 Q 186 80 172 94 Q 162 108 164 136 Q 176 112 168 100 Q 158 92 152 106 Q 144 126 152 162 Q 158 180 168 195 Z" fill="${c}" opacity=".9" stroke="rgba(80,40,160,.2)" stroke-width="1.5"/>
+  <path d="M 198 150 Q 180 145 164 152" fill="none" stroke="rgba(100,50,200,.25)" stroke-width="1.5"/>
+  <path d="M 202 165 Q 182 162 164 165" fill="none" stroke="rgba(100,50,200,.2)" stroke-width="1.2"/>
+</g>
+<g id="bodyGroup" style="transform-origin:110px 195px">
+  <ellipse cx="110" cy="192" rx="62" ry="58" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="110" cy="204" rx="38" ry="38" fill="url(#bg2)"/>
+  <path d="M 84 182 Q 110 186 136 182" fill="none" stroke="rgba(150,100,255,.22)" stroke-width="2"/>
+  <path d="M 80 200 Q 110 205 140 200" fill="none" stroke="rgba(150,100,255,.18)" stroke-width="2"/>
+  <path d="M 83 218 Q 110 224 137 218" fill="none" stroke="rgba(150,100,255,.15)" stroke-width="2"/>
+  <ellipse cx="86" cy="162" rx="16" ry="9" fill="rgba(255,255,255,.28)" transform="rotate(-22,86,162)"/>
+</g>
+<g id="tuftL" style="transform-origin:72px 70px">
+  <path d="M 60 92 Q 56 68 66 46 Q 74 28 84 46 Q 90 62 84 86 Z" fill="${c}" stroke="rgba(80,40,160,.3)" stroke-width="1.5"/>
+  <path d="M 64 88 Q 62 68 70 50 Q 76 36 82 50 Q 86 66 82 84 Z" fill="rgba(200,160,255,.55)"/>
+</g>
+<g id="tuftR" style="transform-origin:148px 70px">
+  <path d="M 136 86 Q 130 62 136 46 Q 146 28 156 46 Q 164 62 160 86 Z" fill="${c}" stroke="rgba(80,40,160,.3)" stroke-width="1.5"/>
+  <path d="M 138 84 Q 134 68 138 50 Q 144 36 152 50 Q 158 66 156 82 Z" fill="rgba(200,160,255,.55)"/>
+</g>
+<ellipse cx="110" cy="110" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="110" cy="118" rx="50" ry="44" fill="rgba(255,248,240,.44)"/>
+<ellipse cx="86" cy="86" rx="16" ry="9" fill="rgba(255,255,255,.28)" transform="rotate(-22,86,86)"/>
+<g id="eyeL" style="transform-origin:88px 108px">
+  <circle cx="88" cy="108" r="22" fill="rgba(180,140,255,.3)"/>
+  <circle cx="88" cy="108" r="18" fill="white" stroke="rgba(60,20,140,.2)" stroke-width="1"/>
+  <circle cx="88" cy="108" r="13" fill="#2a0a6a"/>
+  <circle cx="88" cy="108" r="8.5" fill="#5522aa"/>
+  <circle cx="88" cy="108" r="5" fill="#0a0020"/>
+  <circle cx="96" cy="100" r="5" fill="white"/>
+  <circle cx="83" cy="115" r="2.8" fill="rgba(255,255,255,.6)"/>
+  <circle cx="94" cy="115" r="1.8" fill="rgba(255,255,255,.4)"/>
+  <ellipse id="lidL" cx="88" cy="90" rx="18" ry="3.5" fill="${c}" style="display:none"/>
+  <path d="M 70 96 Q 88 89 106 96" fill="none" stroke="rgba(60,20,140,.4)" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:132px 108px">
+  <circle cx="132" cy="108" r="22" fill="rgba(180,140,255,.3)"/>
+  <circle cx="132" cy="108" r="18" fill="white" stroke="rgba(60,20,140,.2)" stroke-width="1"/>
+  <circle cx="132" cy="108" r="13" fill="#2a0a6a"/>
+  <circle cx="132" cy="108" r="8.5" fill="#5522aa"/>
+  <circle cx="132" cy="108" r="5" fill="#0a0020"/>
+  <circle cx="140" cy="100" r="5" fill="white"/>
+  <circle cx="127" cy="115" r="2.8" fill="rgba(255,255,255,.6)"/>
+  <circle cx="138" cy="115" r="1.8" fill="rgba(255,255,255,.4)"/>
+  <ellipse id="lidR" cx="132" cy="90" rx="18" ry="3.5" fill="${c}" style="display:none"/>
+  <path d="M 114 96 Q 132 89 150 96" fill="none" stroke="rgba(60,20,140,.4)" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<polygon points="110,128 103,142 117,142" fill="#dd9922" stroke="rgba(120,70,0,.35)" stroke-width="1.5"/>
+<ellipse cx="107" cy="130" rx="2.8" ry="1.8" fill="rgba(255,255,255,.38)"/>
+<g id="talons">
+  <ellipse cx="80" cy="232" rx="19" ry="12" fill="${c}" transform="rotate(-5,80,232)"/>
+  <ellipse cx="140" cy="232" rx="19" ry="12" fill="${c}" transform="rotate(5,140,232)"/>
+  <line x1="73" y1="231" x2="69" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="80" y1="230" x2="78" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="87" y1="231" x2="87" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="133" y1="231" x2="133" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="140" y1="230" x2="142" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="147" y1="231" x2="151" y2="244" stroke="rgba(80,40,160,.38)" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<g id="heartEyes" style="display:none">
+  <circle cx="88" cy="108" r="18" fill="#8833cc"/>
+  <text x="88" y="115" font-size="18" text-anchor="middle" fill="white">♥</text>
+  <circle cx="132" cy="108" r="18" fill="#8833cc"/>
+  <text x="132" y="115" font-size="18" text-anchor="middle" fill="white">♥</text>
+</g>`);
+}
+
+function buildGlimcat(c='#e0b3ff'){
+  return svg(200,230,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#f5eaff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#8844cc"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#fff0ff"/><stop offset="100%" stop-color="#ddb3ff"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(120,40,200,.28)"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="100" cy="225" rx="58" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="tail" style="transform-origin:38px 195px">
+  <path d="M 28 205 Q 10 190 12 170 Q 14 152 28 148 Q 40 145 46 158 Q 52 172 44 192 Q 38 206 28 205 Z" fill="${c}" stroke="rgba(100,30,180,.3)" stroke-width="1.5"/>
+  <path d="M 32 200 Q 18 188 20 170 Q 22 156 32 153 Q 40 151 44 162 Q 48 175 40 190 Z" fill="#c880ff" opacity=".6"/>
+  <ellipse cx="16" cy="185" rx="10" ry="8" fill="#fff0ff" filter="url(#glow)"/>
+</g>
+<g id="bodyGroup" style="transform-origin:100px 180px">
+  <ellipse cx="100" cy="176" rx="66" ry="60" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="100" cy="186" rx="40" ry="34" fill="url(#bg2)"/>
+  <ellipse cx="78" cy="150" rx="15" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-25,78,150)"/>
+  <!-- Magic sparkle marks on body -->
+  <circle cx="76" cy="165" r="3" fill="rgba(200,120,255,.5)" filter="url(#glow)"/>
+  <circle cx="124" cy="158" r="2.5" fill="rgba(200,120,255,.45)" filter="url(#glow)"/>
+</g>
+<g id="earL" style="transform-origin:62px 72px">
+  <polygon points="48,108 62,52 78,108" fill="${c}" stroke="rgba(100,30,180,.3)" stroke-width="1.5"/>
+  <polygon points="54,102 62,60 72,102" fill="#c880ff"/>
+</g>
+<g id="earR" style="transform-origin:138px 72px">
+  <polygon points="122,108 138,52 154,108" fill="${c}" stroke="rgba(100,30,180,.3)" stroke-width="1.5"/>
+  <polygon points="128,102 138,60 148,102" fill="#c880ff"/>
+</g>
+<ellipse cx="100" cy="120" rx="55" ry="51" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="80" cy="100" rx="13" ry="7" fill="rgba(255,255,255,.28)" transform="rotate(-22,80,100)"/>
+<!-- Glowing eyes - slightly bigger and mystical -->
+<g id="eyeL" style="transform-origin:82px 116px">
+  <ellipse cx="82" cy="116" rx="14" ry="16" fill="white" stroke="rgba(100,30,180,.2)" stroke-width="1"/>
+  <ellipse cx="82" cy="118" rx="9" ry="11" fill="#3a006a"/>
+  <ellipse cx="82" cy="117" rx="6" ry="8" fill="#aa44ff"/>
+  <circle cx="82" cy="118" r="4" fill="#1a0030"/>
+  <circle cx="87" cy="112" r="3.5" fill="white"/>
+  <circle cx="82" cy="108" r="2" fill="rgba(180,100,255,.6)" filter="url(#glow)"/>
+  <ellipse id="lidL" cx="82" cy="103" rx="14" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 70 108 Q 82 103 94 108" fill="none" stroke="rgba(100,30,180,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:118px 116px">
+  <ellipse cx="118" cy="116" rx="14" ry="16" fill="white" stroke="rgba(100,30,180,.2)" stroke-width="1"/>
+  <ellipse cx="118" cy="118" rx="9" ry="11" fill="#3a006a"/>
+  <ellipse cx="118" cy="117" rx="6" ry="8" fill="#aa44ff"/>
+  <circle cx="118" cy="118" r="4" fill="#1a0030"/>
+  <circle cx="123" cy="112" r="3.5" fill="white"/>
+  <circle cx="118" cy="108" r="2" fill="rgba(180,100,255,.6)" filter="url(#glow)"/>
+  <ellipse id="lidR" cx="118" cy="103" rx="14" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 106 108 Q 118 103 130 108" fill="none" stroke="rgba(100,30,180,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="100" cy="133" rx="7.5" ry="5.5" fill="#cc55ee" stroke="rgba(120,0,180,.3)" stroke-width="1"/>
+<ellipse cx="98" cy="131" rx="2.5" ry="1.8" fill="rgba(255,255,255,.5)"/>
+<g id="mouth">
+  <path id="mn" d="M 91 141 Q 96 147 100 145 Q 104 147 109 141" stroke="rgba(130,30,180,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 89 140 Q 100 158 111 140 Q 106 152 100 154 Q 94 152 89 140 Z" fill="#cc55ee"/><ellipse cx="100" cy="149" rx="8" ry="5" fill="#880099"/></g>
+</g>
+<ellipse cx="70" cy="136" rx="12" ry="7" fill="rgba(180,100,255,.38)"/>
+<ellipse cx="130" cy="136" rx="12" ry="7" fill="rgba(180,100,255,.38)"/>
+<line x1="88" y1="130" x2="52" y2="124" stroke="rgba(140,60,200,.4)" stroke-width="1.5"/>
+<line x1="88" y1="136" x2="50" y2="136" stroke="rgba(140,60,200,.4)" stroke-width="1.5"/>
+<line x1="112" y1="130" x2="148" y2="124" stroke="rgba(140,60,200,.4)" stroke-width="1.5"/>
+<line x1="112" y1="136" x2="150" y2="136" stroke="rgba(140,60,200,.4)" stroke-width="1.5"/>
+<g id="paws"><ellipse cx="72" cy="218" rx="20" ry="12" fill="url(#bg1)"/><ellipse cx="128" cy="218" rx="20" ry="12" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="82" cy="116" rx="14" ry="16" fill="#aa44ff"/><text x="82" y="122" font-size="14" text-anchor="middle" fill="white">♥</text><ellipse cx="118" cy="116" rx="14" ry="16" fill="#aa44ff"/><text x="118" y="122" font-size="14" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildCoraluff(c='#ffb3b3'){
+  return svg(210,240,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#ffd8d8"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc6666"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fff0f0"/><stop offset="100%" stop-color="#ffcccc"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(180,60,60,.25)"/></filter>
+</defs>
+<ellipse cx="105" cy="234" rx="62" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="bodyGroup" style="transform-origin:105px 188px">
+  <ellipse cx="105" cy="185" rx="74" ry="66" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="105" cy="198" rx="46" ry="38" fill="url(#bg2)"/>
+  <ellipse cx="82" cy="156" rx="17" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-25,82,156)"/>
+</g>
+<!-- Round bear ears -->
+<circle cx="62" cy="72" r="24" fill="${c}" stroke="rgba(160,50,50,.25)" stroke-width="1.5"/>
+<circle cx="62" cy="72" r="16" fill="#ffcccc"/>
+<circle cx="148" cy="72" r="24" fill="${c}" stroke="rgba(160,50,50,.25)" stroke-width="1.5"/>
+<circle cx="148" cy="72" r="16" fill="#ffcccc"/>
+<ellipse cx="105" cy="128" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="82" cy="105" rx="15" ry="8" fill="rgba(255,255,255,.28)" transform="rotate(-22,82,105)"/>
+<!-- Bear muzzle -->
+<ellipse cx="105" cy="148" rx="28" ry="20" fill="#ffcccc" stroke="rgba(160,50,50,.2)" stroke-width="1"/>
+<g id="eyeL" style="transform-origin:84px 118px">
+  <ellipse cx="84" cy="118" rx="13" ry="14" fill="white" stroke="rgba(100,30,30,.2)" stroke-width="1"/>
+  <ellipse cx="84" cy="120" rx="8.5" ry="10" fill="#2a0a0a"/>
+  <ellipse cx="84" cy="119" rx="5.5" ry="7" fill="#552222"/>
+  <circle cx="84" cy="120" r="4" fill="#111"/>
+  <circle cx="89" cy="114" r="3.2" fill="white"/>
+  <ellipse id="lidL" cx="84" cy="106" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 73 110 Q 84 105 95 110" fill="none" stroke="rgba(100,30,30,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:126px 118px">
+  <ellipse cx="126" cy="118" rx="13" ry="14" fill="white" stroke="rgba(100,30,30,.2)" stroke-width="1"/>
+  <ellipse cx="126" cy="120" rx="8.5" ry="10" fill="#2a0a0a"/>
+  <ellipse cx="126" cy="119" rx="5.5" ry="7" fill="#552222"/>
+  <circle cx="126" cy="120" r="4" fill="#111"/>
+  <circle cx="131" cy="114" r="3.2" fill="white"/>
+  <ellipse id="lidR" cx="126" cy="106" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 115 110 Q 126 105 137 110" fill="none" stroke="rgba(100,30,30,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<circle cx="105" cy="148" r="10" fill="#cc7777" stroke="rgba(140,40,40,.3)" stroke-width="1.5"/>
+<circle cx="102" cy="145" r="3.5" fill="rgba(255,255,255,.45)"/>
+<g id="mouth">
+  <path id="mn" d="M 94 158 Q 100 165 105 163 Q 110 165 116 158" stroke="rgba(140,40,40,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 91 156 Q 105 174 119 156 Q 113 168 105 170 Q 97 168 91 156 Z" fill="#cc7777"/><ellipse cx="105" cy="165" rx="9" ry="6" fill="#aa4444"/></g>
+</g>
+<ellipse cx="72" cy="142" rx="13" ry="8" fill="rgba(255,140,140,.4)"/>
+<ellipse cx="138" cy="142" rx="13" ry="8" fill="rgba(255,140,140,.4)"/>
+<g id="paws"><ellipse cx="76" cy="226" rx="22" ry="14" fill="url(#bg1)"/><ellipse cx="134" cy="226" rx="22" ry="14" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="84" cy="118" rx="13" ry="14" fill="#ff6666"/><text x="84" y="124" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="126" cy="118" rx="13" ry="14" fill="#ff6666"/><text x="126" y="124" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildPeppin(c='#ffdfb3'){
+  return svg(190,210,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#fff3e0"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc9944"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#fffbf0"/><stop offset="100%" stop-color="#ffe8b0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(160,120,0,.22)"/></filter>
+</defs>
+<ellipse cx="95" cy="205" rx="52" ry="8" fill="rgba(0,0,0,.12)"/>
+<g id="bodyGroup" style="transform-origin:95px 165px">
+  <!-- Very round hamster body -->
+  <ellipse cx="95" cy="162" rx="68" ry="60" fill="url(#bg1)" filter="url(#sh)"/>
+  <!-- Chubby cheeks -->
+  <ellipse cx="56" cy="158" rx="22" ry="18" fill="#ffddaa"/>
+  <ellipse cx="134" cy="158" rx="22" ry="18" fill="#ffddaa"/>
+  <ellipse cx="95" cy="174" rx="42" ry="32" fill="url(#bg2)"/>
+  <ellipse cx="75" cy="138" rx="13" ry="7" fill="rgba(255,255,255,.28)" transform="rotate(-25,75,138)"/>
+</g>
+<!-- Small round ears -->
+<circle cx="60" cy="78" r="18" fill="${c}" stroke="rgba(140,90,0,.2)" stroke-width="1.5"/>
+<circle cx="60" cy="78" r="11" fill="#ffccaa"/>
+<circle cx="130" cy="78" r="18" fill="${c}" stroke="rgba(140,90,0,.2)" stroke-width="1.5"/>
+<circle cx="130" cy="78" r="11" fill="#ffccaa"/>
+<ellipse cx="95" cy="112" rx="50" ry="46" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="75" cy="93" rx="12" ry="6.5" fill="rgba(255,255,255,.28)" transform="rotate(-22,75,93)"/>
+<g id="eyeL" style="transform-origin:78px 108px">
+  <ellipse cx="78" cy="108" rx="11" ry="12" fill="white"/>
+  <ellipse cx="78" cy="110" rx="7" ry="8.5" fill="#1a1000"/>
+  <ellipse cx="78" cy="109" rx="4.5" ry="6" fill="#553300"/>
+  <circle cx="78" cy="110" r="3.2" fill="#111"/>
+  <circle cx="82" cy="105" r="2.8" fill="white"/>
+  <ellipse id="lidL" cx="78" cy="98" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<g id="eyeR" style="transform-origin:112px 108px">
+  <ellipse cx="112" cy="108" rx="11" ry="12" fill="white"/>
+  <ellipse cx="112" cy="110" rx="7" ry="8.5" fill="#1a1000"/>
+  <ellipse cx="112" cy="109" rx="4.5" ry="6" fill="#553300"/>
+  <circle cx="112" cy="110" r="3.2" fill="#111"/>
+  <circle cx="116" cy="105" r="2.8" fill="white"/>
+  <ellipse id="lidR" cx="112" cy="98" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<ellipse cx="95" cy="124" rx="7" ry="5.5" fill="#dd9955" stroke="rgba(140,80,0,.3)" stroke-width="1"/>
+<circle cx="93" cy="122" r="2" fill="rgba(255,255,255,.5)"/>
+<g id="mouth">
+  <path id="mn" d="M 87 132 Q 91 138 95 136 Q 99 138 103 132" stroke="rgba(140,80,0,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 85 131 Q 95 148 105 131 Q 100 143 95 144 Q 90 143 85 131 Z" fill="#dd9955"/><ellipse cx="95" cy="140" rx="7" ry="4.5" fill="#aa6622"/></g>
+</g>
+<ellipse cx="66" cy="126" rx="11" ry="7" fill="rgba(255,160,80,.38)"/>
+<ellipse cx="124" cy="126" rx="11" ry="7" fill="rgba(255,160,80,.38)"/>
+<g id="paws"><ellipse cx="68" cy="198" rx="18" ry="11" fill="url(#bg1)"/><ellipse cx="122" cy="198" rx="18" ry="11" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="78" cy="108" rx="11" ry="12" fill="#ffaa44"/><text x="78" y="114" font-size="12" text-anchor="middle" fill="white">♥</text><ellipse cx="112" cy="108" rx="11" ry="12" fill="#ffaa44"/><text x="112" y="114" font-size="12" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildStarwhirl(c='#fff0a0'){
+  return svg(200,200,`
+<defs>
+  <radialGradient id="bg1" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#fffde0"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#ddaa00"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(180,140,0,.25)"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="100" cy="196" rx="50" ry="8" fill="rgba(0,0,0,.12)"/>
+<!-- Star body - 5 points -->
+<g id="bodyGroup" style="transform-origin:100px 100px">
+  <polygon points="100,10 122,72 188,72 135,110 155,172 100,134 45,172 65,110 12,72 78,72" fill="url(#bg1)" filter="url(#sh)" stroke="rgba(180,140,0,.3)" stroke-width="2"/>
+  <polygon points="100,28 116,70 156,70 124,94 136,136 100,112 64,136 76,94 44,70 84,70" fill="rgba(255,255,200,.4)"/>
+  <!-- Star glow -->
+  <ellipse cx="100" cy="100" rx="35" ry="35" fill="rgba(255,255,180,.25)" filter="url(#glow)"/>
+</g>
+<!-- Face in center of star -->
+<g id="eyeL" style="transform-origin:84px 95px">
+  <ellipse cx="84" cy="95" rx="11" ry="13" fill="white"/>
+  <ellipse cx="84" cy="97" rx="7.5" ry="9.5" fill="#1a1800"/>
+  <ellipse cx="84" cy="96" rx="5" ry="7" fill="#554400"/>
+  <circle cx="84" cy="97" r="3.5" fill="#111"/>
+  <circle cx="89" cy="91" r="3" fill="white"/>
+  <ellipse id="lidL" cx="84" cy="84" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<g id="eyeR" style="transform-origin:116px 95px">
+  <ellipse cx="116" cy="95" rx="11" ry="13" fill="white"/>
+  <ellipse cx="116" cy="97" rx="7.5" ry="9.5" fill="#1a1800"/>
+  <ellipse cx="116" cy="96" rx="5" ry="7" fill="#554400"/>
+  <circle cx="116" cy="97" r="3.5" fill="#111"/>
+  <circle cx="121" cy="91" r="3" fill="white"/>
+  <ellipse id="lidR" cx="116" cy="84" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<ellipse cx="100" cy="112" rx="6" ry="4.5" fill="#ddaa00" stroke="rgba(160,120,0,.3)" stroke-width="1"/>
+<g id="mouth">
+  <path id="mn" d="M 92 120 Q 97 126 100 124 Q 103 126 108 120" stroke="rgba(160,120,0,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 90 119 Q 100 134 110 119 Q 106 130 100 131 Q 94 130 90 119 Z" fill="#ddaa00"/></g>
+</g>
+<ellipse cx="72" cy="108" rx="10" ry="6" fill="rgba(255,220,80,.4)"/>
+<ellipse cx="128" cy="108" rx="10" ry="6" fill="rgba(255,220,80,.4)"/>
+<!-- Sparkle trail effects -->
+<circle cx="34" cy="40" r="5" fill="rgba(255,240,100,.7)" filter="url(#glow)"/>
+<circle cx="165" cy="35" r="4" fill="rgba(255,240,100,.65)" filter="url(#glow)"/>
+<circle cx="170" cy="165" r="4.5" fill="rgba(255,240,100,.6)" filter="url(#glow)"/>
+<g id="heartEyes" style="display:none"><ellipse cx="84" cy="95" rx="11" ry="13" fill="#ffcc00"/><text x="84" y="101" font-size="12" text-anchor="middle" fill="white">♥</text><ellipse cx="116" cy="95" rx="11" ry="13" fill="#ffcc00"/><text x="116" y="101" font-size="12" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildMossling(c='#c8ffb3'){
+  return svg(210,200,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#e8ffdc"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#5aaa30"/></radialGradient>
+  <radialGradient id="shellG" cx="45%" cy="35%" r="58%"><stop offset="0%" stop-color="#a87840"/><stop offset="100%" stop-color="#6a4a18"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(60,120,30,.22)"/></filter>
+</defs>
+<ellipse cx="105" cy="196" rx="60" ry="9" fill="rgba(0,0,0,.13)"/>
+<!-- Shell on back -->
+<g id="bodyGroup" style="transform-origin:105px 148px">
+  <ellipse cx="105" cy="145" rx="76" ry="58" fill="url(#shellG)" filter="url(#sh)"/>
+  <ellipse cx="105" cy="140" rx="66" ry="50" fill="url(#bg1)"/>
+  <!-- Shell hex pattern -->
+  <path d="M 60 128 Q 82 120 105 128 Q 128 120 150 128 Q 128 136 105 128 Q 82 136 60 128" stroke="rgba(80,50,10,.3)" stroke-width="1.5" fill="none"/>
+  <path d="M 55 148 Q 80 140 105 148 Q 130 140 155 148 Q 130 156 105 148 Q 80 156 55 148" stroke="rgba(80,50,10,.25)" stroke-width="1.5" fill="none"/>
+  <ellipse cx="82" cy="116" rx="14" ry="8" fill="rgba(255,255,255,.25)" transform="rotate(-22,82,116)"/>
+</g>
+<!-- Head peeking out -->
+<ellipse cx="105" cy="100" rx="44" ry="40" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="86" cy="83" rx="12" ry="6.5" fill="rgba(255,255,255,.28)" transform="rotate(-22,86,83)"/>
+<g id="eyeL" style="transform-origin:88px 96px">
+  <ellipse cx="88" cy="96" rx="11" ry="12" fill="white"/>
+  <ellipse cx="88" cy="98" rx="7" ry="8.5" fill="#0a2000"/>
+  <ellipse cx="88" cy="97" rx="4.5" ry="6" fill="#2a6010"/>
+  <circle cx="88" cy="98" r="3.2" fill="#111"/>
+  <circle cx="93" cy="92" r="2.8" fill="white"/>
+  <ellipse id="lidL" cx="88" cy="86" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+  <path d="M 78 88 Q 88 83 98 88" fill="none" stroke="rgba(30,80,10,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:122px 96px">
+  <ellipse cx="122" cy="96" rx="11" ry="12" fill="white"/>
+  <ellipse cx="122" cy="98" rx="7" ry="8.5" fill="#0a2000"/>
+  <ellipse cx="122" cy="97" rx="4.5" ry="6" fill="#2a6010"/>
+  <circle cx="122" cy="98" r="3.2" fill="#111"/>
+  <circle cx="127" cy="92" r="2.8" fill="white"/>
+  <ellipse id="lidR" cx="122" cy="86" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+  <path d="M 112 88 Q 122 83 132 88" fill="none" stroke="rgba(30,80,10,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="105" cy="112" rx="7" ry="5" fill="#88cc44" stroke="rgba(40,100,10,.3)" stroke-width="1"/>
+<g id="mouth">
+  <path id="mn" d="M 97 120 Q 101 126 105 124 Q 109 126 113 120" stroke="rgba(40,100,10,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 95 119 Q 105 134 115 119 Q 110 131 105 132 Q 100 131 95 119 Z" fill="#88cc44"/></g>
+</g>
+<!-- Tiny legs -->
+<ellipse cx="68" cy="178" rx="18" ry="12" fill="url(#bg1)" transform="rotate(-15,68,178)"/>
+<ellipse cx="142" cy="178" rx="18" ry="12" fill="url(#bg1)" transform="rotate(15,142,178)"/>
+<g id="heartEyes" style="display:none"><ellipse cx="88" cy="96" rx="11" ry="12" fill="#66cc22"/><text x="88" y="102" font-size="12" text-anchor="middle" fill="white">♥</text><ellipse cx="122" cy="96" rx="11" ry="12" fill="#66cc22"/><text x="122" y="102" font-size="12" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildTwinkow(c='#ffd6f5'){
+  return svg(210,240,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#fff0ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc66cc"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fff8ff"/><stop offset="100%" stop-color="#ffccee"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(160,60,160,.25)"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="105" cy="234" rx="60" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="tail" style="transform-origin:38px 190px">
+  <ellipse cx="30" cy="198" rx="28" ry="20" fill="#cc66cc" transform="rotate(-18,30,198)"/>
+  <ellipse cx="26" cy="194" rx="22" ry="16" fill="${c}" transform="rotate(-18,26,194)"/>
+  <ellipse cx="22" cy="190" rx="15" ry="11" fill="#ffe0ff" transform="rotate(-18,22,190)"/>
+  <!-- Rainbow shimmer on tail -->
+  <ellipse cx="15" cy="185" rx="8" ry="6" fill="rgba(255,200,255,.7)" filter="url(#glow)"/>
+</g>
+<g id="bodyGroup" style="transform-origin:105px 185px">
+  <ellipse cx="105" cy="182" rx="68" ry="62" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="105" cy="194" rx="42" ry="35" fill="url(#bg2)"/>
+  <ellipse cx="82" cy="152" rx="16" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-25,82,152)"/>
+</g>
+<!-- Unicorn horn -->
+<polygon points="105,48 98,82 112,82" fill="#ffdd44" stroke="rgba(180,140,0,.4)" stroke-width="1.5"/>
+<polygon points="105,52 100,80 110,80" fill="rgba(255,255,200,.5)"/>
+<!-- Ears -->
+<g id="earL" style="transform-origin:68px 80px">
+  <ellipse cx="68" cy="66" rx="16" ry="38" fill="${c}" stroke="rgba(160,60,160,.25)" stroke-width="1.5"/>
+  <ellipse cx="68" cy="70" rx="9" ry="28" fill="#ffaaee"/>
+</g>
+<g id="earR" style="transform-origin:142px 80px">
+  <ellipse cx="142" cy="66" rx="16" ry="38" fill="${c}" stroke="rgba(160,60,160,.25)" stroke-width="1.5"/>
+  <ellipse cx="142" cy="70" rx="9" ry="28" fill="#ffaaee"/>
+</g>
+<ellipse cx="105" cy="122" rx="54" ry="50" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="84" cy="102" rx="14" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-22,84,102)"/>
+<g id="eyeL" style="transform-origin:86px 116px">
+  <ellipse cx="86" cy="116" rx="13" ry="15" fill="white"/>
+  <ellipse cx="86" cy="118" rx="8.5" ry="10.5" fill="#1a0030"/>
+  <ellipse cx="86" cy="117" rx="5.5" ry="7.5" fill="#aa44cc"/>
+  <circle cx="86" cy="118" r="4" fill="#111"/>
+  <circle cx="91" cy="112" r="3.2" fill="white"/>
+  <ellipse id="lidL" cx="86" cy="103" rx="13" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 74 108 Q 86 103 98 108" fill="none" stroke="rgba(140,40,160,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:124px 116px">
+  <ellipse cx="124" cy="116" rx="13" ry="15" fill="white"/>
+  <ellipse cx="124" cy="118" rx="8.5" ry="10.5" fill="#1a0030"/>
+  <ellipse cx="124" cy="117" rx="5.5" ry="7.5" fill="#aa44cc"/>
+  <circle cx="124" cy="118" r="4" fill="#111"/>
+  <circle cx="129" cy="112" r="3.2" fill="white"/>
+  <ellipse id="lidR" cx="124" cy="103" rx="13" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 112 108 Q 124 103 136 108" fill="none" stroke="rgba(140,40,160,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="105" cy="133" rx="8" ry="6" fill="#ff88cc" stroke="rgba(160,40,120,.3)" stroke-width="1"/>
+<g id="mouth">
+  <path id="mn" d="M 96 141 Q 101 147 105 145 Q 109 147 114 141" stroke="rgba(160,40,120,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 94 140 Q 105 157 116 140 Q 111 152 105 153 Q 99 152 94 140 Z" fill="#ff88cc"/></g>
+</g>
+<ellipse cx="72" cy="136" rx="12" ry="7" fill="rgba(255,150,220,.4)"/>
+<ellipse cx="138" cy="136" rx="12" ry="7" fill="rgba(255,150,220,.4)"/>
+<g id="paws"><ellipse cx="76" cy="226" rx="21" ry="13" fill="url(#bg1)"/><ellipse cx="134" cy="226" rx="21" ry="13" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="86" cy="116" rx="13" ry="15" fill="#dd44cc"/><text x="86" y="122" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="124" cy="116" rx="13" ry="15" fill="#dd44cc"/><text x="124" y="122" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildBoulbear(c='#d4e0ff'){
+  return svg(210,235,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#eef2ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#6677aa"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#f8f8ff"/><stop offset="100%" stop-color="#c4d0ee"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(60,70,160,.22)"/></filter>
+</defs>
+<ellipse cx="105" cy="229" rx="62" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="bodyGroup" style="transform-origin:105px 182px">
+  <!-- Extra round panda body -->
+  <ellipse cx="105" cy="178" rx="74" ry="66" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="105" cy="190" rx="46" ry="38" fill="white"/>
+  <ellipse cx="82" cy="150" rx="16" ry="9" fill="rgba(255,255,255,.32)" transform="rotate(-25,82,150)"/>
+</g>
+<!-- Black panda ears -->
+<circle cx="62" cy="70" r="26" fill="#222" stroke="rgba(0,0,0,.3)" stroke-width="1"/>
+<circle cx="62" cy="70" r="16" fill="#444"/>
+<circle cx="148" cy="70" r="26" fill="#222" stroke="rgba(0,0,0,.3)" stroke-width="1"/>
+<circle cx="148" cy="70" r="16" fill="#444"/>
+<ellipse cx="105" cy="122" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="83" cy="100" rx="14" ry="8" fill="rgba(255,255,255,.28)" transform="rotate(-22,83,100)"/>
+<!-- Panda eye patches -->
+<ellipse cx="83" cy="116" rx="20" ry="17" fill="#222"/>
+<ellipse cx="127" cy="116" rx="20" ry="17" fill="#222"/>
+<g id="eyeL" style="transform-origin:83px 116px">
+  <ellipse cx="83" cy="116" rx="13" ry="14" fill="white"/>
+  <ellipse cx="83" cy="118" rx="8.5" ry="10" fill="#0a0a0a"/>
+  <ellipse cx="83" cy="117" rx="5.5" ry="7" fill="#223344"/>
+  <circle cx="83" cy="118" r="4" fill="#111"/>
+  <circle cx="88" cy="112" r="3.2" fill="white"/>
+  <ellipse id="lidL" cx="83" cy="104" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+</g>
+<g id="eyeR" style="transform-origin:127px 116px">
+  <ellipse cx="127" cy="116" rx="13" ry="14" fill="white"/>
+  <ellipse cx="127" cy="118" rx="8.5" ry="10" fill="#0a0a0a"/>
+  <ellipse cx="127" cy="117" rx="5.5" ry="7" fill="#223344"/>
+  <circle cx="127" cy="118" r="4" fill="#111"/>
+  <circle cx="132" cy="112" r="3.2" fill="white"/>
+  <ellipse id="lidR" cx="127" cy="104" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+</g>
+<ellipse cx="105" cy="136" rx="14" ry="10" fill="white"/>
+<ellipse cx="105" cy="136" rx="9" ry="7" fill="#cc8899" stroke="rgba(140,40,60,.3)" stroke-width="1"/>
+<circle cx="102" cy="134" r="2.5" fill="rgba(255,255,255,.45)"/>
+<g id="mouth">
+  <path id="mn" d="M 94 145 Q 100 152 105 150 Q 110 152 116 145" stroke="rgba(100,40,60,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 91 144 Q 105 162 119 144 Q 113 156 105 158 Q 97 156 91 144 Z" fill="#cc8899"/></g>
+</g>
+<g id="paws"><ellipse cx="76" cy="222" rx="23" ry="14" fill="url(#bg1)"/><ellipse cx="134" cy="222" rx="23" ry="14" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="83" cy="116" rx="13" ry="14" fill="#5566bb"/><text x="83" y="122" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="127" cy="116" rx="13" ry="14" fill="#5566bb"/><text x="127" y="122" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildZipplet(c='#fffbb3'){
+  return svg(180,200,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#ffffe8"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#ccaa00"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(160,140,0,.22)"/></filter>
+</defs>
+<ellipse cx="90" cy="196" rx="48" ry="8" fill="rgba(0,0,0,.12)"/>
+<!-- Very fluffy round chick body -->
+<g id="bodyGroup" style="transform-origin:90px 160px">
+  <ellipse cx="90" cy="158" rx="62" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="90" cy="170" rx="38" ry="30" fill="rgba(255,255,230,.6)"/>
+  <ellipse cx="70" cy="132" rx="13" ry="7" fill="rgba(255,255,255,.28)" transform="rotate(-25,70,132)"/>
+</g>
+<!-- Wing stubs -->
+<g id="wingL" style="transform-origin:30px 148px">
+  <ellipse cx="30" cy="150" rx="22" ry="14" fill="${c}" stroke="rgba(160,140,0,.2)" stroke-width="1.5" transform="rotate(20,30,150)"/>
+  <ellipse cx="28" cy="152" rx="14" ry="9" fill="rgba(255,255,200,.6)" transform="rotate(20,28,152)"/>
+</g>
+<g id="wingR" style="transform-origin:150px 148px">
+  <ellipse cx="150" cy="150" rx="22" ry="14" fill="${c}" stroke="rgba(160,140,0,.2)" stroke-width="1.5" transform="rotate(-20,150,150)"/>
+  <ellipse cx="152" cy="152" rx="14" ry="9" fill="rgba(255,255,200,.6)" transform="rotate(-20,152,152)"/>
+</g>
+<!-- Head -->
+<ellipse cx="90" cy="100" rx="50" ry="48" fill="url(#bg1)" filter="url(#sh)"/>
+<!-- Tiny feather tufts on top -->
+<g id="tuftL" style="transform-origin:76px 55px">
+  <path d="M 70 65 Q 74 45 80 58 Q 77 55 77 64 Z" fill="${c}"/>
+</g>
+<g id="tuftR" style="transform-origin:104px 55px">
+  <path d="M 100 64 Q 106 44 110 58 Q 107 55 107 63 Z" fill="${c}"/>
+</g>
+<ellipse cx="72" cy="82" rx="11" ry="7" fill="rgba(255,255,255,.26)" transform="rotate(-22,72,82)"/>
+<g id="eyeL" style="transform-origin:74px 96px">
+  <ellipse cx="74" cy="96" rx="11" ry="12" fill="white"/>
+  <ellipse cx="74" cy="98" rx="7" ry="8.5" fill="#1a1400"/>
+  <ellipse cx="74" cy="97" rx="4.5" ry="6" fill="#554400"/>
+  <circle cx="74" cy="98" r="3.2" fill="#111"/>
+  <circle cx="79" cy="92" r="2.8" fill="white"/>
+  <ellipse id="lidL" cx="74" cy="86" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<g id="eyeR" style="transform-origin:106px 96px">
+  <ellipse cx="106" cy="96" rx="11" ry="12" fill="white"/>
+  <ellipse cx="106" cy="98" rx="7" ry="8.5" fill="#1a1400"/>
+  <ellipse cx="106" cy="97" rx="4.5" ry="6" fill="#554400"/>
+  <circle cx="106" cy="98" r="3.2" fill="#111"/>
+  <circle cx="111" cy="92" r="2.8" fill="white"/>
+  <ellipse id="lidR" cx="106" cy="86" rx="11" ry="2.5" fill="${c}" style="display:none"/>
+</g>
+<!-- Beak -->
+<polygon points="90,108 83,118 97,118" fill="#ffaa22" stroke="rgba(160,100,0,.4)" stroke-width="1"/>
+<ellipse cx="87" cy="111" rx="2.5" ry="1.8" fill="rgba(255,255,255,.4)"/>
+<g id="paws">
+  <line x1="72" y1="190" x2="64" y2="200" stroke="#ffaa22" stroke-width="3" stroke-linecap="round"/>
+  <line x1="80" y1="192" x2="76" y2="200" stroke="#ffaa22" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="192" x2="104" y2="200" stroke="#ffaa22" stroke-width="3" stroke-linecap="round"/>
+  <line x1="108" y1="190" x2="116" y2="200" stroke="#ffaa22" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g id="heartEyes" style="display:none"><ellipse cx="74" cy="96" rx="11" ry="12" fill="#ffcc00"/><text x="74" y="102" font-size="12" text-anchor="middle" fill="white">♥</text><ellipse cx="106" cy="96" rx="11" ry="12" fill="#ffcc00"/><text x="106" y="102" font-size="12" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildDazzlphin(c='#b3f0ff'){
+  return svg(230,200,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#e0faff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#2299cc"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="45%" r="52%"><stop offset="0%" stop-color="#f0fcff"/><stop offset="100%" stop-color="#99ddee"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,100,180,.2)"/></filter>
+</defs>
+<ellipse cx="115" cy="196" rx="70" ry="8" fill="rgba(0,0,0,.12)"/>
+<!-- Dolphin body - horizontal orientation -->
+<g id="bodyGroup" style="transform-origin:115px 130px">
+  <ellipse cx="115" cy="128" rx="88" ry="52" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="102" cy="138" rx="58" ry="36" fill="url(#bg2)"/>
+  <ellipse cx="80" cy="100" rx="20" ry="11" fill="rgba(255,255,255,.32)" transform="rotate(-22,80,100)"/>
+</g>
+<!-- Dorsal fin -->
+<g id="tuftL" style="transform-origin:115px 78px">
+  <path d="M 100 100 Q 108 70 120 80 Q 124 90 118 100 Z" fill="${c}" stroke="rgba(0,80,160,.2)" stroke-width="1.5"/>
+</g>
+<!-- Tail fins -->
+<g id="tailFlip" style="transform-origin:195px 128px">
+  <path d="M 190 118 Q 212 102 220 112 Q 214 124 200 124 Z" fill="${c}" stroke="rgba(0,80,160,.2)" stroke-width="1.5"/>
+  <path d="M 190 138 Q 212 154 220 144 Q 214 132 200 132 Z" fill="${c}" stroke="rgba(0,80,160,.2)" stroke-width="1.5"/>
+</g>
+<!-- Pectoral fin -->
+<g id="flipL" style="transform-origin:82px 148px">
+  <path d="M 85 140 Q 60 152 58 168 Q 70 160 88 155 Z" fill="${c}" stroke="rgba(0,80,160,.15)" stroke-width="1.5"/>
+</g>
+<!-- Head -->
+<ellipse cx="52" cy="118" rx="44" ry="40" fill="url(#bg1)" filter="url(#sh)"/>
+<!-- Snout -->
+<path d="M 20 112 Q 8 116 8 122 Q 8 128 20 130 Q 30 130 34 122 Q 30 114 20 112 Z" fill="url(#bg1)" stroke="rgba(0,80,160,.15)" stroke-width="1"/>
+<ellipse cx="42" cy="100" rx="14" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-20,42,100)"/>
+<!-- Big round eye -->
+<g id="eyeL" style="transform-origin:54px 112px">
+  <ellipse cx="54" cy="112" rx="14" ry="15" fill="white"/>
+  <ellipse cx="54" cy="114" rx="9" ry="11" fill="#0a1a3a"/>
+  <ellipse cx="54" cy="113" rx="6" ry="8" fill="#1a4a7a"/>
+  <circle cx="54" cy="114" r="4.5" fill="#0a0a2a"/>
+  <circle cx="60" cy="107" r="4" fill="white"/>
+  <circle cx="50" cy="118" r="2.2" fill="rgba(255,255,255,.6)"/>
+  <ellipse id="lidL" cx="54" cy="99" rx="14" ry="3" fill="${c}" style="display:none"/>
+  <path d="M 41 103 Q 54 97 67 103" fill="none" stroke="rgba(0,60,140,.4)" stroke-width="2" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="display:none"/>`+"`"+`
+<!-- Smile mouth -->
+<path id="mn" d="M 14 124 Q 22 132 30 128" stroke="rgba(0,60,140,.5)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<g id="mc" style="display:none"><path d="M 12 123 Q 22 138 32 123 Q 26 134 22 135 Q 18 134 12 123 Z" fill="#5599cc"/></g>
+<!-- Blowhole -->
+<ellipse cx="68" cy="80" rx="5" ry="3" fill="rgba(0,60,140,.3)"/>
+<!-- Cheek shine -->
+<ellipse cx="38" cy="122" rx="12" ry="7" fill="rgba(100,200,255,.4)"/>
+<g id="heartEyes" style="display:none"><ellipse cx="54" cy="112" rx="14" ry="15" fill="#2288ff"/><text x="54" y="118" font-size="14" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildFlameow(c='#ffcbb3'){
+  return svg(200,230,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#ffe8d8"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc6633"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#fff5f0"/><stop offset="100%" stop-color="#ffc0a0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(180,80,30,.25)"/></filter>
+  <filter id="fg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="100" cy="225" rx="58" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="tail" style="transform-origin:40px 192px">
+  <path d="M 30 200 Q 12 185 14 165 Q 16 148 30 145 Q 42 142 48 156 Q 54 170 46 190 Q 40 204 30 200 Z" fill="${c}" stroke="rgba(160,60,20,.3)" stroke-width="1.5"/>
+  <!-- Flame tip on tail -->
+  <path d="M 14 168 Q 8 155 14 144 Q 22 136 28 150 Q 24 158 14 168 Z" fill="#ff6600" filter="url(#fg)"/>
+  <path d="M 16 165 Q 12 155 17 147 Q 23 141 27 152 Z" fill="#ffaa00"/>
+</g>
+<g id="bodyGroup" style="transform-origin:100px 180px">
+  <ellipse cx="100" cy="177" rx="66" ry="60" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="100" cy="188" rx="40" ry="34" fill="url(#bg2)"/>
+  <ellipse cx="78" cy="150" rx="15" ry="8" fill="rgba(255,255,255,.28)" transform="rotate(-25,78,150)"/>
+</g>
+<!-- Flame ears -->
+<g id="earL" style="transform-origin:62px 72px">
+  <polygon points="48,108 62,52 78,108" fill="${c}" stroke="rgba(160,60,20,.25)" stroke-width="1.5"/>
+  <polygon points="54,102 62,60 72,102" fill="#ff6622"/>
+  <polygon points="58,100 62,68 67,100" fill="#ffaa44" opacity=".7"/>
+</g>
+<g id="earR" style="transform-origin:138px 72px">
+  <polygon points="122,108 138,52 154,108" fill="${c}" stroke="rgba(160,60,20,.25)" stroke-width="1.5"/>
+  <polygon points="128,102 138,60 148,102" fill="#ff6622"/>
+  <polygon points="132,100 138,68 143,100" fill="#ffaa44" opacity=".7"/>
+</g>
+<!-- Flame crown on head -->
+<path d="M 88 75 Q 94 58 100 72 Q 106 55 112 72 Q 118 58 124 75" fill="none" stroke="#ff6622" stroke-width="3" stroke-linecap="round" filter="url(#fg)"/>
+<ellipse cx="100" cy="120" rx="55" ry="51" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="80" cy="100" rx="13" ry="7" fill="rgba(255,255,255,.28)" transform="rotate(-22,80,100)"/>
+<g id="eyeL" style="transform-origin:82px 116px">
+  <ellipse cx="82" cy="116" rx="13" ry="14" fill="white"/>
+  <ellipse cx="82" cy="118" rx="8.5" ry="10" fill="#1a0800"/>
+  <ellipse cx="82" cy="117" rx="5.5" ry="7" fill="#882200"/>
+  <circle cx="82" cy="118" r="3.8" fill="#111"/>
+  <circle cx="87" cy="112" r="3" fill="white"/>
+  <ellipse id="lidL" cx="82" cy="104" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 70 108 Q 82 103 94 108" fill="none" stroke="rgba(140,50,10,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:118px 116px">
+  <ellipse cx="118" cy="116" rx="13" ry="14" fill="white"/>
+  <ellipse cx="118" cy="118" rx="8.5" ry="10" fill="#1a0800"/>
+  <ellipse cx="118" cy="117" rx="5.5" ry="7" fill="#882200"/>
+  <circle cx="118" cy="118" r="3.8" fill="#111"/>
+  <circle cx="123" cy="112" r="3" fill="white"/>
+  <ellipse id="lidR" cx="118" cy="104" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 106 108 Q 118 103 130 108" fill="none" stroke="rgba(140,50,10,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="100" cy="133" rx="8" ry="5.5" fill="#ff7744" stroke="rgba(160,60,20,.3)" stroke-width="1"/>
+<g id="mouth">
+  <path id="mn" d="M 91 141 Q 96 147 100 145 Q 104 147 109 141" stroke="rgba(140,50,10,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 89 140 Q 100 157 111 140 Q 106 152 100 153 Q 94 152 89 140 Z" fill="#ff7744"/><ellipse cx="100" cy="149" rx="7" ry="4.5" fill="#cc4422"/></g>
+</g>
+<ellipse cx="70" cy="136" rx="12" ry="7" fill="rgba(255,120,60,.35)"/>
+<ellipse cx="130" cy="136" rx="12" ry="7" fill="rgba(255,120,60,.35)"/>
+<line x1="88" y1="130" x2="52" y2="124" stroke="rgba(160,80,30,.4)" stroke-width="1.5"/>
+<line x1="88" y1="136" x2="50" y2="136" stroke="rgba(160,80,30,.4)" stroke-width="1.5"/>
+<line x1="112" y1="130" x2="148" y2="124" stroke="rgba(160,80,30,.4)" stroke-width="1.5"/>
+<line x1="112" y1="136" x2="150" y2="136" stroke="rgba(160,80,30,.4)" stroke-width="1.5"/>
+<g id="paws"><ellipse cx="72" cy="218" rx="20" ry="12" fill="url(#bg1)"/><ellipse cx="128" cy="218" rx="20" ry="12" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="82" cy="116" rx="13" ry="14" fill="#ff5500"/><text x="82" y="122" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="118" cy="116" rx="13" ry="14" fill="#ff5500"/><text x="118" y="122" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildCrystaloo(c='#e8b3ff'){
+  return svg(205,230,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#f5e0ff"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#9933bb"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#faf0ff"/><stop offset="100%" stop-color="#ddaaff"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(120,30,180,.25)"/></filter>
+</defs>
+<ellipse cx="102" cy="225" rx="58" ry="9" fill="rgba(0,0,0,.13)"/>
+<g id="tail" style="transform-origin:38px 192px">
+  <!-- Striped raccoon tail -->
+  <ellipse cx="28" cy="200" rx="26" ry="18" fill="#333" transform="rotate(-18,28,200)"/>
+  <ellipse cx="24" cy="196" rx="20" ry="14" fill="${c}" transform="rotate(-18,24,196)"/>
+  <ellipse cx="20" cy="192" rx="14" ry="10" fill="#333" transform="rotate(-18,20,192)"/>
+  <ellipse cx="16" cy="188" rx="9" ry="7" fill="${c}" transform="rotate(-18,16,188)"/>
+  <ellipse cx="12" cy="185" rx="6" ry="4.5" fill="white" transform="rotate(-18,12,185)"/>
+</g>
+<g id="bodyGroup" style="transform-origin:102px 180px">
+  <ellipse cx="102" cy="177" rx="66" ry="60" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="102" cy="188" rx="40" ry="34" fill="url(#bg2)"/>
+  <ellipse cx="80" cy="150" rx="15" ry="8" fill="rgba(255,255,255,.28)" transform="rotate(-25,80,150)"/>
+</g>
+<g id="earL" style="transform-origin:64px 74px">
+  <circle cx="64" cy="70" r="22" fill="${c}" stroke="rgba(100,20,160,.25)" stroke-width="1.5"/>
+  <circle cx="64" cy="70" r="14" fill="#cc88ff"/>
+</g>
+<g id="earR" style="transform-origin:140px 74px">
+  <circle cx="140" cy="70" r="22" fill="${c}" stroke="rgba(100,20,160,.25)" stroke-width="1.5"/>
+  <circle cx="140" cy="70" r="14" fill="#cc88ff"/>
+</g>
+<ellipse cx="102" cy="120" rx="56" ry="52" fill="url(#bg1)" filter="url(#sh)"/>
+<!-- Raccoon mask markings -->
+<ellipse cx="82" cy="118" rx="19" ry="16" fill="rgba(50,20,60,.55)"/>
+<ellipse cx="122" cy="118" rx="19" ry="16" fill="rgba(50,20,60,.55)"/>
+<ellipse cx="80" cy="100" rx="13" ry="7" fill="rgba(255,255,255,.26)" transform="rotate(-22,80,100)"/>
+<g id="eyeL" style="transform-origin:82px 118px">
+  <ellipse cx="82" cy="118" rx="13" ry="14" fill="white"/>
+  <ellipse cx="82" cy="120" rx="8.5" ry="10" fill="#1a001a"/>
+  <ellipse cx="82" cy="119" rx="5.5" ry="7" fill="#662288"/>
+  <circle cx="82" cy="120" r="3.8" fill="#111"/>
+  <circle cx="87" cy="114" r="3" fill="white"/>
+  <ellipse id="lidL" cx="82" cy="106" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+</g>
+<g id="eyeR" style="transform-origin:122px 118px">
+  <ellipse cx="122" cy="118" rx="13" ry="14" fill="white"/>
+  <ellipse cx="122" cy="120" rx="8.5" ry="10" fill="#1a001a"/>
+  <ellipse cx="122" cy="119" rx="5.5" ry="7" fill="#662288"/>
+  <circle cx="122" cy="120" r="3.8" fill="#111"/>
+  <circle cx="127" cy="114" r="3" fill="white"/>
+  <ellipse id="lidR" cx="122" cy="106" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+</g>
+<!-- Raccoon nose -->
+<ellipse cx="102" cy="136" rx="9" ry="7" fill="#dda0ff" stroke="rgba(100,20,160,.3)" stroke-width="1"/>
+<circle cx="99" cy="134" r="2.5" fill="rgba(255,255,255,.5)"/>
+<g id="mouth">
+  <path id="mn" d="M 93 144 Q 98 150 102 148 Q 106 150 111 144" stroke="rgba(100,20,160,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 91 143 Q 102 160 113 143 Q 108 155 102 156 Q 96 155 91 143 Z" fill="#dda0ff"/></g>
+</g>
+<g id="paws"><ellipse cx="74" cy="218" rx="20" ry="12" fill="url(#bg1)"/><ellipse cx="130" cy="218" rx="20" ry="12" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="82" cy="118" rx="13" ry="14" fill="#9933bb"/><text x="82" y="124" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="122" cy="118" rx="13" ry="14" fill="#9933bb"/><text x="122" y="124" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildDewdrop(c='#b3f5e0'){
+  return svg(210,200,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#e0fff4"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#22aa77"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="42%" r="52%"><stop offset="0%" stop-color="#f0fff8"/><stop offset="100%" stop-color="#99eec8"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(20,120,80,.22)"/></filter>
+</defs>
+<ellipse cx="105" cy="196" rx="60" ry="8" fill="rgba(0,0,0,.12)"/>
+<!-- Axolotl body - chubby with stubby legs -->
+<g id="bodyGroup" style="transform-origin:105px 148px">
+  <ellipse cx="105" cy="145" rx="82" ry="58" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="105" cy="155" rx="55" ry="40" fill="url(#bg2)"/>
+  <ellipse cx="80" cy="112" rx="18" ry="10" fill="rgba(255,255,255,.3)" transform="rotate(-20,80,112)"/>
+</g>
+<!-- Axolotl tail -->
+<g id="tail" style="transform-origin:180px 145px">
+  <path d="M 175 135 Q 200 120 212 132 Q 208 148 194 152 Q 178 155 175 135 Z" fill="${c}" stroke="rgba(20,120,80,.2)" stroke-width="1.5"/>
+</g>
+<!-- Feathery gills - the signature axolotl feature -->
+<g id="flipL" style="transform-origin:35px 98px">
+  <path d="M 42 110 Q 22 88 18 68 Q 26 74 34 92 Q 28 78 36 68 Q 44 82 40 98 Q 36 84 44 76 Q 50 90 44 108 Z" fill="#ff8888" stroke="rgba(180,50,50,.3)" stroke-width="1.2"/>
+</g>
+<g id="flipR" style="transform-origin:175px 98px">
+  <path d="M 168 110 Q 188 88 192 68 Q 184 74 176 92 Q 182 78 174 68 Q 166 82 170 98 Q 174 84 166 76 Q 160 90 166 108 Z" fill="#ff8888" stroke="rgba(180,50,50,.3)" stroke-width="1.2"/>
+</g>
+<!-- Head -->
+<ellipse cx="105" cy="92" rx="56" ry="50" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="82" cy="70" rx="16" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-20,82,70)"/>
+<g id="eyeL" style="transform-origin:86px 86px">
+  <ellipse cx="86" cy="86" rx="13" ry="14" fill="white"/>
+  <ellipse cx="86" cy="88" rx="8.5" ry="10" fill="#0a1e10"/>
+  <ellipse cx="86" cy="87" rx="5.5" ry="7" fill="#1a6640"/>
+  <circle cx="86" cy="88" r="4" fill="#111"/>
+  <circle cx="92" cy="82" r="3.2" fill="white"/>
+  <ellipse id="lidL" cx="86" cy="74" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 74 78 Q 86 73 98 78" fill="none" stroke="rgba(20,100,60,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:124px 86px">
+  <ellipse cx="124" cy="86" rx="13" ry="14" fill="white"/>
+  <ellipse cx="124" cy="88" rx="8.5" ry="10" fill="#0a1e10"/>
+  <ellipse cx="124" cy="87" rx="5.5" ry="7" fill="#1a6640"/>
+  <circle cx="124" cy="88" r="4" fill="#111"/>
+  <circle cx="130" cy="82" r="3.2" fill="white"/>
+  <ellipse id="lidR" cx="124" cy="74" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 112 78 Q 124 73 136 78" fill="none" stroke="rgba(20,100,60,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="105" cy="104" rx="8" ry="6" fill="#55ccaa" stroke="rgba(20,100,60,.3)" stroke-width="1"/>
+<g id="mouth">
+  <path id="mn" d="M 96 112 Q 101 118 105 116 Q 109 118 114 112" stroke="rgba(20,100,60,.55)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 94 111 Q 105 128 116 111 Q 111 123 105 124 Q 99 123 94 111 Z" fill="#55ccaa"/></g>
+</g>
+<!-- Stubby legs -->
+<ellipse cx="68" cy="178" rx="18" ry="12" fill="url(#bg1)" transform="rotate(-10,68,178)"/>
+<ellipse cx="142" cy="178" rx="18" ry="12" fill="url(#bg1)" transform="rotate(10,142,178)"/>
+<g id="heartEyes" style="display:none"><ellipse cx="86" cy="86" rx="13" ry="14" fill="#22aa77"/><text x="86" y="92" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="124" cy="86" rx="13" ry="14" fill="#22aa77"/><text x="124" y="92" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildPuffy(c='#ffb3cc'){
+  return svg(195,225,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="35%" r="62%"><stop offset="0%" stop-color="#ffe8f0"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc4477"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="38%" r="52%"><stop offset="0%" stop-color="#fff2f6"/><stop offset="100%" stop-color="#ffa0c0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(180,40,80,.22)"/></filter>
+</defs>
+<ellipse cx="97" cy="219" rx="56" ry="9" fill="rgba(0,0,0,.13)"/>
+<!-- Very round pig body -->
+<g id="bodyGroup" style="transform-origin:97px 178px">
+  <ellipse cx="97" cy="174" rx="72" ry="62" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="97" cy="186" rx="44" ry="36" fill="url(#bg2)"/>
+  <ellipse cx="76" cy="146" rx="16" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-25,76,146)"/>
+</g>
+<!-- Curly tail -->
+<g id="tail" style="transform-origin:158px 174px">
+  <path d="M 162 168 Q 172 162 176 170 Q 178 180 168 182 Q 160 182 158 176 Q 156 168 162 168 Z" fill="${c}" stroke="rgba(160,40,70,.3)" stroke-width="1.5"/>
+</g>
+<!-- Pig ears - floppy -->
+<g id="earL" style="transform-origin:60px 74px">
+  <ellipse cx="58" cy="74" rx="20" ry="26" fill="${c}" stroke="rgba(160,40,70,.25)" stroke-width="1.5" transform="rotate(-15,58,74)"/>
+  <ellipse cx="58" cy="76" rx="13" ry="18" fill="#ff99bb" transform="rotate(-15,58,76)"/>
+</g>
+<g id="earR" style="transform-origin:136px 74px">
+  <ellipse cx="136" cy="74" rx="20" ry="26" fill="${c}" stroke="rgba(160,40,70,.25)" stroke-width="1.5" transform="rotate(15,136,74)"/>
+  <ellipse cx="136" cy="76" rx="13" ry="18" fill="#ff99bb" transform="rotate(15,136,76)"/>
+</g>
+<ellipse cx="97" cy="116" rx="54" ry="50" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="76" cy="96" rx="14" ry="8" fill="rgba(255,255,255,.28)" transform="rotate(-22,76,96)"/>
+<g id="eyeL" style="transform-origin:78px 110px">
+  <ellipse cx="78" cy="110" rx="12" ry="13" fill="white"/>
+  <ellipse cx="78" cy="112" rx="8" ry="9.5" fill="#1a0808"/>
+  <ellipse cx="78" cy="111" rx="5" ry="6.5" fill="#553333"/>
+  <circle cx="78" cy="112" r="3.5" fill="#111"/>
+  <circle cx="83" cy="106" r="3" fill="white"/>
+  <ellipse id="lidL" cx="78" cy="99" rx="12" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 67 102 Q 78 97 89 102" fill="none" stroke="rgba(140,30,60,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:116px 110px">
+  <ellipse cx="116" cy="110" rx="12" ry="13" fill="white"/>
+  <ellipse cx="116" cy="112" rx="8" ry="9.5" fill="#1a0808"/>
+  <ellipse cx="116" cy="111" rx="5" ry="6.5" fill="#553333"/>
+  <circle cx="116" cy="112" r="3.5" fill="#111"/>
+  <circle cx="121" cy="106" r="3" fill="white"/>
+  <ellipse id="lidR" cx="116" cy="99" rx="12" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 105 102 Q 116 97 127 102" fill="none" stroke="rgba(140,30,60,.4)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<!-- Pig snout -->
+<ellipse cx="97" cy="130" rx="20" ry="14" fill="#ffaacc" stroke="rgba(160,40,80,.3)" stroke-width="1.5"/>
+<circle cx="91" cy="130" r="4.5" fill="rgba(160,40,80,.4)"/>
+<circle cx="103" cy="130" r="4.5" fill="rgba(160,40,80,.4)"/>
+<circle cx="90" cy="129" r="1.8" fill="rgba(0,0,0,.2)"/>
+<circle cx="102" cy="129" r="1.8" fill="rgba(0,0,0,.2)"/>
+<g id="mouth">
+  <path id="mn" d="M 86 141 Q 92 148 97 146 Q 102 148 108 141" stroke="rgba(140,30,60,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 84 140 Q 97 158 110 140 Q 104 152 97 153 Q 90 152 84 140 Z" fill="#ffaacc"/></g>
+</g>
+<ellipse cx="66" cy="130" rx="12" ry="7" fill="rgba(255,130,160,.4)"/>
+<ellipse cx="128" cy="130" rx="12" ry="7" fill="rgba(255,130,160,.4)"/>
+<g id="paws"><ellipse cx="70" cy="212" rx="20" ry="12" fill="url(#bg1)"/><ellipse cx="124" cy="212" rx="20" ry="12" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="78" cy="110" rx="12" ry="13" fill="#ff4477"/><text x="78" y="116" font-size="12" text-anchor="middle" fill="white">♥</text><ellipse cx="116" cy="110" rx="12" ry="13" fill="#ff4477"/><text x="116" y="116" font-size="12" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildShimmur(c='#ffedb3'){
+  return svg(220,240,`
+<defs>
+  <radialGradient id="bg1" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#fff8dc"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="#cc9900"/></radialGradient>
+  <radialGradient id="bg2" cx="50%" cy="40%" r="52%"><stop offset="0%" stop-color="#fffef0"/><stop offset="100%" stop-color="#ffe8a0"/></radialGradient>
+  <filter id="sh"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="rgba(160,120,0,.25)"/></filter>
+  <filter id="mg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="110" cy="234" rx="64" ry="9" fill="rgba(0,0,0,.13)"/>
+<!-- Mane glow -->
+<ellipse cx="110" cy="110" rx="68" ry="55" fill="rgba(255,200,50,.2)" filter="url(#mg)"/>
+<g id="bodyGroup" style="transform-origin:110px 185px">
+  <ellipse cx="110" cy="182" rx="70" ry="62" fill="url(#bg1)" filter="url(#sh)"/>
+  <ellipse cx="110" cy="193" rx="42" ry="36" fill="url(#bg2)"/>
+  <ellipse cx="87" cy="152" rx="17" ry="9" fill="rgba(255,255,255,.3)" transform="rotate(-25,87,152)"/>
+</g>
+<!-- Lion mane - layered circles -->
+<circle cx="110" cy="118" r="65" fill="#cc8800" opacity=".4"/>
+<circle cx="110" cy="118" r="55" fill="#ddaa00" opacity=".35"/>
+<!-- Round ears -->
+<circle cx="68" cy="72" r="22" fill="${c}" stroke="rgba(160,120,0,.2)" stroke-width="1.5"/>
+<circle cx="68" cy="72" r="14" fill="#ffdd88"/>
+<circle cx="152" cy="72" r="22" fill="${c}" stroke="rgba(160,120,0,.2)" stroke-width="1.5"/>
+<circle cx="152" cy="72" r="14" fill="#ffdd88"/>
+<ellipse cx="110" cy="118" rx="58" ry="54" fill="url(#bg1)" filter="url(#sh)"/>
+<ellipse cx="87" cy="96" rx="15" ry="8" fill="rgba(255,255,255,.3)" transform="rotate(-22,87,96)"/>
+<g id="eyeL" style="transform-origin:88px 112px">
+  <ellipse cx="88" cy="112" rx="13" ry="14" fill="white"/>
+  <ellipse cx="88" cy="114" rx="8.5" ry="10.5" fill="#1a1000"/>
+  <ellipse cx="88" cy="113" rx="5.5" ry="7" fill="#664400"/>
+  <circle cx="88" cy="114" r="4" fill="#111"/>
+  <circle cx="93" cy="108" r="3.2" fill="white"/>
+  <ellipse id="lidL" cx="88" cy="100" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 76 104 Q 88 99 100 104" fill="none" stroke="rgba(130,90,0,.45)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<g id="eyeR" style="transform-origin:132px 112px">
+  <ellipse cx="132" cy="112" rx="13" ry="14" fill="white"/>
+  <ellipse cx="132" cy="114" rx="8.5" ry="10.5" fill="#1a1000"/>
+  <ellipse cx="132" cy="113" rx="5.5" ry="7" fill="#664400"/>
+  <circle cx="132" cy="114" r="4" fill="#111"/>
+  <circle cx="137" cy="108" r="3.2" fill="white"/>
+  <ellipse id="lidR" cx="132" cy="100" rx="13" ry="2.8" fill="${c}" style="display:none"/>
+  <path d="M 120 104 Q 132 99 144 104" fill="none" stroke="rgba(130,90,0,.45)" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<ellipse cx="110" cy="132" rx="18" ry="12" fill="#ffdd88"/>
+<ellipse cx="110" cy="132" rx="10" ry="7" fill="#cc9944" stroke="rgba(140,90,0,.3)" stroke-width="1.5"/>
+<circle cx="107" cy="130" r="3" fill="rgba(255,255,255,.45)"/>
+<g id="mouth">
+  <path id="mn" d="M 98 142 Q 105 150 110 148 Q 115 150 122 142" stroke="rgba(130,80,0,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <g id="mc" style="display:none"><path d="M 95 141 Q 110 160 125 141 Q 118 154 110 156 Q 102 154 95 141 Z" fill="#cc9944"/></g>
+</g>
+<ellipse cx="74" cy="136" rx="13" ry="8" fill="rgba(255,180,60,.35)"/>
+<ellipse cx="146" cy="136" rx="13" ry="8" fill="rgba(255,180,60,.35)"/>
+<line x1="96" y1="128" x2="58" y2="121" stroke="rgba(160,120,0,.4)" stroke-width="1.5"/>
+<line x1="96" y1="135" x2="56" y2="135" stroke="rgba(160,120,0,.4)" stroke-width="1.5"/>
+<line x1="124" y1="128" x2="162" y2="121" stroke="rgba(160,120,0,.4)" stroke-width="1.5"/>
+<line x1="124" y1="135" x2="164" y2="135" stroke="rgba(160,120,0,.4)" stroke-width="1.5"/>
+<g id="paws"><ellipse cx="80" cy="226" rx="22" ry="14" fill="url(#bg1)"/><ellipse cx="140" cy="226" rx="22" ry="14" fill="url(#bg1)"/></g>
+<g id="heartEyes" style="display:none"><ellipse cx="88" cy="112" rx="13" ry="14" fill="#ddaa00"/><text x="88" y="118" font-size="13" text-anchor="middle" fill="white">♥</text><ellipse cx="132" cy="112" rx="13" ry="14" fill="#ddaa00"/><text x="132" y="118" font-size="13" text-anchor="middle" fill="white">♥</text></g>`);
+}
+
+function buildGeneric(c='#ffb3d9'){return buildFluffkin(c);}
+
+
+
+
+
+const BUILDERS = {
+  Fluffkin:buildFluffkin, Sparklox:buildSparklox, Puddlum:buildPuddlum,
+  Driftail:buildDriftail, Lunabelle:buildLunabelle,
+  Glimcat:buildGlimcat, Coraluff:buildCoraluff, Peppin:buildPeppin,
+  Starwhirl:buildStarwhirl, Mossling:buildMossling, Twinkow:buildTwinkow,
+  Boulbear:buildBoulbear, Zipplet:buildZipplet, Dazzlphin:buildDazzlphin,
+  Flameow:buildFlameow, Crystaloo:buildCrystaloo, Dewdrop:buildDewdrop,
+  Puffy:buildPuffy, Shimmur:buildShimmur,
+};
+function getBuilder(name){
+  if(BUILDERS[name]) return BUILDERS[name];
+  const arch = ARCHETYPE[name];
+  return arch ? BUILDERS[arch] : buildGeneric;
+}
+
+// ═══════════════════════════════════════════
+//  ANIMATION ENGINE
+// ═══════════════════════════════════════════
+let animT=0, rafId=null, currentName='';
+
+// Blink state
+let blinkTimer=90, blinkNext=160, isBlinking=false, blinkFrame=0;
+// Fluffkin
+let isHopping=false, hopPhase=0, hopTimer=250, earWigglePhase=0;
+// Sparklox
+let tailWag=0, foxEarPhase=0;
+// Puddlum  
+let isClapping=false, clapPhase=0, clapTimer=200, rockPhase=0;
+// Driftail
+let wingFlap=0;
+// Lunabelle
+let headAngle=0, headDir=1, headTimer=120, tuftPhase=0;
+
+function startAnim(name){
+  currentName=name; animT=0;
+  blinkTimer=60+Math.random()*100; blinkNext=120+Math.random()*160;
+  isHopping=false; hopTimer=180+Math.random()*200;
+  isClapping=false; clapTimer=160+Math.random()*180;
+  headAngle=0; headTimer=90+Math.random()*90;
+  tailWag=0; wingFlap=0; rockPhase=0;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId=requestAnimationFrame(al);
+}
+
+function el(id){ return document.getElementById(id); }
+
+function al(){
+  rafId=requestAnimationFrame(al);
+  animT++;
+  if(!el('cSvg')) return;
+  try{
+
+  // ── BREATHING: body gently expands and contracts ──
+  const bg=el('bodyGroup');
+  if(bg){
+    const breathe=Math.sin(animT*.038)*0.016;
+    const breatheX=1-breathe*.4;
+    bg.style.transform=`scaleY(${1+breathe}) scaleX(${breatheX})`;
+  }
+
+  // ── BLINKING ──
+  blinkTimer--;
+  if(blinkTimer<=0 && !isBlinking){ isBlinking=true; blinkFrame=0; }
+  if(isBlinking){
+    blinkFrame++;
+    const lidL=el('lidL'), lidR=el('lidR');
+    const eyeL=el('eyeL'), eyeR=el('eyeR');
+    if(blinkFrame===1){
+      // Snap closed
+      if(lidL){ lidL.style.display='block'; lidL.setAttribute('ry','11'); }
+      if(lidR){ lidR.style.display='block'; lidR.setAttribute('ry','11'); }
+      if(eyeL) eyeL.style.filter='brightness(.15)';
+      if(eyeR) eyeR.style.filter='brightness(.15)';
+    } else if(blinkFrame===4){
+      // Half open
+      if(lidL) lidL.setAttribute('ry','5');
+      if(lidR) lidR.setAttribute('ry','5');
+      if(eyeL) eyeL.style.filter='brightness(.5)';
+      if(eyeR) eyeR.style.filter='brightness(.5)';
+    } else if(blinkFrame===7){
+      // Open
+      if(lidL) lidL.style.display='none';
+      if(lidR) lidR.style.display='none';
+      if(eyeL) eyeL.style.filter='';
+      if(eyeR) eyeR.style.filter='';
+    } else if(blinkFrame===12){
+      isBlinking=false;
+      blinkTimer=blinkNext;
+      blinkNext=140+Math.random()*200;
+    }
+  }
+
+  // ── EYE MICRO-MOVEMENT: subtle pupil drift via the inner iris elements ──
+  if(!isBlinking && animT%4===0){
+    const ex=Math.sin(animT*.018)*1.2;
+    const ey=Math.sin(animT*.022)*.6;
+    // Move just pupils, not whole eye group (avoids transform conflict)
+    const pupils=document.querySelectorAll('#cSvg circle[fill="#111"]');
+    pupils.forEach(p=>{ p.style.transform=`translate(${ex}px,${ey}px)`; });
+  }
+
+  // ── CREATURE-SPECIFIC ANIMATIONS ──
+  const arch = ARCHETYPE[currentName];
+  const animName = CD[currentName] ? currentName : (arch||'Fluffkin');
+  if(animName==='Fluffkin')   animFluffkin();
+  else if(animName==='Sparklox') animSparklox();
+  else if(animName==='Puddlum')  animPuddlum();
+  else if(animName==='Driftail') animDriftail();
+  else if(animName==='Lunabelle') animLunabelle();
+  }catch(e){ /* suppress per-frame errors */ }
+}
+
+// ── FLUFFKIN: ear twitches, tail wag, periodic hops ──
+function animFluffkin(){
+  earWigglePhase+=.07;
+  const earL=el('earL'), earR=el('earR'), tail=el('tail');
+  // Independent ear movement — left twitches more
+  if(earL) earL.style.transform=`rotate(${Math.sin(earWigglePhase)*6 + Math.sin(animT*.15)*2}deg)`;
+  if(earR) earR.style.transform=`rotate(${Math.sin(earWigglePhase+1.4)*4}deg)`;
+  // Tail wag
+  if(tail) tail.style.transform=`rotate(${Math.sin(animT*.07)*11}deg)`;
+  // Hop
+  hopTimer--;
+  if(hopTimer<=0 && !isHopping){ isHopping=true; hopPhase=0; hopTimer=200+Math.random()*240; }
+  if(isHopping){
+    hopPhase++;
+    const st=el('stage');
+    if(st){
+      // Arc jump: goes up then comes down with squash on landing
+      const progress=hopPhase/22;
+      const hy=-Math.sin(progress*Math.PI)*42;
+      // Squash at peak, stretch going up
+      const sx=progress<.5 ? 1-progress*.08 : 1-(1-progress)*.08;
+      const sy=progress<.5 ? 1+progress*.1  : 1+(1-progress)*.1;
+      // Landing squash
+      const landSX = hopPhase===21 ? 1.18 : hopPhase===22 ? 1.1 : sx;
+      const landSY = hopPhase===21 ? .78  : hopPhase===22 ? .88 : sy;
+      st.style.transform=`translateY(${hy}px) scaleX(${landSX}) scaleY(${landSY})`;
+    }
+    if(hopPhase>22){ isHopping=false; if(el('stage')) el('stage').style.transform=''; }
+  }
+}
+
+// ── SPARKLOX: tail wag with physics, ear flick ──
+function animSparklox(){
+  tailWag+=.08;
+  foxEarPhase+=.05;
+  const tail=el('tail'), earL=el('earL'), earR=el('earR');
+  // Tail has a slight lag/spring feel via sin + offset
+  if(tail){
+    const wag=Math.sin(tailWag)*22 + Math.sin(tailWag*2)*.8*4;
+    tail.style.transform=`rotate(${wag}deg)`;
+  }
+  // Occasional ear flick
+  const flick=Math.sin(foxEarPhase)*5;
+  if(earL) earL.style.transform=`rotate(${flick}deg)`;
+  if(earR) earR.style.transform=`rotate(${Math.sin(foxEarPhase+.8)*4}deg)`;
+}
+
+// ── PUDDLUM: body rock, flipper sway, clap, tiny bounce ──
+function animPuddlum(){
+  rockPhase+=.045;
+  const flipL=el('flipL'), flipR=el('flipR'), bg=el('bodyGroup');
+  const rock=Math.sin(rockPhase)*5;
+  // Override body transform to add rock on top of breathing
+  if(bg){
+    const breathe=Math.sin(animT*.038)*0.016;
+    bg.style.transform=`scaleY(${1+breathe}) scaleX(${1-breathe*.4}) rotate(${rock}deg)`;
+  }
+  clapTimer--;
+  if(clapTimer<=0 && !isClapping){ isClapping=true; clapPhase=0; clapTimer=180+Math.random()*180; }
+  if(isClapping){
+    clapPhase++;
+    const ca=Math.sin(clapPhase*.45)*42;
+    if(flipL) flipL.style.transform=`rotate(${-ca}deg)`;
+    if(flipR) flipR.style.transform=`rotate(${ca}deg)`;
+    // Small excited bounce during clap
+    const st=el('stage');
+    if(st) st.style.transform=`translateY(${-Math.abs(Math.sin(clapPhase*.45))*8}px)`;
+    if(clapPhase>28){
+      isClapping=false;
+      if(flipL) flipL.style.transform='';
+      if(flipR) flipR.style.transform='';
+      if(el('stage')) el('stage').style.transform='';
+    }
+  } else {
+    // Gentle resting flipper sway
+    const sw=Math.sin(animT*.058)*10;
+    if(flipL) flipL.style.transform=`rotate(${-sw}deg)`;
+    if(flipR) flipR.style.transform=`rotate(${sw}deg)`;
+  }
+}
+
+// ── DRIFTAIL: wing flap, tail flame sway, occasional stomp ──
+function animDriftail(){
+  wingFlap+=.068;
+  const wingL=el('wingL'), wingR=el('wingR'), tail=el('tail');
+  // Wing flap — asymmetric for life
+  const fa=Math.sin(wingFlap)*14 + Math.sin(wingFlap*2+.5)*3;
+  if(wingL) wingL.style.transform=`rotate(${fa}deg)`;
+  if(wingR) wingR.style.transform=`rotate(${-fa}deg)`;
+  // Tail sways with gentle flame undulation
+  if(tail) tail.style.transform=`rotate(${Math.sin(animT*.042)*10}deg)`;
+  // Occasional small stomp - use a flag to prevent stacking
+  if(animT%280===0 && !animDriftail._stomping){
+    animDriftail._stomping=true;
+    const st=el('stage');
+    if(st){
+      let f=0;
+      const iv=setInterval(()=>{
+        f++;
+        if(f<3) st.style.transform=`translateY(4px) scaleX(1.06) scaleY(.94)`;
+        else if(f<6) st.style.transform=`translateY(-6px) scaleX(.96) scaleY(1.06)`;
+        else if(f<9) st.style.transform=`translateY(2px)`;
+        else { clearInterval(iv); if(st) st.style.transform=''; animDriftail._stomping=false; }
+      },50);
+    }
+  }
+}
+
+// ── LUNABELLE: head look-around, tuft sway, halo pulse, wing settle ──
+function animLunabelle(){
+  tuftPhase+=.055;
+  headTimer--;
+  if(headTimer<=0){ headDir*=-1; headTimer=70+Math.random()*100; }
+  // Smooth angle interpolation
+  const targetAngle=headDir*24;
+  headAngle+=(targetAngle-headAngle)*.025;
+
+  // Rotate just the head area via full SVG rotation around head center
+  const svg=el('cSvg');
+  if(svg){ svg.style.transformBox='fill-box'; svg.style.transformOrigin='110px 110px'; svg.style.transform=`rotate(${headAngle*.35}deg)`; }
+
+  const tuftL=el('tuftL'), tuftR=el('tuftR');
+  if(tuftL) tuftL.style.transform=`rotate(${Math.sin(tuftPhase)*7}deg)`;
+  if(tuftR) tuftR.style.transform=`rotate(${Math.sin(tuftPhase+1)*6}deg)`;
+
+  // Wing settle
+  const wingL=el('wingL'), wingR=el('wingR');
+  const ws=Math.sin(animT*.038)*5;
+  if(wingL) wingL.style.transform=`rotate(${ws}deg)`;
+  if(wingR) wingR.style.transform=`rotate(${-ws}deg)`;
+
+  // Moon halo breathe
+  const halo=el('moonHalo');
+  if(halo){ const p=.22+Math.sin(animT*.048)*.14; halo.setAttribute('stroke',`rgba(255,220,80,${p})`); }
+}
+
+// ═══════════════════════════════════════════
+//  REACTION ANIMATIONS
+// ═══════════════════════════════════════════
+
+function squashStretch(stage, frames){
+  // frames: array of [scaleX, scaleY, ms]
+  let i=0;
+  function next(){
+    if(i>=frames.length){ stage.style.transform=''; return; }
+    const [sx,sy,ms]=frames[i++];
+    stage.style.transform=`scaleX(${sx}) scaleY(${sy})`;
+    setTimeout(next,ms);
+  }
+  next();
+}
+
+function reactPet(){
+  const st=el('stage'), he=el('heartEyes');
+  if(he) he.style.display='block';
+  // Big squish (wide/flat) then bounce up (narrow/tall) then settle
+  squashStretch(st,[
+    [1.22,.78,80],[.92,1.14,80],[1.1,.9,70],[.96,1.06,70],[1.0,1.0,60]
+  ]);
+  setTimeout(()=>{ if(he) he.style.display='none'; }, 2200);
+}
+
+function reactFeed(){
+  const mn=el('mn'), mc=el('mc'), st=el('stage');
+  if(mn) mn.style.display='none';
+  if(mc) mc.style.display='block';
+  // Anticipation lean back, then lunge forward to chomp
+  let f=0;
+  const iv=setInterval(()=>{
+    f++;
+    if(f<=4){
+      // Lean back
+      if(st) st.style.transform=`translateX(${-f*2}px) rotate(${-f}deg)`;
+    } else if(f<=8){
+      // Lunge forward + chomp squash
+      if(st) st.style.transform=`translateX(${(f-4)*4}px) scaleX(1.14) scaleY(.86) rotate(2deg)`;
+    } else if(f<=14){
+      // Chewing bounce
+      const chew=Math.sin((f-8)*0.9)*0.06;
+      if(st) st.style.transform=`scaleX(${1+chew}) scaleY(${1-chew})`;
+    } else if(f<=18){
+      // Settle
+      if(st) st.style.transform='';
+    } else {
+      clearInterval(iv);
+      if(mn) mn.style.display='block';
+      if(mc) mc.style.display='none';
+      if(st) st.style.transform='';
+    }
+  },55);
+}
+
+function reactBrush(){
+  const st=el('stage');
+  // Lean into the brush - tilt one way, blissful
+  let f=0;
+  const iv=setInterval(()=>{
+    f++;
+    // Slow lean to right, then left, then settle contentedly
+    const angle=Math.sin(f*.28)*12;
+    const tx=Math.sin(f*.28)*6;
+    if(st) st.style.transform=`rotate(${angle}deg) translateX(${tx}px)`;
+    if(f>42){ clearInterval(iv); if(st) st.style.transform=''; }
+  },40);
+}
+
+function reactCuddle(){
+  const st=el('stage');
+  // Slow gentle sway then droop down
+  let f=0;
+  const iv=setInterval(()=>{
+    f++;
+    if(f<20){
+      if(st) st.style.transform=`rotate(${Math.sin(f*.2)*8}deg)`;
+    } else {
+      // Droop
+      const droop=Math.min(1,(f-20)/15);
+      if(st) st.style.transform=`rotate(${-5*droop}deg) scaleY(${1-droop*.04})`;
+    }
+    if(f>35){ clearInterval(iv); }
+  },45);
+}
+
+// ═══════════════════════════════════════════
+//  HABITATS
+// ═══════════════════════════════════════════
+const bg=document.getElementById('bg');const ctx=bg.getContext('2d');
+let W=0,H=0,curHab='meadow';
+
+function resize(){W=bg.width=window.innerWidth;H=bg.height=window.innerHeight;drawHab(curHab);}
+window.addEventListener('resize',resize);resize();
+
+function drawHab(type){
+  curHab=type;ctx.clearRect(0,0,W,H);
+  const f={
+    meadow(){
+      const s=ctx.createLinearGradient(0,0,0,H*.62);s.addColorStop(0,'#5bb8f5');s.addColorStop(1,'#b8e4ff');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H*.62);
+      drawSun(W*.8,H*.11,34);drawCloud(W*.12,H*.1,72);drawCloud(W*.52,H*.08,92);drawCloud(W*.82,H*.14,56);
+      const g=ctx.createLinearGradient(0,H*.56,0,H);g.addColorStop(0,'#7dd65b');g.addColorStop(.4,'#59b83d');g.addColorStop(1,'#3a8020');
+      ctx.fillStyle=g;ctx.fillRect(0,H*.56,W,H*.44);
+      for(let i=0;i<14;i++) flower(15+i*(W/14),H*.61+Math.sin(i*1.3)*18,['#ff7eb3','#ffe040','#ff5252','#4dcf8a'][i%4]);
+    },
+    ocean(){
+      const s=ctx.createLinearGradient(0,0,0,H*.48);s.addColorStop(0,'#1565c0');s.addColorStop(1,'#42a5f5');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H*.48);
+      drawSun(W*.72,H*.1,27);drawCloud(W*.2,H*.09,68);drawCloud(W*.72,H*.07,82);
+      const o=ctx.createLinearGradient(0,H*.48,0,H);o.addColorStop(0,'#0277bd');o.addColorStop(.5,'#01579b');o.addColorStop(1,'#003c6e');
+      ctx.fillStyle=o;ctx.fillRect(0,H*.48,W,H*.52);
+      for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(255,255,255,${.11+i*.04})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,H*(.5+i*.056));for(let x=0;x<W;x+=24){ctx.quadraticCurveTo(x+12,H*(.5+i*.056)-9,x+24,H*(.5+i*.056));}ctx.stroke();}
+      ctx.fillStyle='#c4a96b';ctx.fillRect(0,H*.89,W,H*.11);
+      for(let i=0;i<8;i++) coral(20+i*(W/8),H*.89,['#ff7eb3','#ff5252','#ffe040'][i%3]);
+    },
+    volcano(){
+      const s=ctx.createLinearGradient(0,0,0,H*.66);s.addColorStop(0,'#0d0500');s.addColorStop(.6,'#3a0f00');s.addColorStop(1,'#5a1800');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H*.66);
+      const gl=ctx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.4,W*.72);gl.addColorStop(0,'rgba(255,80,0,.33)');gl.addColorStop(1,'transparent');
+      ctx.fillStyle=gl;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#0d0500';ctx.beginPath();ctx.moveTo(0,H*.76);ctx.lineTo(W*.28,H*.21);ctx.lineTo(W*.72,H*.21);ctx.lineTo(W,H*.76);ctx.fill();
+      const lv=ctx.createRadialGradient(W*.5,H*.21,0,W*.5,H*.21,68);lv.addColorStop(0,'rgba(255,130,0,.92)');lv.addColorStop(.5,'rgba(255,60,0,.55)');lv.addColorStop(1,'transparent');
+      ctx.fillStyle=lv;ctx.beginPath();ctx.arc(W*.5,H*.21,68,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#1a0500';ctx.fillRect(0,H*.73,W,H*.27);
+      ctx.strokeStyle='rgba(255,80,0,.48)';ctx.lineWidth=3;
+      for(let i=0;i<6;i++){ctx.beginPath();ctx.moveTo(i*(W/5)+20,H*.73);ctx.lineTo(i*(W/5)+52,H);ctx.stroke();}
+    },
+    nightsky(){
+      const s=ctx.createLinearGradient(0,0,0,H);s.addColorStop(0,'#030010');s.addColorStop(.5,'#080825');s.addColorStop(1,'#150830');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H);
+      for(let i=0;i<100;i++){const x=Math.random()*W,y=Math.random()*H*.85,r=Math.random()*2.2;ctx.fillStyle=`rgba(255,255,255,${.35+Math.random()*.65})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle='#FFF8DC';ctx.beginPath();ctx.arc(W*.78,H*.14,40,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#030010';ctx.beginPath();ctx.arc(W*.88,H*.1,34,0,Math.PI*2);ctx.fill();
+      for(let i=0;i<4;i++){const gr=ctx.createLinearGradient(0,H*.32+i*26,W,H*.42+i*26);gr.addColorStop(0,'transparent');gr.addColorStop(.4,`rgba(77,207,138,${.07+i*.02})`);gr.addColorStop(.65,`rgba(155,95,212,${.06+i*.02})`);gr.addColorStop(1,'transparent');ctx.fillStyle=gr;ctx.fillRect(0,H*.32+i*26,W,42);}
+      ctx.fillStyle='rgba(255,255,255,.06)';ctx.beginPath();ctx.ellipse(W*.5,H*.8,W*.45,26,0,0,Math.PI*2);ctx.fill();
+    },
+    forest(){
+      const s=ctx.createLinearGradient(0,0,0,H*.42);s.addColorStop(0,'#1a3d10');s.addColorStop(1,'#2d5a20');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H*.42);
+      for(let i=0;i<10;i++){ctx.fillStyle=['#1a3a10','#2a5518','#3d7020'][i%3];ctx.beginPath();ctx.arc(i*(W/9)-10,H*.22,65+Math.sin(i)*15,0,Math.PI*2);ctx.fill();}
+      for(let i=0;i<6;i++){const gr=ctx.createLinearGradient(i*(W/4.5),0,i*(W/4.5)+26,H*.62);gr.addColorStop(0,'rgba(255,255,180,.09)');gr.addColorStop(1,'transparent');ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(i*(W/4.5),0);ctx.lineTo(i*(W/4.5)+46,H*.63);ctx.lineTo(i*(W/4.5)-46,H*.63);ctx.fill();}
+      const g=ctx.createLinearGradient(0,H*.56,0,H);g.addColorStop(0,'#3a5510');g.addColorStop(1,'#1a2808');
+      ctx.fillStyle=g;ctx.fillRect(0,H*.56,W,H*.44);
+      for(let i=0;i<7;i++) mush(25+i*(W/7),H*.61,['#ff7eb3','#ff5252','#ffe040'][i%3]);
+    },
+    mountain(){
+      const s=ctx.createLinearGradient(0,0,0,H*.56);s.addColorStop(0,'#1a2540');s.addColorStop(1,'#2a4070');
+      ctx.fillStyle=s;ctx.fillRect(0,0,W,H*.56);
+      ctx.fillStyle='#1e2c3e';ctx.beginPath();ctx.moveTo(0,H);[{x:0,h:.71},{x:W*.2,h:.39},{x:W*.45,h:.26},{x:W*.7,h:.43},{x:W,h:.66}].forEach(m=>ctx.lineTo(m.x,H*m.h));ctx.lineTo(W,H);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.88)';ctx.beginPath();ctx.moveTo(W*.35,H*.33);ctx.lineTo(W*.45,H*.26);ctx.lineTo(W*.55,H*.33);ctx.fill();
+      const g=ctx.createLinearGradient(0,H*.66,0,H);g.addColorStop(0,'#3d4d2a');g.addColorStop(1,'#1e2810');
+      ctx.fillStyle=g;ctx.fillRect(0,H*.66,W,H*.34);
+      for(let i=0;i<8;i++) pine(15+i*(W/8),H*.66,['#1a3a10','#264f18'][i%2]);
+    },
+  };
+  (f[type]||f.meadow)();
+}
+
+function drawSun(x,y,r){ctx.fillStyle='#FFE566';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,220,80,.38)';ctx.lineWidth=r*.38;for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*(r+4),y+Math.sin(a)*(r+4));ctx.lineTo(x+Math.cos(a)*(r+13),y+Math.sin(a)*(r+13));ctx.stroke();}}
+function drawCloud(x,y,s){ctx.fillStyle='rgba(255,255,255,.87)';[[0,0,s*.42],[s*.32,-s*.18,s*.38],[s*.62,0,s*.32]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(x+dx,y+dy,r,0,Math.PI*2);ctx.fill();});}
+function flower(x,y,c){ctx.fillStyle=c;for(let i=0;i<6;i++){ctx.beginPath();ctx.ellipse(x+Math.cos(i*60*Math.PI/180)*6.5,y+Math.sin(i*60*Math.PI/180)*6.5,3.5,6.5,i*60*Math.PI/180,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#FFE040';ctx.beginPath();ctx.arc(x,y,3.8,0,Math.PI*2);ctx.fill();}
+function coral(x,y,c){ctx.strokeStyle=c;ctx.lineWidth=4.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-27);ctx.moveTo(x,y-14);ctx.lineTo(x-13,y-29);ctx.moveTo(x,y-14);ctx.lineTo(x+13,y-29);ctx.stroke();}
+function mush(x,y,c){ctx.fillStyle='#7a4a20';ctx.fillRect(x-3.8,y-15,7.5,15);ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y-15,17,13,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.48)';ctx.beginPath();ctx.arc(x-5,y-19,4.2,0,Math.PI*2);ctx.fill();}
+function pine(x,y,c){ctx.fillStyle=c;[[0,-42,15],[0,-27,21],[0,-11,27]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.moveTo(x+dx-r,y+dy+r);ctx.lineTo(x+dx,y+dy-r);ctx.lineTo(x+dx+r,y+dy+r);ctx.fill();});ctx.fillStyle='#5a3010';ctx.fillRect(x-3.8,y,7.5,11);}
+
+// ═══════════════════════════════════════════
+//  APP STATE & INIT
+// ═══════════════════════════════════════════
+let appState={name:'',color:'',word:'',happy:50,acc:null,sleeping:false,lore:null};
+
+function initCreature(name,color,word,happy){
+  const data=CD[name]||CD[ARCHETYPE[name]||'Fluffkin'];
+  appState={name,color,word,happy:happy||50,acc:null,sleeping:false,lore:data};
+  curHab=data.bgType||'meadow';
+  drawHab(curHab);
+
+  const builder=getBuilder(name);
+  const stage=document.getElementById('stage');
+  stage.innerHTML=builder(color);
+  stage.style.transform='';
+
+  // Scale and position
+  const trayH=148,topH=56;
+  const avH=window.innerHeight-topH-trayH;
+  const svgW=260,svgH=290;
+  const sf=Math.min((window.innerWidth*.88)/svgW,(avH*.88)/svgH);
+  const sw=svgW*sf,sh=svgH*sf;
+  stage.style.position='absolute';
+  stage.style.left=((window.innerWidth-sw)/2)+'px';
+  stage.style.top=(topH+(avH-sh)/2)+'px';
+  stage.style.width=sw+'px';stage.style.height=sh+'px';
+  stage.style.transformOrigin='center bottom';
+
+  document.getElementById('topName').textContent=name;
+  document.getElementById('topSub').textContent=`${data.habitat} Creature • Lv.${data.lv} • ${data.type} Type`;
+
+  document.getElementById('loreName').textContent=name;
+  document.getElementById('loreDesc').textContent=data.desc;
+  const stats=[{n:'HP',v:data.hp,c:'#4dcf8a'},{n:'ATK',v:data.atk,c:'#ff5252'},{n:'DEF',v:data.def,c:'#aac4ff'},{n:'SPD',v:data.spd,c:'#ffe040'}];
+  document.getElementById('loreStats').innerHTML=stats.map(s=>`<div class="stat-row"><div class="stat-name">${s.n}</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${s.v}%;background:${s.c}"></div></div><div class="stat-val">${s.v}</div></div>`).join('');
+  document.getElementById('loreFoot').innerHTML=`🏠 ${data.habitat} &nbsp;•&nbsp; 🌡 ${data.climate}<br>🍽 Loves ${data.food}`;
+
+  // Clear any old accessories
+  appState.acc = null;
+  appState.accSet = new Set();
+  updateHappy();buildTools();buildAccPicker();startParts();startAnim(name);
+}
+
+// ═══════════════════════════════════════════
+//  TOOLS
+// ═══════════════════════════════════════════
+const TOOLS=[{id:'pet',icon:'🤚',lbl:'Pet'},{id:'feed',icon:'🍎',lbl:'Feed'},{id:'brush',icon:'🪮',lbl:'Brush'},{id:'cuddle',icon:'💤',lbl:'Cuddle'},{id:'acc',icon:'🎀',lbl:'Dress Up'}];
+const THAPPY={pet:8,feed:15,brush:12,sparkle:12,cuddle:8,acc:10};
+const SPARKLE_ICONS=['✨','💫','⭐','🌟','💎'];
+const HEART_ICONS={pet:'💕',feed:'⭐',brush:'✨',sparkle:'💎',cuddle:'💤',acc:'🎀'};
+
+let activeTool=null,dragging=false,dX=0,dY=0,lastSpX=-999,lastSpY=-999;
+
+function buildTools(){
+  const d=appState.lore,row=document.getElementById('toolsRow');
+  row.innerHTML='';
+  TOOLS.forEach(t=>{
+    let icon=t.icon,lbl=t.lbl;
+    if(t.id==='brush'&&!d.furry){icon='✨';lbl='Sparkle';}
+    if(t.id==='feed'){icon=d.food;}
+    const el=document.createElement('div');
+    el.className='tool';el.id='tool_'+t.id;
+    el.innerHTML=`<span class="ti">${icon}</span><span class="tl">${lbl}</span>`;
+    el.addEventListener('mousedown',e=>startDrag(e,{...t,icon,lbl}));
+    el.addEventListener('touchstart',e=>startDrag(e,{...t,icon,lbl}),{passive:false});
+    row.appendChild(el);
+  });
+}
+
+function startDrag(e,tool){
+  e.preventDefault();
+  getCareCtx(); // unlock audio on first touch
+  if(appState.sleeping&&tool.id!=='pet'){speak("Shhh… sleeping! Pet me to wake up 😴");playCareSound('no');return;}
+  if(tool.id==='acc'){toggleAcc();return;}
+  activeTool=tool;dragging=true;
+  const pt=e.touches?e.touches[0]:e;dX=pt.clientX;dY=pt.clientY;
+  const g=document.getElementById('ghost');g.textContent=tool.icon;g.style.left=dX+'px';g.style.top=dY+'px';g.classList.add('on');
+  document.getElementById('tool_'+tool.id)?.classList.add('on');
+}
+document.addEventListener('mousemove',mv);document.addEventListener('touchmove',mv,{passive:false});
+document.addEventListener('mouseup',up);document.addEventListener('touchend',up);
+
+function mv(e){
+  if(!dragging)return;e.preventDefault();
+  const pt=e.touches?e.touches[0]:e;dX=pt.clientX;dY=pt.clientY;
+  const g=document.getElementById('ghost');g.style.left=dX+'px';g.style.top=dY+'px';
+  if(activeTool&&(activeTool.id==='brush'||activeTool.id==='sparkle'||activeTool.id==='pet')){
+    const dx2=dX-lastSpX,dy2=dY-lastSpY;
+    if(Math.sqrt(dx2*dx2+dy2*dy2)>18){spawnSpark(dX,dY);lastSpX=dX;lastSpY=dY;}
+  }
+}
+function up(){
+  if(!dragging)return;dragging=false;
+  const g=document.getElementById('ghost');g.classList.remove('on');
+  if(activeTool){
+    document.getElementById('tool_'+activeTool.id)?.classList.remove('on');
+    if(overCreature(dX,dY)) doAction(activeTool.id);
+    activeTool=null;
+  }
+  lastSpX=lastSpY=-999;
+}
+
+function overCreature(x,y){
+  const s=document.getElementById('stage');if(!s)return false;
+  const r=s.getBoundingClientRect();const pad=42;
+  return x>r.left-pad&&x<r.right+pad&&y>r.top-pad&&y<r.bottom+pad;
+}
+function spawnSpark(x,y){
+  const el=document.createElement('div');el.className='sp';
+  el.textContent=SPARKLE_ICONS[Math.floor(Math.random()*SPARKLE_ICONS.length)];
+  el.style.left=x+'px';el.style.top=y+'px';el.style.fontSize=(.55+Math.random()*.7)+'rem';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),950);
+}
+
+// ═══════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════
+const PET_MSGS=["Ooh that feels so nice! 🥰","More please! 💕","You have the best hands! ✨","So good! 😊","Best day ever! 🌟"];
+
+function doAction(type){
+  if(appState.sleeping&&type!=='pet'){speak("Shhh… sleeping! Pet me first 😴");playCareSound('no');return;}
+  const d=appState.lore;
+  let msg='';
+  if(type==='pet'&&appState.sleeping){
+    appState.sleeping=false;removeSleepZ();speak("Yawn… good morning! 😊");hearts('💕',6);playCareSound('pet');return;
+  }
+  switch(type){
+    case 'pet': msg=PET_MSGS[Math.floor(Math.random()*PET_MSGS.length)];reactPet();playCareSound('pet');break;
+    case 'feed': msg=d.moods.feed;reactFeed();playCareSound('feed');break;
+    case 'brush': msg=d.furry?d.moods.brush:d.moods.sparkle;if(msg==='N/A') msg='Feeling fresh! ✨';reactBrush();playCareSound('brush');break;
+    case 'cuddle': appState.sleeping=true;addSleepZ();msg=d.sleepMsg;reactCuddle();playCareSound('cuddle');break;
+    case 'acc': return;
+  }
+  speak(msg);hearts(HEART_ICONS[type]||'💕',7);
+  appState.happy=Math.min(100,appState.happy+(THAPPY[type]||8));
+  updateHappy();
+  if(appState.happy>=80){const he=document.getElementById('heartEyes');if(he){he.style.display='block';setTimeout(()=>he.style.display='none',2500);}}
+}
+
+const speechEl=document.getElementById('speech');
+let speechT=null;
+function speak(txt){
+  const stage=document.getElementById('stage');if(!stage)return;
+  speechEl.textContent=txt;
+  const r=stage.getBoundingClientRect();
+  speechEl.style.left=Math.max(8,r.left-8)+'px';
+  speechEl.style.top=Math.max(68,r.top-72)+'px';
+  speechEl.classList.add('show');clearTimeout(speechT);
+  speechT=setTimeout(()=>speechEl.classList.remove('show'),3500);
+}
+
+function hearts(icon,n){
+  const stage=document.getElementById('stage');if(!stage)return;
+  const r=stage.getBoundingClientRect();
+  for(let i=0;i<n;i++) setTimeout(()=>{
+    const el=document.createElement('div');el.className='heart';
+    el.style.cssText=`left:${r.left+20+Math.random()*(r.width-40)}px;top:${r.top+18+Math.random()*(r.height*.48)}px`;
+    el.textContent=icon;document.body.appendChild(el);setTimeout(()=>el.remove(),1200);
+  },i*125);
+}
+
+function updateHappy(){const f=document.getElementById('hFill');if(f) f.style.width=Math.min(100,appState.happy)+'%';}
+function addSleepZ(){removeSleepZ();const s=document.getElementById('stage');const el=document.createElement('div');el.className='zzz';el.id='zzz';el.textContent='💤';s.appendChild(el);}
+function removeSleepZ(){const el=document.getElementById('zzz');if(el)el.remove();}
+
+// ── GENERIC ACCESSORIES (fallback for creatures without custom set) ──
+const GENERIC_ACCESSORIES = [
+  {id:'party_hat',label:'Party Hat',
+   preview:`<polygon points="30,8 14,46 46,46" fill="#ff6eb4" stroke="#cc4488" stroke-width="1.5"/><ellipse cx="30" cy="46" rx="16" ry="5" fill="#ff9eb5" stroke="#cc4488" stroke-width="1"/><line x1="30" y1="8" x2="30" y2="2" stroke="#ffe040" stroke-width="2"/><circle cx="30" cy="1" r="4" fill="#ffe040"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_party_hat"><polygon points="110,38 86,90 134,90" fill="#ff6eb4" stroke="#cc4488" stroke-width="2"/><ellipse cx="110" cy="90" rx="24" ry="7" fill="#ff9eb5" stroke="#cc4488" stroke-width="1.5"/><line x1="110" y1="38" x2="110" y2="28" stroke="#ffe040" stroke-width="2.5"/><circle cx="110" cy="26" r="6" fill="#ffe040"/></g>`},
+  {id:'rainbow_bow',label:'Rainbow Bow',
+   preview:`<polygon points="14,20 30,30 14,40" fill="#ff5252"/><polygon points="46,20 30,30 46,40" fill="#4dcf8a"/><circle cx="30" cy="30" r="7" fill="#ffe040"/><circle cx="30" cy="30" r="3.5" fill="#ff7eb3"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_rainbow_bow"><polygon points="84,182 110,196 84,210" fill="#ff5252"/><polygon points="136,182 110,196 136,210" fill="#4dcf8a"/><circle cx="110" cy="196" r="10" fill="#ffe040"/><circle cx="110" cy="196" r="5" fill="#ff7eb3"/></g>`},
+  {id:'halo',label:'Halo',
+   preview:`<ellipse cx="30" cy="20" rx="22" ry="7" fill="none" stroke="#ffe040" stroke-width="3.5"/><ellipse cx="30" cy="20" rx="22" ry="7" fill="none" stroke="#ffee88" stroke-width="1.5" opacity=".6"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_halo"><ellipse cx="110" cy="44" rx="42" ry="12" fill="none" stroke="#ffe040" stroke-width="4.5"/><ellipse cx="110" cy="44" rx="42" ry="12" fill="none" stroke="#ffee88" stroke-width="2" opacity=".6"/></g>`},
+  {id:'heart_eyes_acc',label:'Heart Eyes',
+   preview:`<path d="M 18 20 Q 14 14 18 18 Q 22 14 26 18 Q 28 24 22 28 Q 18 30 14 26 Z" fill="#ff5252"/><path d="M 42 20 Q 38 14 42 18 Q 46 14 50 18 Q 52 24 46 28 Q 42 30 38 26 Z" fill="#ff5252"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_heart_eyes_acc"><path d="M 96 108 Q 88 98 96 104 Q 104 98 112 104 Q 115 112 106 118 Q 98 121 90 115 Z" fill="#ff5252"/><path d="M 128 108 Q 120 98 128 104 Q 136 98 144 104 Q 147 112 138 118 Q 130 121 122 115 Z" fill="#ff5252"/></g>`},
+  {id:'gem_necklace',label:'Gem Necklace',
+   preview:`<path d="M 8 28 Q 30 38 52 28" fill="none" stroke="#9b5fd4" stroke-width="2.5" stroke-linecap="round"/><polygon points="30,36 25,48 30,54 35,48" fill="#9b5fd4"/><circle cx="30" cy="38" r="5" fill="#c89aff" stroke="#9b5fd4" stroke-width="1"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_gem_necklace"><path d="M 68 188 Q 110 202 152 188" fill="none" stroke="#9b5fd4" stroke-width="3" stroke-linecap="round"/><polygon points="110,198 104,215 110,222 116,215" fill="#9b5fd4"/><circle cx="110" cy="200" r="8" fill="#c89aff" stroke="#9b5fd4" stroke-width="1.5"/></g>`},
+  {id:'flower_crown_gen',label:'Flower Crown',
+   preview:`<circle cx="30" cy="30" r="9" fill="#ff6eb4"/><circle cx="30" cy="30" r="5" fill="#ffe040"/><circle cx="14" cy="34" r="7" fill="#ff5252"/><circle cx="14" cy="34" r="3.5" fill="#ffe040"/><circle cx="46" cy="34" r="7" fill="#9b5fd4"/><circle cx="46" cy="34" r="3.5" fill="#ffe040"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_flower_crown_gen"><circle cx="82" cy="62" r="8" fill="#ff6eb4"/><circle cx="82" cy="62" r="4" fill="#ffe040"/><circle cx="96" cy="56" r="7" fill="#ff5252"/><circle cx="96" cy="56" r="3.5" fill="#ffe040"/><circle cx="110" cy="54" r="9" fill="#ffe040"/><circle cx="110" cy="54" r="4.5" fill="#ff6eb4"/><circle cx="124" cy="56" r="7" fill="#4dcf8a"/><circle cx="124" cy="56" r="3.5" fill="#ffe040"/><circle cx="138" cy="62" r="8" fill="#9b5fd4"/><circle cx="138" cy="62" r="4" fill="#ffe040"/></g>`},
+  {id:'star_sticker',label:'Star Sticker',
+   preview:`<polygon points="30,8 34,22 48,22 37,31 41,45 30,36 19,45 23,31 12,22 26,22" fill="#ffe040" stroke="#ccaa00" stroke-width="1.5"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_star_sticker"><polygon points="156,100 160,114 174,114 163,123 167,137 156,128 145,137 149,123 138,114 152,114" fill="#ffe040" stroke="#ccaa00" stroke-width="1.5"/></g>`},
+  {id:'tiny_crown',label:'Mini Crown',
+   preview:`<path d="M 10 36 L 8 18 L 20 28 L 30 14 L 40 28 L 52 18 L 50 36 Z" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><ellipse cx="30" cy="36" rx="20" ry="5" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><circle cx="30" cy="15" r="4" fill="#ff5252"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_tiny_crown"><path d="M 82 72 L 78 52 L 94 64 L 110 46 L 126 64 L 142 52 L 138 72 Z" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><ellipse cx="110" cy="72" rx="30" ry="7" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/><circle cx="110" cy="48" r="6" fill="#ff5252"/></g>`},
+  {id:'cape_gen',label:'Cape',
+   preview:`<path d="M 4 16 Q 2 32 8 46 Q 18 40 22 26 Q 16 34 4 16 Z" fill="#9b5fd4" stroke="#6622aa" stroke-width="1.5"/><ellipse cx="13" cy="16" rx="9" ry="6" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_cape_gen"><path d="M 54 172 Q 44 200 52 228 Q 74 218 82 192 Q 76 182 54 172 Z" fill="#9b5fd4" stroke="#6622aa" stroke-width="1.5"/><ellipse cx="60" cy="172" rx="10" ry="7" fill="#ffe040" stroke="#ddaa00" stroke-width="1.5"/></g>`},
+  {id:'sparkle_dust',label:'Sparkles',
+   preview:`<circle cx="14" cy="16" r="4" fill="#ffe040" opacity=".9"/><circle cx="42" cy="12" r="5" fill="#ff7eb3" opacity=".9"/><circle cx="26" cy="34" r="6" fill="#9b5fd4" opacity=".9"/><circle cx="48" cy="40" r="4" fill="#4dcf8a" opacity=".9"/>`,
+   svg:(c)=>`<g class="acc-item" id="acc_sparkle_dust"><circle cx="68" cy="100" r="6" fill="#ffe040" opacity=".85"/><circle cx="155" cy="95" r="7" fill="#ff7eb3" opacity=".85"/><circle cx="72" cy="165" r="6" fill="#9b5fd4" opacity=".85"/><circle cx="150" cy="170" r="6" fill="#4dcf8a" opacity=".85"/><circle cx="110" cy="78" r="5" fill="#ff5252" opacity=".8"/></g>`},
+];
+
+function getCreatureAccs(){
+  const name = appState.name;
+  if(CREATURE_ACCESSORIES[name]) return CREATURE_ACCESSORIES[name];
+  return GENERIC_ACCESSORIES;
+}
+
+
+// ── ACC ──
+function buildAccPicker(){
+  const row = document.getElementById('accRow');
+  row.innerHTML = '';
+  const accs = getCreatureAccs();
+  accs.forEach(a => {
+    const btn = document.createElement('div');
+    const isOn = appState.accSet && appState.accSet.has(a.id);
+    btn.className = 'acc-opt' + (isOn ? ' on' : '');
+    btn.title = a.label;
+    btn.innerHTML = `
+      <svg viewBox="0 0 60 60" width="62" height="62" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">
+        <rect width="60" height="60" rx="8" fill="rgba(255,255,255,.05)"/>
+        <g transform="scale(1) translate(0,0)">${a.preview}</g>
+      </svg>
+      <div class="acc-opt-label">${a.label}</div>`;
+    btn.onclick = () => toggleAccItem(a);
+    row.appendChild(btn);
+  });
+  // Remove all button
+  const rem = document.createElement('div');
+  rem.className = 'acc-opt';
+  rem.style.gridColumn = 'span 4';
+  rem.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:4px 12px">
+    <span style="font-size:.9rem">🗑️</span>
+    <span style="font-family:'Baloo 2',cursive;font-size:.6rem;font-weight:800;color:#ff8888">Remove All Accessories</span>
+  </div>`;
+  rem.onclick = () => removeAllAcc();
+  row.appendChild(rem);
+}
+
+function toggleAcc(){ document.getElementById('accPick').classList.toggle('show'); }
+
+function toggleAccItem(accDef){
+  if(!appState.accSet) appState.accSet = new Set();
+  const cSvg = document.getElementById('cSvg');
+  if(!cSvg) return;
+
+  if(appState.accSet.has(accDef.id)){
+    // Remove this accessory
+    appState.accSet.delete(accDef.id);
+    const existing = document.getElementById('acc_' + accDef.id);
+    if(existing) existing.remove();
+    // Also try class-based removal for items without proper id
+    cSvg.querySelectorAll('[id="acc_'+accDef.id+'"]').forEach(e=>e.remove());
+  } else {
+    // Add this accessory
+    appState.accSet.add(accDef.id);
+    const svgStr = accDef.svg(appState.color || '#ffb3d9');
+    const ns = 'http://www.w3.org/2000/svg';
+    const tmp = document.createElementNS(ns, 'g');
+    tmp.innerHTML = svgStr;
+    // Move all children into the SVG
+    const child = tmp.firstElementChild;
+    if(child) cSvg.appendChild(child);
+    // Speak and react
+    speak(appState.lore ? appState.lore.moods.acc || "I love it! 🥰" : "Looking great! 🥰");
+    hearts('🎉', 4);
+    playCareSound('acc');
+    appState.happy = Math.min(100, appState.happy + 5);
+    updateHappy();
+  }
+  buildAccPicker();
+}
+
+function removeAllAcc(){
+  if(!appState.accSet) return;
+  const cSvg = document.getElementById('cSvg');
+  if(cSvg) cSvg.querySelectorAll('.acc-item, [id^="acc_"]').forEach(e => e.remove());
+  appState.accSet = new Set();
+  speak("Back to natural look! 😊");
+  buildAccPicker();
+}
+
+// Keep appState.acc for compatibility but use accSet for stacking
+function applyAcc(accDef){ toggleAccItem(accDef); }
+function removeAcc(){ removeAllAcc(); }
+
+
+// ── PARTICLES ──
+let partIv=null;
+function startParts(){
+  clearInterval(partIv);const d=appState.lore;if(!d)return;
+  partIv=setInterval(()=>{
+    if(document.hidden)return;
+    const el=document.createElement('div');el.className='part';
+    el.textContent=d.parts[Math.floor(Math.random()*d.parts.length)];
+    el.style.left=Math.random()*100+'%';el.style.top=(35+Math.random()*45)+'%';
+    el.style.animationDuration=(3+Math.random()*5)+'s';el.style.animationDelay=Math.random()*2+'s';
+    document.getElementById('app').appendChild(el);setTimeout(()=>el.remove(),8000);
+  },1800);
+}
+
+function toggleLore(){document.getElementById('lore').classList.toggle('show');}
+
+document.getElementById('btnBack').onclick=()=>{
+  if(window.parent&&window.parent!==window) window.parent.postMessage({type:'closeCare',name:appState.name,happiness:appState.happy},'*');
+  else history.back();
+};
+
+// ═══════════════════════════════════════════
+//  CARE SOUND ENGINE
+// ═══════════════════════════════════════════
+let careCtx=null;
+
+function getCareCtx(){
+  if(!careCtx) careCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(careCtx.state==='suspended') careCtx.resume();
+  return careCtx;
+}
+
+function careTone(freq,type,start,dur,vol,ctx){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,start);
+  g.gain.setValueAtTime(vol,start);g.gain.exponentialRampToValueAtTime(.001,start+dur);
+  o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+dur+.05);
+}
+
+function careSlide(f1,f2,type,start,dur,vol,ctx){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f1,start);o.frequency.linearRampToValueAtTime(f2,start+dur);
+  g.gain.setValueAtTime(vol,start);g.gain.exponentialRampToValueAtTime(.001,start+dur);
+  o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+dur+.05);
+}
+
+function playCareSound(type){
+  try{
+    const ctx=getCareCtx();
+    const t=ctx.currentTime;
+    if(type==='pet'){
+      // Soft warm purr-like tones
+      careTone(523,'sine',t,.18,.25,ctx);
+      careTone(659,'sine',t+.1,.18,.2,ctx);
+      careTone(784,'sine',t+.2,.22,.18,ctx);
+      careTone(1047,'sine',t+.3,.25,.15,ctx);
+    } else if(type==='feed'){
+      // Munching crunch - short percussive bursts
+      [0,.1,.2,.3].forEach((dt,i)=>{
+        careTone(220+i*30,'sawtooth',t+dt,.06,.35,ctx);
+        careTone(440+i*20,'square',t+dt,.04,.15,ctx);
+      });
+      careTone(523,'sine',t+.4,.2,.2,ctx);
+      careTone(784,'sine',t+.5,.2,.18,ctx);
+    } else if(type==='brush'){
+      // Gentle whoosh-sparkle
+      careSlide(800,400,'sawtooth',t,.15,.12,ctx);
+      [.12,.24,.36].forEach(dt=>{
+        careTone(1047+Math.random()*200,'sine',t+dt,.1,.08,ctx);
+      });
+      careTone(1568,'sine',t+.4,.25,.1,ctx);
+    } else if(type==='cuddle'){
+      // Soft lullaby notes
+      [523,494,440,392].forEach((f,i)=>{
+        careTone(f,'sine',t+i*.25,.3,.18,ctx);
+      });
+    } else if(type==='no'){
+      // Soft thud - rejection
+      careSlide(300,180,'sine',t,.2,.2,ctx);
+    } else if(type==='happy'){
+      // Happy fanfare
+      [523,659,784,1047].forEach((f,i)=>{
+        careTone(f,'square',t+i*.07,.18,.3,ctx);
+      });
+    } else if(type==='acc'){
+      // Sparkle jingle
+      [1047,1319,1568,2093].forEach((f,i)=>{
+        careTone(f,'sine',t+i*.06,.15,.2,ctx);
+      });
+    }
+  }catch(e){}
+}
+
+window.addEventListener('message',e=>{
+  if(e.data?.type==='initCreature') initCreature(e.data.name,e.data.color,e.data.word,e.data.happiness);
+});
+window.addEventListener('load',()=>initCreature('Fluffkin','#ffb3d9','pounce',50));
+</script>
+</body>
+</html>

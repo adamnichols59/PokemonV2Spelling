@@ -2,11 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9GNH24NL8Q"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9GNH24NL8Q');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Bella's Spelling Adventure</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+/* Streak chip */
+#streakEl{background:rgba(255,100,0,.22);border:1.5px solid rgba(255,130,50,.6);
+  border-radius:999px;padding:3px 10px;font-size:.7rem;font-weight:800;color:#ffaa44;
+  display:flex;align-items:center;gap:4px;}
+@keyframes streakPop{0%{transform:scale(.7)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes streakBurstAnim{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:0}
+  30%{opacity:1}
+  60%{transform:translate(-50%,-50%) scale(1.1);opacity:1}
+  85%{transform:translate(-50%,-50%) scale(1);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1.2);opacity:0}
+}
+
+/* Nickname */
+.nickname-wrap{display:flex;gap:8px;align-items:center;margin-top:10px;justify-content:center}
+.nickname-inp{font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:800;
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:7px 14px;color:white;text-align:center;width:180px;outline:none;}
+.nickname-inp::placeholder{color:rgba(255,255,255,.35)}
+.btn-nickname{font-family:'Baloo 2',cursive;font-size:.62rem;font-weight:800;
+  background:#0f3460;border:2px solid var(--yellow);color:var(--yellow);
+  border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;}
+.nickname-saved{font-size:.62rem;font-weight:800;color:#4dcf8a;margin-top:4px;text-align:center;}
+.title-badge{font-family:'Nunito',sans-serif;font-size:.55rem;font-weight:800;
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);
+  border-radius:999px;padding:4px 10px;color:#aac4ff;}
+.splash-dot{width:11px;height:11px;border-radius:50%;background:#ffe040;
+  animation:splashBounce .7s ease-in-out infinite alternate;}
+@keyframes splashBounce{from{transform:translateY(0) scale(1)}to{transform:translateY(-16px) scale(.75)}}
+@keyframes splashTap{from{opacity:.4;transform:scale(.95)}to{opacity:1;transform:scale(1.05)}}
+@keyframes splashSpin{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
 html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'Nunito',sans-serif}
 
 :root{
@@ -90,7 +130,9 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   display:flex;flex-direction:column;align-items:center;gap:6px;
   animation:floatY 2.5s ease-in-out infinite;
 }
-@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}
+@keyframes floatY2{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+50%{transform:translateY(-10px)}}
 .spell-creature-name{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;
   color:var(--yellow);background:rgba(0,0,0,.5);padding:3px 12px;border-radius:999px;border:1.5px solid var(--yellow)}
 .spell-encounter-tag{font-family:'Baloo 2',cursive;font-size:.7rem;color:#aac4ff;
@@ -99,19 +141,19 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 /* Definition */
 .def-card{
   width:100%;background:#0a1030;border:2px solid #2244aa;border-radius:14px;
-  padding:12px 16px;font-size:.95rem;font-weight:700;color:#aac4ff;text-align:center;line-height:1.5;
+  padding:14px 18px;font-size:1.05rem;font-weight:700;color:#aac4ff;text-align:center;line-height:1.6;
 }
 
 /* Blanks — interactive letter tiles */
 .blanks-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;cursor:text}
 .blank{
-  width:40px;height:50px;
+  width:44px;height:56px;
   border:2.5px solid rgba(255,224,64,.4);
   border-bottom:3px solid var(--yellow);
   border-radius:8px;
   background:rgba(255,224,64,.07);
   display:flex;align-items:center;justify-content:center;
-  font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;
+  font-family:'Baloo 2',cursive;font-size:1.35rem;font-weight:800;
   color:var(--yellow);transition:all .2s;position:relative;
 }
 .blank.active-cursor::after{
@@ -374,16 +416,188 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 
 /* Responsive */
 @media(max-width:360px){.blank{width:28px;height:38px;font-size:.95rem}.pokeball{width:54px;height:54px}}
+
+/* ═══════════════════════════════
+   POKÉDEX CARE SCREEN
+═══════════════════════════════ */
+#sDex{
+  background:linear-gradient(160deg,#0d0221,#1a0a3e,#0a1a3a);
+  justify-content:flex-start;overflow-y:auto;padding:0;
+}
+
+.dex-topbar{
+  width:100%;background:var(--panel);border-bottom:3px solid var(--yellow);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.dex-topbar-title{font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:var(--yellow)}
+.btn-back{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;
+  background:#0f3460;color:var(--yellow);border:2px solid var(--yellow);
+  border-radius:999px;padding:6px 14px;cursor:pointer}
+
+/* Grid of caught creatures */
+.dex-care-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:10px;padding:16px;width:100%;
+}
+.dex-care-card{
+  background:#0f3460;border:2px solid var(--yellow);border-radius:14px;
+  padding:10px 6px;text-align:center;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:all .2s;position:relative;
+}
+.dex-care-card:active{transform:scale(.95)}
+.dex-care-card .dcc-name{font-family:'Baloo 2',cursive;font-size:.45rem;font-weight:800;color:var(--yellow)}
+.dex-care-card .dcc-word{font-size:.4rem;font-weight:700;color:#aac4ff}
+.dex-care-card .dcc-happy{
+  position:absolute;top:4px;right:4px;font-size:.6rem;
+}
+/* Lock overlay for uncaught */
+.dex-care-card.locked{opacity:.3;cursor:default;filter:grayscale(1)}
+
+/* ── CARE MODAL ── */
+#careModal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.85);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#careModal.show{opacity:1;pointer-events:all}
+
+.care-sheet{
+  width:100%;max-width:480px;
+  background:linear-gradient(180deg,#1a1040,#0d0a2e);
+  border:3px solid var(--yellow);border-radius:28px 28px 0 0;
+  padding:20px 18px 32px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  animation:slideUp .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.care-creature-wrap{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.care-creature-svg{width:140px;height:140px;position:relative}
+.care-creature-name{font-family:'Baloo 2',cursive;font-size:.9rem;font-weight:800;color:var(--yellow)}
+.care-word-badge{font-family:'Baloo 2',cursive;font-size:.55rem;font-weight:800;
+  color:var(--white);background:#0a1a3a;padding:3px 12px;border-radius:999px;border:1.5px solid #2244aa}
+
+/* Happiness meter */
+.happy-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px}
+.happy-label{font-family:'Baloo 2',cursive;font-size:.6rem;font-weight:800;color:#aac4ff}
+.happy-bar-track{width:80%;height:14px;background:#111;border-radius:999px;overflow:hidden;border:2px solid #333}
+.happy-bar-fill{height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#ff6eb4,#ffe040);transition:width .5s ease}
+
+/* Speech bubble */
+.care-bubble{
+  background:#1a1040;border:2px solid var(--purple);border-radius:14px;
+  padding:10px 14px;font-family:'Baloo 2',cursive;font-size:.65rem;font-weight:800;
+  color:var(--white);text-align:center;min-height:40px;width:100%;
+  display:flex;align-items:center;justify-content:center;line-height:1.6;
+  transition:all .3s;
+}
+
+/* Care action buttons */
+.care-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
+.care-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:#0f3460;border:2px solid #4466aa;border-radius:14px;
+  padding:10px 12px;cursor:pointer;transition:all .18s;min-width:60px;
+  font-family:'Nunito',sans-serif;font-weight:800;
+}
+.care-btn:active{transform:scale(.92);background:#1a4a80}
+.care-btn .cb-icon{font-size:1.4rem}
+.care-btn .cb-label{font-size:.55rem;color:#aac4ff;font-weight:800}
+.care-btn.active{border-color:var(--yellow);background:#1a3060}
+
+/* Floating hearts/stars */
+.floatie{
+  position:absolute;pointer-events:none;
+  font-size:1.2rem;animation:floatUp 1.2s ease forwards;
+  z-index:10;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0) scale(.5);opacity:1}
+  100%{transform:translateY(-90px) scale(1.2);opacity:0}
+}
+
+/* Accessory overlays on creature */
+.accessory-overlay{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  font-size:1.8rem;pointer-events:none;z-index:5;
+  animation:floatY 2s ease-in-out infinite;
+}
+.sleeping-overlay{
+  position:absolute;top:0;right:-10px;
+  font-size:1rem;pointer-events:none;z-index:5;
+  animation:floatY 1.5s ease-in-out infinite;
+}
+
+/* Dex button on topbar during game */
+.btn-dex{
+  font-size:1rem;background:none;border:none;cursor:pointer;padding:2px 4px;
+}
+
+/* Empty dex message */
+.dex-empty{
+  font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;
+  color:#aac4ff;text-align:center;padding:40px 20px;line-height:2;
+}
+
+.btn-close-care{
+  font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;
+  background:none;border:2px solid #444;border-radius:999px;
+  color:#888;padding:6px 18px;cursor:pointer;margin-top:4px;
+}
+
+
+/* ═══ CARE IFRAME OVERLAY ═══ */
+#careOverlay{
+  position:fixed;inset:0;z-index:300;
+  background:#000;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s;
+}
+#careOverlay.show{opacity:1;pointer-events:all}
+#careFrame{width:100%;height:100%;border:none}
+
 </style>
 </head>
 <body>
 <canvas id="cvs"></canvas>
 
 <!-- ═══════════════════════ TITLE ═══════════════════════ -->
+<!-- SPLASH OVERLAY - tap anywhere to dismiss -->
+<div id="splashOverlay" onclick="dismissSplash()" style="position:fixed;inset:0;z-index:999;
+  background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .6s ease;cursor:pointer;">
+  <div style="font-size:3.5rem;animation:splashSpin 1.5s ease-out forwards">✨</div>
+  <div style="font-family:'Baloo 2',cursive;font-size:clamp(1.8rem,8vw,2.8rem);font-weight:800;
+    color:#ffe040;text-align:center;text-shadow:0 0 30px rgba(255,224,64,.5);line-height:1.2">
+    Bella's Spelling<br>Adventure!
+  </div>
+  <div style="display:flex;gap:10px;margin-top:8px">
+    <div class="splash-dot" style="animation-delay:0s"></div>
+    <div class="splash-dot" style="animation-delay:.25s"></div>
+    <div class="splash-dot" style="animation-delay:.5s"></div>
+  </div>
+  <div style="font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+    color:rgba(170,196,255,.6);margin-top:12px;animation:splashTap 1.2s ease-in-out infinite alternate">
+    Tap to start ✨
+  </div>
+</div>
+
 <div class="screen" id="sTitle">
   <div class="title-creatures" id="titleCreatures"></div>
   <h1 class="title-h1">Bella's Spelling<br>Adventure!</h1>
-  <p class="title-sub">Unit 4 · Week 5 · Soft C &amp; G Words</p>
+  <p class="title-sub">Compound Words</p>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
+    <span class="title-badge">🐾 20 Creatures to Catch</span>
+    <span class="title-badge">🗺️ 5 Locations</span>
+    <span class="title-badge">🏆 Prize Challenge</span>
+  </div>
   <button class="btn-start" onclick="startGame()">✨ Let's Go! ✨</button>
 </div>
 
@@ -397,7 +611,9 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
     <div class="spell-topbar-right">
       <div class="hchip">⭐ <span id="scoreEl">0</span></div>
       <div class="hchip" id="heartsEl">❤️❤️❤️</div>
+      <div class="hchip" id="streakEl" style="display:none">🔥 <span id="streakNum">0</span></div>
       <div class="hchip" id="wordNumEl">1/20</div>
+      <button class="btn-dex" onclick="openDex()" title="My Pokédex">📖</button>
       <button onclick="toggleSound()" id="sndBtn" style="background:none;border:none;font-size:1.1rem;cursor:pointer">🔈</button>
     </div>
   </div>
@@ -503,7 +719,10 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   <div style="font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:#aac4ff;text-align:center;line-height:1.8">You caught all the creatures, Bella!<br>You are AMAZING! ⭐</div>
   <div class="dex-grid" id="dexGrid"></div>
   <div class="win-stats" id="winStats"></div>
-  <button class="btn-continue" onclick="playAgain()" style="margin-top:4px">🔄 Play Again!</button>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+    <button class="btn-continue" onclick="openDex()" style="background:linear-gradient(135deg,var(--purple),#6622aa);box-shadow:0 5px 0 #440088">📖 Pokédex</button>
+    <button class="btn-continue" onclick="playAgain()">🔄 Play Again!</button>
+  </div>
 </div>
 
 <!-- ═══════════════════════ CATCH OVERLAY ═══════════════════════ -->
@@ -514,6 +733,11 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
     <div class="catch-word" id="catchWordEl"></div>
     <div class="catch-pts" id="catchPtsEl"></div>
     <div class="catch-msg" id="catchMsgEl"></div>
+    <div class="nickname-wrap" id="nicknameWrap">
+      <input id="nicknameInp" class="nickname-inp" maxlength="12" placeholder="Give a nickname! (optional)" autocomplete="off" spellcheck="false" style="font-size:16px"/>
+      <button class="btn-nickname" onclick="saveNickname()">💾 Save</button>
+    </div>
+    <div id="nicknameSaved" class="nickname-saved" style="display:none">✅ Saved!</div>
     <button class="btn-continue" onclick="afterCatch()">Continue ▶</button>
   </div>
 </div>
@@ -523,27 +747,28 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 //  DATA
 // ═══════════════════════════════════════════════════════════
 const WORDS=[
-  {w:"pounce",  d:"Jump on something suddenly, like a cat! 🐱",         s:"The kitten will pounce on the toy mouse."},
-  {w:"placed",  d:"Past tense of place — put something somewhere 📍",    s:"She placed her shoes by the front door."},
-  {w:"dice",    d:"Plural of die — small numbered cubes for games 🎲",   s:"She rolled the dice and moved six spaces."},
-  {w:"cents",   d:"Small coins; 100 cents equals one dollar 🪙",         s:"The gumball costs twenty-five cents."},
-  {w:"price",   d:"The amount of money something costs 💰",              s:"The price of the book was three dollars."},
-  {w:"space",   d:"The area beyond Earth full of stars 🌌",              s:"The rocket flew up into outer space."},
-  {w:"mice",    d:"More than one mouse 🐭",                              s:"The cats chased the mice across the floor."},
-  {w:"office",  d:"A room where people do work 💼",                      s:"Dad works in an office with a big desk."},
-  {w:"wage",    d:"Money you earn for doing work 💵",                    s:"She earned a wage for walking the dog."},
-  {w:"age",     d:"How many years old something or someone is 🎂",       s:"Bella is the right age for third grade."},
-  {w:"gyms",    d:"More than one gym — rooms for exercise 🏋️",          s:"Both gyms at school have basketball hoops."},
-  {w:"giant",   d:"Extremely large — much bigger than normal 🌟",        s:"The giant elephant was bigger than the car."},
-  {w:"changes", d:"When something becomes different than before 🔄",     s:"The caterpillar changes into a butterfly."},
-  {w:"message", d:"Words sent from one person to another 💌",            s:"Bella wrote a message and put it in an envelope."},
-  {w:"pages",   d:"The sheets of paper inside a book 📖",                s:"The book had fifty pages of adventure."},
-  {w:"you",     d:"The word for the person you are talking to 👧",       s:"I hope you have a wonderful day today!"},
-  {w:"road",    d:"A paved path that cars and trucks drive on 🛣️",      s:"The long road led all the way to the beach."},
-  {w:"peace",   d:"A feeling of quiet, calm, and happiness 🕊️",         s:"The park was full of peace on Sunday morning."},
-  {w:"giraffe", d:"A very tall African animal with a long neck 🦒",      s:"The giraffe used its long neck to reach the leaves."},
-  {w:"peaceful",d:"Describes a calm, quiet, and gentle feeling 😸",      s:"The sleeping kitten looked so peaceful and cozy."}
+  {w:"airplane",    d:"A flying machine with wings that carries people through the sky ✈️",    s:"The airplane flew high above the fluffy white clouds."},
+  {w:"daytime",     d:"The part of the day when the sun is shining ☀️",                        s:"Bella loves to play outside during the daytime."},
+  {w:"birthday",    d:"The special day each year when you were born 🎂",                        s:"She got a surprise party on her birthday."},
+  {w:"daylight",    d:"The natural light that comes from the sun during the day 🌤️",            s:"We could see the path clearly in the bright daylight."},
+  {w:"hairdo",      d:"A special way that someone's hair is styled 💇",                         s:"She had a beautiful hairdo for the school photo."},
+  {w:"somebody",    d:"Some person — another way to say someone 🙋",                            s:"Somebody left their backpack by the door."},
+  {w:"birdhouse",   d:"A small wooden house built for birds to live in 🐦",                     s:"Dad built a birdhouse and hung it in the oak tree."},
+  {w:"barefoot",    d:"Walking without any shoes or socks on your feet 🦶",                     s:"She ran barefoot across the warm sand at the beach."},
+  {w:"headlight",   d:"A bright light on the front of a car that helps you see at night 🚗",   s:"The car's headlight lit up the dark road ahead."},
+  {w:"sometime",    d:"At an unspecified time in the future or past 🕰️",                       s:"We should go to the park sometime this weekend."},
+  {w:"someone",     d:"Some unknown or unspecified person 👤",                                  s:"Someone left a kind note in Bella's lunchbox."},
+  {w:"newspaper",   d:"Sheets of paper printed with news and stories, read every day 📰",      s:"Grandpa reads the newspaper every morning at breakfast."},
+  {w:"sidewalks",   d:"Paved paths along the side of a street for people to walk on 🚶",       s:"The children walked along the sidewalks to get to school."},
+  {w:"basketball",  d:"A sport where you throw a ball through a hoop, or the ball itself 🏀",  s:"She practiced basketball in the driveway every afternoon."},
+  {w:"stagecoach",  d:"An old-fashioned horse-drawn carriage that carried passengers 🐴",      s:"The cowboys rode in a stagecoach across the dusty plains."},
+  {w:"placed",      d:"Put something carefully in a specific spot 📍",                          s:"She placed her trophy on the shelf above her desk."},
+  {w:"office",      d:"A room or building where people do their work 💼",                       s:"Dad works in an office with a big window and a tall desk."},
+  {w:"giant",       d:"Something extremely large — much bigger than normal 🌟",                 s:"The giant elephant was taller than the fence at the zoo."},
+  {w:"handwriting", d:"The way a person forms letters and words when writing by hand ✍️",      s:"Her handwriting was so neat that the teacher showed the class."},
+  {w:"windshield",  d:"The large glass window at the front of a car 🚘",                       s:"Dad turned on the wipers to clear the rain from the windshield."}
 ];
+
 
 const LOCATIONS=[
   {name:"🏡 Meadow Valley",  emoji:"🏡"},
@@ -555,26 +780,26 @@ const LOCATIONS=[
 const NODE_PCT=[8,27,46,65,84];
 
 const CREATURES=[
-  {name:"Fluffkin", color:"#ffb3d9", fn:drawBunny},
-  {name:"Sparklox", color:"#ffe066", fn:drawFox},
-  {name:"Puddlum",  color:"#a0d8ff", fn:drawSeal},
-  {name:"Fernbit",  color:"#b3ffb3", fn:drawFrog},
-  {name:"Glimcat",  color:"#e0b3ff", fn:drawCat},
-  {name:"Coraluff", color:"#ffb3b3", fn:drawBear},
-  {name:"Driftail", color:"#b3e0ff", fn:drawDragon},
-  {name:"Peppin",   color:"#ffdfb3", fn:drawHamster},
-  {name:"Starwhirl",color:"#fff0a0", fn:drawStar},
-  {name:"Mossling", color:"#c8ffb3", fn:drawTurtle},
-  {name:"Twinkow",  color:"#ffd6f5", fn:drawUnicorn},
-  {name:"Boulbear", color:"#d4e0ff", fn:drawPanda},
-  {name:"Zipplet",  color:"#fffbb3", fn:drawChick},
-  {name:"Dazzlphin",color:"#b3f0ff", fn:drawDolphin},
-  {name:"Flameow",  color:"#ffcbb3", fn:drawFirecat},
-  {name:"Crystaloo",color:"#e8b3ff", fn:drawRaccoon},
-  {name:"Dewdrop",  color:"#b3f5e0", fn:drawAxolotl},
-  {name:"Puffy",    color:"#ffb3cc", fn:drawPig},
-  {name:"Shimmur",  color:"#ffedb3", fn:drawLion},
-  {name:"Lunabelle",color:"#cdb3ff", fn:drawOwl}
+  {name:"Fluffkin", color:"#ffb3d9", fn:drawBunny,  furry:true,  food:"🥕 carrot",    sleepMsg:"Fluffkin curls into a fluffy ball 💤"},
+  {name:"Sparklox", color:"#ffe066", fn:drawFox,    furry:true,  food:"🍓 berries",   sleepMsg:"Sparklox tucks its tail around itself 💤"},
+  {name:"Puddlum",  color:"#a0d8ff", fn:drawSeal,   furry:false, food:"🐟 fish",      sleepMsg:"Puddlum floats peacefully on its back 💤"},
+  {name:"Fernbit",  color:"#b3ffb3", fn:drawFrog,   furry:false, food:"🪲 bug",       sleepMsg:"Fernbit closes its big eyes slowly 💤"},
+  {name:"Glimcat",  color:"#e0b3ff", fn:drawCat,    furry:true,  food:"🐟 fish",      sleepMsg:"Glimcat purrs and kneads the air 💤"},
+  {name:"Coraluff", color:"#ffb3b3", fn:drawBear,   furry:true,  food:"🍯 honey",     sleepMsg:"Coraluff snuggles down for a long nap 💤"},
+  {name:"Driftail", color:"#b3e0ff", fn:drawDragon, furry:false, food:"🔥 firesnack", sleepMsg:"Driftail folds its wings and drifts off 💤"},
+  {name:"Peppin",   color:"#ffdfb3", fn:drawHamster,furry:true,  food:"🌰 acorn",     sleepMsg:"Peppin stuffs its cheeks and dozes off 💤"},
+  {name:"Starwhirl",color:"#fff0a0", fn:drawStar,   furry:false, food:"✨ stardust",  sleepMsg:"Starwhirl dims its glow and floats gently 💤"},
+  {name:"Mossling", color:"#c8ffb3", fn:drawTurtle, furry:false, food:"🥬 lettuce",   sleepMsg:"Mossling retreats into its shell 💤"},
+  {name:"Twinkow",  color:"#ffd6f5", fn:drawUnicorn,furry:true,  food:"🌈 rainbow",   sleepMsg:"Twinkow glows softly as it sleeps 💤"},
+  {name:"Boulbear", color:"#d4e0ff", fn:drawPanda,  furry:true,  food:"🎋 bamboo",    sleepMsg:"Boulbear hugs its belly and snores 💤"},
+  {name:"Zipplet",  color:"#fffbb3", fn:drawChick,  furry:true,  food:"🌾 seeds",     sleepMsg:"Zipplet fluffs up its feathers 💤"},
+  {name:"Dazzlphin",color:"#b3f0ff", fn:drawDolphin,furry:false, food:"🐠 fish",      sleepMsg:"Dazzlphin sways in an imaginary wave 💤"},
+  {name:"Flameow",  color:"#ffcbb3", fn:drawFirecat,furry:true,  food:"🌶️ spicy treat",sleepMsg:"Flameow purrs with tiny flame snores 💤"},
+  {name:"Crystaloo",color:"#e8b3ff", fn:drawRaccoon,furry:true,  food:"🍬 candy",     sleepMsg:"Crystaloo wraps its striped tail around itself 💤"},
+  {name:"Dewdrop",  color:"#b3f5e0", fn:drawAxolotl,furry:false, food:"🦐 shrimp",    sleepMsg:"Dewdrop wiggles its gills slowly 💤"},
+  {name:"Puffy",    color:"#ffb3cc", fn:drawPig,    furry:true,  food:"🌽 corn",      sleepMsg:"Puffy oinks softly and curls up 💤"},
+  {name:"Shimmur",  color:"#ffedb3", fn:drawLion,   furry:true,  food:"🥩 meat",      sleepMsg:"Shimmur yawns and rests its mane 💤"},
+  {name:"Lunabelle",color:"#cdb3ff", fn:drawOwl,    furry:true,  food:"🐭 mouse",     sleepMsg:"Lunabelle tucks its beak under its wing 💤"}
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -608,6 +833,7 @@ function drawOwl(c){return svg(90,100,`<ellipse cx="45" cy="68" rx="26" ry="24" 
 let wordOrder=[],wordIdx=0,score=0,hearts=3;
 let hintUsed=false,attempts=0,isPerfect=true;
 let caught=[],speaking=false,soundEnabled=true;
+let streak=0,bestStreak=0;
 let throwReady=false,throwLocked=false;
 let audioCtx=null,bgmGain=null,sfxGain=null,bgmPlaying=false,bgmNodes=[],bgmSched=null;
 
@@ -677,13 +903,41 @@ function initKeyboardHandler() {
 // ═══════════════════════════════════════════════════════════
 function initTitle(){
   const row=document.getElementById('titleCreatures');
-  [4,0,10].forEach((i,j)=>{
-    const c=CREATURES[i];
+  row.style.cssText='display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:340px;margin:0 auto 8px';
+  // Pick 6 varied creatures to show on title
+  const picks=[0,4,2,14,10,17];
+  const anims=['floatY','floatY2','floatY'];
+  picks.forEach((i,j)=>{
+    const c=CREATURES[i%CREATURES.length];
+    const wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px';
+    // Creature SVG
     const d=document.createElement('div');
-    d.style.cssText=`width:72px;height:72px;animation:floatY 2.2s ease-in-out infinite;animation-delay:${j*.3}s`;
+    const size=j===2||j===3?80:64; // middle two bigger
+    d.style.cssText=`width:${size}px;height:${size}px;
+      animation:${anims[j%3]} ${2+j*.18}s ease-in-out infinite;
+      animation-delay:${j*.22}s;
+      filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));`;
     d.innerHTML=c.fn(c.color);
-    row.appendChild(d);
+    // Name label
+    const lbl=document.createElement('div');
+    lbl.style.cssText="font-family:'Nunito',sans-serif;font-size:.42rem;font-weight:800;color:rgba(170,196,255,.7);text-align:center";
+    lbl.textContent=c.name;
+    wrap.appendChild(d);
+    wrap.appendChild(lbl);
+    row.appendChild(wrap);
   });
+  // Also populate splash overlay creatures if present
+  const splash=document.getElementById('splashCreatures');
+  if(splash){
+    [0,4,10].forEach((i,j)=>{
+      const c=CREATURES[i];
+      const d=document.createElement('div');
+      d.style.cssText=`width:60px;height:60px;animation:floatY ${2+j*.2}s ease-in-out infinite;animation-delay:${j*.3}s`;
+      d.innerHTML=c.fn(c.color);
+      splash.appendChild(d);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -691,10 +945,93 @@ function initTitle(){
 // ═══════════════════════════════════════════════════════════
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
 
+
+// ════════════════════════════════════════════
+//  SPLASH SCREEN
+// ════════════════════════════════════════════
+function dismissSplash(){
+  const overlay = document.getElementById('splashOverlay');
+  if(!overlay) return;
+  overlay.style.opacity='0';
+  overlay.style.pointerEvents='none';
+  setTimeout(()=>{ overlay.style.display='none'; }, 650);
+}
+
+function initSplash(){
+  const overlay = document.getElementById('splashOverlay');
+  if(!overlay) return;
+  // Auto-dismiss after 2.5s even if not tapped
+  setTimeout(dismissSplash, 2500);
+  // Also dismiss on any touch/click anywhere as backup
+  document.addEventListener('touchstart', dismissSplash, {once:true});
+}
+
+// ════════════════════════════════════════════
+//  STREAK HUD
+// ════════════════════════════════════════════
+function updateStreakHUD(){
+  const el  = document.getElementById('streakEl');
+  const num = document.getElementById('streakNum');
+  if(!el||!num) return;
+  if(streak>=2){
+    num.textContent = streak;
+    el.style.display = 'flex';
+    el.style.animation = 'none';
+    void el.offsetWidth; // reflow
+    el.style.animation = 'streakPop .4s cubic-bezier(.17,.67,.35,1.5)';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function showStreakBurst(n){
+  const msgs = {
+    2:'2 in a row! 🔥', 3:'On fire! 🔥🔥', 4:'Amazing! 🔥🔥🔥',
+    5:'UNSTOPPABLE! ⚡', 6:'LEGENDARY! 🌟', 7:'YOU ARE A SPELLING STAR! ⭐',
+    8:'INCREDIBLE! 💫', 9:'GENIUS! 🧠', 10:'PERFECT STREAK! 👑'
+  };
+  const msg = msgs[Math.min(n,10)] || (n + ' in a row! 🔥');
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(0);
+    z-index:500;font-family:'Baloo 2',cursive;font-size:clamp(1.2rem,5vw,2rem);
+    font-weight:800;color:#ffe040;text-align:center;
+    text-shadow:0 0 20px rgba(255,224,64,.8), 0 2px 4px rgba(0,0,0,.8);
+    pointer-events:none;white-space:nowrap;
+    animation:streakBurstAnim .9s cubic-bezier(.17,.67,.35,1.5) forwards;`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+// ════════════════════════════════════════════
+//  NICKNAME
+// ════════════════════════════════════════════
+let currentNicknames = {}; // name -> nickname
+
+function saveNickname(){
+  const inp = document.getElementById('nicknameInp');
+  const saved = document.getElementById('nicknameSaved');
+  if(!inp) return;
+  const val = inp.value.trim();
+  if(!val) return;
+  const w = wordOrder[wordIdx];
+  const cr = CREATURES[wordIdx % CREATURES.length];
+  currentNicknames[cr.name] = val;
+  // Update caught array entry
+  const entry = caught.find(c=>c.name===cr.name);
+  if(entry) entry.nickname = val;
+  inp.disabled = true;
+  if(saved){ saved.style.display='block'; setTimeout(()=>saved.style.display='none',2000); }
+}
+
+function getNickname(crName){
+  return currentNicknames[crName] || crName;
+}
+
 function startGame(){
   unlockAudio(); // iOS requires audio unlock on direct user gesture
   wordOrder=shuffle([...WORDS]);
-  wordIdx=0;score=0;hearts=3;caught=[];isPerfect=true;
+  wordIdx=0;score=0;hearts=3;caught=[];isPerfect=true;streak=0;bestStreak=0;
   initAudio();startBGM();
   initKeyboardHandler();
   buildMapNodes();
@@ -858,8 +1195,16 @@ function checkSpell(){
   if(val===w.w){
     inp.disabled=true;
     sfxCorrect();
+    // Update streak
+    streak++;
+    if(streak>bestStreak) bestStreak=streak;
+    updateStreakHUD();
+    // Show streak burst if on a roll
+    if(streak>=2) showStreakBurst(streak);
+    // Small confetti on correct
+    confettiBurst(10);
     // Transition to throw screen after brief pause
-    setTimeout(()=>goToThrow(),600);
+    setTimeout(()=>goToThrow(),700);
   } else {
     setTimeout(()=>{
       // Reset blank classes back to filled after shake
@@ -870,6 +1215,7 @@ function checkSpell(){
       }
     },500);
     sfxWrong();
+    streak=0; updateStreakHUD();
     if(attempts===1){
       isPerfect=false;useHint();setTimeout(sayWord,400);
     } else {
@@ -1271,8 +1617,19 @@ function showCatch(throwBonus=0){
   document.getElementById('catchCreatureEl').innerHTML=`<div style="width:88px;height:88px;margin:auto">${cr.fn(cr.color)}</div>`;
   document.getElementById('catchWordEl').textContent=w.w.toUpperCase();
   document.getElementById('catchPtsEl').textContent='+'+pts+' points!';
-  document.getElementById('catchMsgEl').textContent=cr.name+' is now yours! 🎉';
+  const CATCH_MSGS=[
+    'is now yours! 🎉','joined your team! ⭐','loves you already! 💕',
+    'thinks you are AMAZING! 🌟','is SO happy! 🥰','chose YOU! ✨',
+    'can\'t wait for adventures! 🎒','is your new best friend! 💖'
+  ];
+  const catchMsg=CATCH_MSGS[Math.floor(Math.random()*CATCH_MSGS.length)];
+  document.getElementById('catchMsgEl').textContent=cr.name+' '+catchMsg;
   document.getElementById('oCatch').classList.add('show');
+  // Reset nickname input
+  const ni=document.getElementById('nicknameInp');
+  const ns=document.getElementById('nicknameSaved');
+  if(ni){ni.value='';ni.disabled=false;}
+  if(ns) ns.style.display='none';
   updateHUD();
 }
 
@@ -1312,8 +1669,25 @@ function endGame(){
 function showWin(){
   goTo('sWin');
   setTimeout(sfxVictory,300);
+  // Show best streak
+  if(bestStreak>=2){
+    const bsEl=document.getElementById('winStreakEl');
+    const bsNum=document.getElementById('winBestStreak');
+    if(bsEl&&bsNum){ bsNum.textContent=bestStreak; bsEl.style.display='block'; }
+  }
+  confettiBurst(30);
   const dex=document.getElementById('dexGrid');
-  dex.innerHTML=caught.map(c=>`<div class="dex-card"><div style="width:52px;height:52px">${c.fn(c.color)}</div><div class="dex-word">${c.word}</div></div>`).join('');
+  dex.innerHTML='';
+  caught.forEach(c=>{
+    const crIdx=CREATURES.findIndex(cr=>cr.name===c.name);
+    const el=document.createElement('div');
+    el.className='dex-card';
+    el.style.cursor='pointer';
+    const nick = c.nickname ? `<div style="font-size:.5rem;color:#ffe040;font-weight:800;margin-top:1px">"${c.nickname}"</div>` : '';
+    el.innerHTML=`<div style="width:52px;height:52px">${c.fn(c.color)}</div><div class="dex-word">${c.word}</div>${nick}<div style="font-size:.5rem;color:#aac4ff;margin-top:2px">🤚 Care</div>`;
+    el.onclick=()=>openCare(crIdx,c);
+    dex.appendChild(el);
+  });
   document.getElementById('winStats').innerHTML=`
     <div class="wstat"><span>⭐ Score</span><span class="v">${score}</span></div>
     <div class="wstat"><span>🎯 Caught</span><span class="v">${caught.length}/20</span></div>
@@ -1481,9 +1855,386 @@ function animConf(){
 }
 
 // ═══════════════════════════════════════════════════════════
+//  POKÉDEX CARE SYSTEM
+// ═══════════════════════════════════════════════════════════
+// Open the fullscreen care iframe for a creature
+function openCreatureCare(crIdx, caughtEntry){
+  const cr = CREATURES[crIdx];
+  const happiness = creatureHappiness[cr.name] || 50;
+  const overlay = document.getElementById('careOverlay');
+  const frame   = document.getElementById('careFrame');
+
+  // Load the care page
+  frame.src = './creature_care.html';
+  overlay.classList.add('show');
+
+  // Once loaded, send creature data
+  frame.onload = () => {
+    frame.contentWindow.postMessage({
+      type:'initCreature',
+      name:cr.name,
+      color:cr.color,
+      word:caughtEntry.word,
+      happiness:happiness,
+    }, '*');
+  };
+}
+
+// Listen for messages back from care iframe
+window.addEventListener('message', e => {
+  if(e.data && e.data.type === 'closeCare'){
+    // Save happiness
+    if(e.data.name) creatureHappiness[e.data.name] = e.data.happiness || 50;
+    const overlay = document.getElementById('careOverlay');
+    const frame   = document.getElementById('careFrame');
+    overlay.classList.remove('show');
+    setTimeout(()=>{ frame.src=''; }, 400);
+    // Rebuild dex if on win screen
+    if(currentScreen === 'sWin') showWin();
+    if(currentScreen === 'sDex') buildDexGrid();
+  }
+});
+
+// Update happiness from care
+function updateCreatureHappiness(name, val){
+  creatureHappiness[name] = val;
+}
+// Persistent happiness per creature (by name)
+let creatureHappiness = {}; // name -> 0-100
+let careCreatureIdx = null; // index into CREATURES
+let currentAccessory = null; // emoji string
+let isSleeping = false;
+let careTimeout = null;
+
+const ACCESSORIES = ['🎀','🎩','👑','🌸','⭐','🎊','🌈','💎'];
+
+const CARE_MESSAGES = {
+  pet: [
+    "Ooh that feels so nice! 😊",
+    "More pets please! 🥰",
+    "You have the best hands! ✨",
+    "Purring intensifies… 💕",
+    "Best day ever! 🌟"
+  ],
+  feed: c => [
+    `Yummy ${c.food}! My favorite! 😋`,
+    `Mmm! You always know what I like! 🤤`,
+    `Can I have another ${c.food}? 🥺`,
+    `That was delicious! Thank you! 💕`,
+  ],
+  brush: [
+    "So fluffy and clean now! ✨",
+    "My fur feels amazing! 🪮",
+    "I look so beautiful! 💅",
+    "Brush brush brush… 😌",
+  ],
+  sparkle: [
+    "I'm so shiny! ✨✨",
+    "Glow glow glow! 🌟",
+    "Look how I sparkle! 💎",
+    "Polished to perfection! ⭐",
+  ],
+  cuddle: c => [c.sleepMsg],
+  accessorize: a => [
+    `I love my new ${a}! 🥰`,
+    `Do I look cute? 💕`,
+    `Fashion icon! ✨`,
+    `Best outfit ever! 🎉`,
+  ],
+};
+
+const FLOATIES = {
+  pet:        ['💕','💖','✨','🌸'],
+  feed:       ['⭐','💫','✨','😋'],
+  brush:      ['✨','💨','🌟','💎'],
+  sparkle:    ['✨','⭐','💎','🌟'],
+  cuddle:     ['💤','😴','💙','🌙'],
+  accessorize:['🎉','💕','🌟','✨'],
+};
+
+function openDex(){
+  buildDexGrid();
+  const prev = currentScreen;
+  goTo('sDex');
+  // Store where we came from so back works
+  document.getElementById('sDex')._from = prev;
+}
+
+function closeDex(){
+  const from = document.getElementById('sDex')._from || 'sSpell';
+  goTo(from);
+}
+
+function buildDexGrid(){
+  const grid = document.getElementById('dexCareGrid');
+  grid.innerHTML = '';
+  document.getElementById('dexCountEl').textContent = caught.length;
+
+  if(caught.length === 0){
+    grid.innerHTML = '<div class="dex-empty">Catch creatures by spelling words correctly!<br>🐱⚡🌸<br>Your Pokédex will fill up here.</div>';
+    return;
+  }
+
+  // Show all 20 slots — caught ones are interactive, rest are locked
+  CREATURES.forEach((cr, i) => {
+    const caughtEntry = caught.find(c => c.name === cr.name);
+    const card = document.createElement('div');
+    const happiness = creatureHappiness[cr.name] || 50;
+    const happyEmoji = happiness >= 80 ? '😄' : happiness >= 50 ? '🙂' : '😔';
+
+    if(caughtEntry){
+      card.className = 'dex-care-card';
+      card.innerHTML = `
+        <div class="dcc-happy">${happyEmoji}</div>
+        <div style="width:64px;height:64px">${cr.fn(cr.color)}</div>
+        <div class="dcc-name">${cr.name}</div>
+        <div class="dcc-word">${caughtEntry.word}</div>
+      `;
+      card.onclick = () => openCare(i, caughtEntry);
+    } else {
+      card.className = 'dex-care-card locked';
+      card.innerHTML = `
+        <div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:1.8rem">❓</div>
+        <div class="dcc-name">???</div>
+      `;
+    }
+    grid.appendChild(card);
+  });
+}
+
+function openCare(creatureIdx, caughtEntry){
+  openCreatureCare(creatureIdx, caughtEntry);
+}
+
+function closeCare(){
+  document.getElementById('careModal').classList.remove('show');
+  clearTimeout(careTimeout);
+  // Rebuild grid to reflect updated happiness
+  buildDexGrid();
+}
+
+function updateHappyBar(val){
+  document.getElementById('happyFill').style.width = Math.min(100, Math.max(0, val)) + '%';
+}
+
+function addHappiness(amount){
+  const cr = CREATURES[careCreatureIdx];
+  if(!cr) return;
+  creatureHappiness[cr.name] = Math.min(100, (creatureHappiness[cr.name] || 50) + amount);
+  updateHappyBar(creatureHappiness[cr.name]);
+}
+
+function spawnFloaties(type){
+  const wrap = document.getElementById('careCreatureSvg');
+  const icons = FLOATIES[type] || ['✨'];
+  for(let i = 0; i < 5; i++){
+    setTimeout(() => {
+      const f = document.createElement('div');
+      f.className = 'floatie';
+      f.textContent = icons[Math.floor(Math.random() * icons.length)];
+      f.style.left = (20 + Math.random() * 60) + '%';
+      f.style.top  = (20 + Math.random() * 40) + '%';
+      f.style.animationDelay = (Math.random() * .3) + 's';
+      wrap.style.position = 'relative';
+      wrap.appendChild(f);
+      setTimeout(() => f.remove(), 1400);
+    }, i * 150);
+  }
+}
+
+function animateCreature(){
+  const svg = document.getElementById('careCreatureSvg');
+  svg.style.transition = 'transform .15s';
+  svg.style.transform = 'scale(1.15)';
+  setTimeout(() => { svg.style.transform = 'scale(1)'; }, 150);
+}
+
+function setMsg(text){
+  const b = document.getElementById('careBubble');
+  b.style.opacity = '0';
+  setTimeout(() => { b.textContent = text; b.style.opacity = '1'; }, 200);
+}
+
+function randomFrom(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function doCare(type){
+  if(isSleeping && type !== 'pet'){ setMsg("Shhh… I'm sleeping! 😴 Try petting me to wake me up!"); return; }
+  if(type === 'pet' && isSleeping){ isSleeping = false; removeAccessoryByType('sleeping'); setMsg("Yawn… good morning! 😊"); return; }
+
+  const cr = CREATURES[careCreatureIdx];
+  if(!cr) return;
+  clearTimeout(careTimeout);
+
+  let msg = '';
+  let happiness = 10;
+
+  switch(type){
+    case 'pet':
+      msg = randomFrom(CARE_MESSAGES.pet);
+      happiness = 8;
+      break;
+    case 'feed':
+      msg = randomFrom(CARE_MESSAGES.feed(cr));
+      happiness = 15;
+      break;
+    case 'brush':
+      msg = randomFrom(CARE_MESSAGES.brush);
+      happiness = 12;
+      break;
+    case 'sparkle':
+      msg = randomFrom(CARE_MESSAGES.sparkle);
+      happiness = 12;
+      break;
+    case 'cuddle':
+      isSleeping = true;
+      msg = cr.sleepMsg;
+      happiness = 10;
+      addSleepingOverlay();
+      break;
+    case 'accessorize':
+      const acc = randomFrom(ACCESSORIES);
+      currentAccessory = acc;
+      addAccessoryOverlay(acc);
+      msg = randomFrom(CARE_MESSAGES.accessorize(acc));
+      happiness = 10;
+      break;
+  }
+
+  setMsg(msg);
+  spawnFloaties(type);
+  animateCreature();
+  addHappiness(happiness);
+  sfxCareChime();
+
+  // Auto-reset message after 3s
+  careTimeout = setTimeout(() => {
+    const h = creatureHappiness[cr.name] || 50;
+    if(h >= 80) setMsg("I'm so happy! 😄💕");
+    else if(h >= 50) setMsg("I love spending time with you! 🥰");
+    else setMsg("Tap something to interact with me! 🥰");
+  }, 3000);
+}
+
+function addAccessoryOverlay(emoji){
+  // Remove old accessory
+  const old = document.getElementById('accOverlay');
+  if(old) old.remove();
+  const wrap = document.getElementById('careCreatureSvg');
+  const el = document.createElement('div');
+  el.className = 'accessory-overlay';
+  el.id = 'accOverlay';
+  el.textContent = emoji;
+  wrap.appendChild(el);
+}
+
+function addSleepingOverlay(){
+  const old = document.getElementById('sleepOverlay');
+  if(old) old.remove();
+  const wrap = document.getElementById('careCreatureSvg');
+  const el = document.createElement('div');
+  el.className = 'sleeping-overlay';
+  el.id = 'sleepOverlay';
+  el.textContent = '💤';
+  wrap.appendChild(el);
+}
+
+function removeAccessoryByType(t){
+  if(t === 'sleeping'){
+    const el = document.getElementById('sleepOverlay');
+    if(el) el.remove();
+  }
+}
+
+// Small chime sound for care actions
+function sfxCareChime(){
+  if(!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const notes = [523, 659, 784];
+  notes.forEach((f, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(.3, t + i*.08);
+    g.gain.exponentialRampToValueAtTime(.001, t + i*.08 + .2);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t + i*.08); o.stop(t + i*.08 + .25);
+  });
+}
+
+// Also open dex from win screen dex cards
+function openCareFromWin(creatureIdx){
+  const cr = CREATURES[creatureIdx];
+  const caughtEntry = caught.find(c => c.name === cr.name);
+  if(caughtEntry) openCare(creatureIdx, caughtEntry);
+}
+
+// ═══════════════════════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════════════════════
 initTitle();
 </script>
+
+<!-- ═══════════════════════ POKÉDEX CARE SCREEN ═══════════════════════ -->
+<div class="screen off" id="sDex">
+  <div class="dex-topbar">
+    <button class="btn-back" onclick="closeDex()">← Back</button>
+    <div class="dex-topbar-title">📖 My Pokédex</div>
+    <div style="font-family:'Baloo 2',cursive;font-size:.6rem;color:#aac4ff">
+      <span id="dexCountEl">0</span>/20 caught
+    </div>
+  </div>
+  <div class="dex-care-grid" id="dexCareGrid"></div>
+</div>
+
+<!-- ═══════════════════════ CARE MODAL ═══════════════════════ -->
+<div id="careModal">
+  <div class="care-sheet">
+    <!-- Creature display -->
+    <div class="care-creature-wrap">
+      <div class="care-creature-svg" id="careCreatureSvg"></div>
+      <div class="care-creature-name" id="careCreatureName">Fluffkin</div>
+      <div class="care-word-badge" id="careWordBadge">POUNCE</div>
+    </div>
+
+    <!-- Happiness -->
+    <div class="happy-wrap">
+      <div class="happy-label">Happiness ✨</div>
+      <div class="happy-bar-track">
+        <div class="happy-bar-fill" id="happyFill" style="width:50%"></div>
+      </div>
+    </div>
+
+    <!-- Speech bubble -->
+    <div class="care-bubble" id="careBubble">Tap something to interact with me! 🥰</div>
+
+    <!-- Care actions -->
+    <div class="care-actions" id="careActions">
+      <button class="care-btn" onclick="doCare('pet')">
+        <span class="cb-icon">🤚</span><span class="cb-label">Pet</span>
+      </button>
+      <button class="care-btn" onclick="doCare('feed')">
+        <span class="cb-icon">🍎</span><span class="cb-label">Feed</span>
+      </button>
+      <button class="care-btn" id="brushBtn" onclick="doCare('brush')">
+        <span class="cb-icon">🪮</span><span class="cb-label">Brush</span>
+      </button>
+      <button class="care-btn" onclick="doCare('cuddle')">
+        <span class="cb-icon">💤</span><span class="cb-label">Cuddle</span>
+      </button>
+      <button class="care-btn" onclick="doCare('accessorize')">
+        <span class="cb-icon">🎀</span><span class="cb-label">Dress Up</span>
+      </button>
+    </div>
+
+    <button class="btn-close-care" onclick="closeCare()">Close ✕</button>
+  </div>
+</div>
+
+
+<!-- ═══ CREATURE CARE OVERLAY ═══ -->
+<div id="careOverlay">
+  <iframe id="careFrame" src="" allow="autoplay"></iframe>
+</div>
+
 </body>
 </html>
