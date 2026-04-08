@@ -592,7 +592,7 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 <div class="screen" id="sTitle">
   <div class="title-creatures" id="titleCreatures"></div>
   <h1 class="title-h1">Bella's Spelling<br>Adventure!</h1>
-  <p class="title-sub">Compound Words</p>
+  <p class="title-sub">Verb Endings (-s, -ed, -ing)</p>
   <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">
     <span class="title-badge">🐾 20 Creatures to Catch</span>
     <span class="title-badge">🗺️ 5 Locations</span>
@@ -747,27 +747,28 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 //  DATA
 // ═══════════════════════════════════════════════════════════
 const WORDS=[
-  {w:"airplane",    d:"A flying machine with wings that carries people through the sky ✈️",    s:"The airplane flew high above the fluffy white clouds."},
-  {w:"daytime",     d:"The part of the day when the sun is shining ☀️",                        s:"Bella loves to play outside during the daytime."},
-  {w:"birthday",    d:"The special day each year when you were born 🎂",                        s:"She got a surprise party on her birthday."},
-  {w:"daylight",    d:"The natural light that comes from the sun during the day 🌤️",            s:"We could see the path clearly in the bright daylight."},
-  {w:"hairdo",      d:"A special way that someone's hair is styled 💇",                         s:"She had a beautiful hairdo for the school photo."},
-  {w:"somebody",    d:"Some person — another way to say someone 🙋",                            s:"Somebody left their backpack by the door."},
-  {w:"birdhouse",   d:"A small wooden house built for birds to live in 🐦",                     s:"Dad built a birdhouse and hung it in the oak tree."},
-  {w:"barefoot",    d:"Walking without any shoes or socks on your feet 🦶",                     s:"She ran barefoot across the warm sand at the beach."},
-  {w:"headlight",   d:"A bright light on the front of a car that helps you see at night 🚗",   s:"The car's headlight lit up the dark road ahead."},
-  {w:"sometime",    d:"At an unspecified time in the future or past 🕰️",                       s:"We should go to the park sometime this weekend."},
-  {w:"someone",     d:"Some unknown or unspecified person 👤",                                  s:"Someone left a kind note in Bella's lunchbox."},
-  {w:"newspaper",   d:"Sheets of paper printed with news and stories, read every day 📰",      s:"Grandpa reads the newspaper every morning at breakfast."},
-  {w:"sidewalks",   d:"Paved paths along the side of a street for people to walk on 🚶",       s:"The children walked along the sidewalks to get to school."},
-  {w:"basketball",  d:"A sport where you throw a ball through a hoop, or the ball itself 🏀",  s:"She practiced basketball in the driveway every afternoon."},
-  {w:"stagecoach",  d:"An old-fashioned horse-drawn carriage that carried passengers 🐴",      s:"The cowboys rode in a stagecoach across the dusty plains."},
-  {w:"placed",      d:"Put something carefully in a specific spot 📍",                          s:"She placed her trophy on the shelf above her desk."},
-  {w:"office",      d:"A room or building where people do their work 💼",                       s:"Dad works in an office with a big window and a tall desk."},
-  {w:"giant",       d:"Something extremely large — much bigger than normal 🌟",                 s:"The giant elephant was taller than the fence at the zoo."},
-  {w:"handwriting", d:"The way a person forms letters and words when writing by hand ✍️",      s:"Her handwriting was so neat that the teacher showed the class."},
-  {w:"windshield",  d:"The large glass window at the front of a car 🚘",                       s:"Dad turned on the wipers to clear the rain from the windshield."}
+  {w:"names",      d:"More than one name — what we call people or things 🏷️",                     s:"She wrote all the names on the birthday cards."},
+  {w:"named",      d:"Was given a name, or called something 📛",                                   s:"The puppy was named Biscuit because he was golden brown."},
+  {w:"naming",     d:"The act of giving someone or something a name right now ✏️",                 s:"They were naming all the new kittens at the shelter."},
+  {w:"hopes",      d:"Wants something good to happen — more than one hope 🌟",                     s:"She hopes it will be sunny for the field trip."},
+  {w:"hoped",      d:"Wanted something good to happen in the past 🤞",                             s:"He hoped his team would win the big game."},
+  {w:"hoping",     d:"Wishing for something good while it is happening 💫",                        s:"She was hoping for a snow day so school would be cancelled."},
+  {w:"dances",     d:"Moves to music — more than one dance, or someone who dances 💃",             s:"She dances at her recital every spring."},
+  {w:"danced",     d:"Moved to music in the past 🎵",                                              s:"They danced all night at the school talent show."},
+  {w:"dancing",    d:"Moving to music right now 🎶",                                               s:"The children were dancing around the maypole at the fair."},
+  {w:"drops",      d:"Falls or lets something fall — or tiny amounts of liquid 💧",               s:"He drops his backpack by the door every day after school."},
+  {w:"dropped",    d:"Let something fall, or fell, in the past 📉",                               s:"She dropped her pencil and it rolled under the desk."},
+  {w:"dropping",   d:"Letting something fall right now ⬇️",                                       s:"The leaves were dropping from the trees one by one."},
+  {w:"wraps",      d:"Covers something all around, or more than one wrap 🎁",                     s:"Dad wraps the presents while we are sleeping."},
+  {w:"wrapped",    d:"Covered something all around in the past 🎀",                               s:"She carefully wrapped the gift in shiny paper and a bow."},
+  {w:"wrapping",   d:"Covering something all around right now 📦",                                s:"He was wrapping the sandwich in foil for his lunch."},
+  {w:"basketball", d:"A sport where you throw a ball through a hoop, or the ball itself 🏀",      s:"She practiced basketball in the driveway every afternoon."},
+  {w:"airplane",   d:"A flying machine with wings that carries people through the sky ✈️",         s:"The airplane flew high above the fluffy white clouds."},
+  {w:"birthday",   d:"The special day each year when you were born 🎂",                            s:"She got a surprise party on her birthday."},
+  {w:"driving",    d:"Controlling a car or vehicle to make it go somewhere 🚗",                   s:"Dad was driving us to school when it started to rain."},
+  {w:"traded",     d:"Gave something and got something else in return 🔄",                        s:"She traded her apple for his crackers at lunch."}
 ];
+
 
 
 const LOCATIONS=[
