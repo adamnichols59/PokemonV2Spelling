@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9GNH24NL8Q"></script>
 <script>
@@ -10,7 +11,29 @@
   gtag('js', new Date());
   gtag('config', 'G-9GNH24NL8Q');
 </script>
+
+<!-- Firebase -->
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,collection,getDocs,query,orderBy,limit} 
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+const fbCfg={
+  apiKey:"AIzaSyCuuUtfqRCjaVffIVj_8ey_6kBmGXPxIro",
+  authDomain:"bella-spelling.firebaseapp.com",
+  projectId:"bella-spelling",
+  storageBucket:"bella-spelling.firebasestorage.app",
+  messagingSenderId:"109241910702",
+  appId:"1:109241910702:web:425b48cf1e24408568343f"
+};
+const fbApp=initializeApp(fbCfg);
+const fbDb=getFirestore(fbApp);
+window._fb={db:fbDb,doc,getDoc,setDoc,updateDoc,collection,getDocs,query,orderBy,limit,ready:true};
+document.dispatchEvent(new Event('fbReady'));
+
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="screen-orientation" content="portrait">
 <title>Bella's Spelling Adventure</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -21,6 +44,28 @@
   border-radius:999px;padding:3px 10px;font-size:.7rem;font-weight:800;color:#ffaa44;
   display:flex;align-items:center;gap:4px;}
 @keyframes streakPop{0%{transform:scale(.7)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;}
+.ob-dot.active{background:#ffe040;transform:scale(1.3);}
+@keyframes coinMsgAnim{
+  0%{transform:translateX(-50%) scale(0);opacity:0}
+  30%{transform:translateX(-50%) scale(1.15);opacity:1}
+  65%{transform:translateX(-50%) scale(1);opacity:1}
+  85%{transform:translateX(-50%) scale(1);opacity:1}
+  100%{transform:translateX(-50%) scale(.9) translateY(-20px);opacity:0}
+}
+@keyframes coinBadgeAnim{
+  0%{transform:translateX(-50%) scale(0);opacity:0}
+  40%{transform:translateX(-50%) scale(1.1);opacity:1}
+  70%{transform:translateX(-50%) scale(1);opacity:1}
+  100%{transform:translateX(-50%) scale(1) translateY(10px);opacity:0}
+}
+@keyframes coinRain{
+  0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}
+  100%{transform:translateY(-120px) rotate(360deg) scale(0);opacity:0}
+}
+/* Coin chip */
+#coinChip{background:rgba(255,224,64,.18);border:1.5px solid rgba(255,224,64,.5);
+  border-radius:999px;padding:3px 10px;font-size:.7rem;font-weight:800;color:#ffe040;}
 @keyframes streakBurstAnim{
   0%{transform:translate(-50%,-50%) scale(0);opacity:0}
   30%{opacity:1}
@@ -42,12 +87,23 @@
 .title-badge{font-family:'Nunito',sans-serif;font-size:.55rem;font-weight:800;
   background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);
   border-radius:999px;padding:4px 10px;color:#aac4ff;}
+.pin-dot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);transition:all .2s;}
+.pin-dot.filled{background:#ffe040;border-color:#ffe040;box-shadow:0 0 8px rgba(255,224,64,.5)}
+.pin-key{font-family:Baloo 2,cursive;font-size:1.3rem;font-weight:800;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 8px;color:white;cursor:pointer;transition:background .15s;}
+.pin-key:active{background:rgba(255,224,64,.25);}
 .splash-dot{width:11px;height:11px;border-radius:50%;background:#ffe040;
   animation:splashBounce .7s ease-in-out infinite alternate;}
 @keyframes splashBounce{from{transform:translateY(0) scale(1)}to{transform:translateY(-16px) scale(.75)}}
 @keyframes splashTap{from{opacity:.4;transform:scale(.95)}to{opacity:1;transform:scale(1.05)}}
 @keyframes splashSpin{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
-html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'Nunito',sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'Nunito',sans-serif;background:#0d0221;}
+@media screen and (orientation:landscape) and (max-height:500px){
+  body::before{content:'Please rotate your device to portrait mode 📱';
+    position:fixed;inset:0;z-index:99999;background:#0d0221;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+    color:#ffe040;text-align:center;padding:24px;box-sizing:border-box;}
+}
 
 :root{
   --pink:#ff7eb3;--dpink:#e8458a;
@@ -68,6 +124,7 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   align-items:center;justify-content:center;
   transition:opacity .35s ease,transform .35s ease;
   z-index:1;
+  background:#0d1a3a;
 }
 .screen.off{opacity:0;pointer-events:none;transform:scale(.96)}
 .screen.off-left{opacity:0;pointer-events:none;transform:translateX(-60px)}
@@ -107,6 +164,9 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 }
 .spell-topbar-title{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;color:var(--yellow)}
 .spell-topbar-right{display:flex;gap:8px;align-items:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner{width:20px;height:20px;border:3px solid rgba(255,224,64,.3);
+  border-top-color:#ffe040;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}
 .hchip{background:#0f3460;border:2px solid var(--yellow);border-radius:999px;
   padding:4px 12px;font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;color:var(--yellow)}
 
@@ -130,9 +190,8 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   display:flex;flex-direction:column;align-items:center;gap:6px;
   animation:floatY 2.5s ease-in-out infinite;
 }
-@keyframes floatY{0%,100%{transform:translateY(0)}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes floatY2{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
-50%{transform:translateY(-10px)}}
 .spell-creature-name{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;
   color:var(--yellow);background:rgba(0,0,0,.5);padding:3px 12px;border-radius:999px;border:1.5px solid var(--yellow)}
 .spell-encounter-tag{font-family:'Baloo 2',cursive;font-size:.7rem;color:#aac4ff;
@@ -403,7 +462,38 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
   color:var(--yellow);text-align:center;text-shadow:3px 3px 0 var(--dyellow)}
 .dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;width:100%;max-width:400px}
 .dex-card{background:#0f3460;border:2px solid var(--yellow);border-radius:12px;
-  padding:8px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+  padding:8px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;
+  position:relative;transition:all .3s;}
+.dex-card.evolve-ready{
+  border-color:#ffe040;
+  box-shadow:0 0 18px rgba(255,224,64,.5), 0 0 8px rgba(255,224,64,.3);
+  animation:evolvePulse 1.8s ease-in-out infinite;}
+@keyframes evolvePulse{
+  0%,100%{box-shadow:0 0 12px rgba(255,224,64,.4);}
+  50%{box-shadow:0 0 28px rgba(255,224,64,.8), 0 0 12px rgba(255,200,0,.6);}}
+.cr-count-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:#9b5fd4;color:white;
+  font-family:'Baloo 2',cursive;font-size:.55rem;font-weight:800;
+  border-radius:999px;padding:2px 6px;
+  border:2px solid #0f3460;min-width:20px;}
+.cr-count-badge.evolve-badge{
+  background:#ffe040;color:#0f3460;}
+.evo-bar-wrap{
+  width:48px;height:5px;background:rgba(255,255,255,.12);
+  border-radius:3px;overflow:hidden;margin-top:2px;}
+.evo-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.evolve-now-btn{font-family:'Baloo 2',cursive;font-size:.5rem;font-weight:800;
+  background:linear-gradient(135deg,#ffe040,#ff9f43);border:none;border-radius:8px;
+  padding:5px 10px;color:#000;cursor:pointer;margin-top:3px;
+  animation:goldPulse 1.5s ease-in-out infinite;display:block;width:100%}
+.evolve-now-btn:hover{transform:scale(1.05);}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 6px rgba(255,224,64,.4)}
+  50%{box-shadow:0 0 16px rgba(255,224,64,.9),0 0 30px rgba(255,159,67,.5)}}
+.evolve-label{
+  font-family:'Baloo 2',cursive;font-size:.42rem;font-weight:800;
+  color:#ffe040;animation:evolveLabelPop .6s ease-out;}
+@keyframes evolveLabelPop{0%{transform:scale(0)}80%{transform:scale(1.15)}100%{transform:scale(1)}}
 .dex-word{font-family:'Baloo 2',cursive;font-size:.48rem;font-weight:800;color:var(--yellow);word-break:break-all}
 .win-stats{background:#0f3460;border:2px solid var(--yellow);border-radius:12px;padding:14px 20px;width:100%;max-width:380px}
 .wstat{display:flex;justify-content:space-between;font-family:'Baloo 2',cursive;font-size:.72rem;
@@ -568,6 +658,78 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 <canvas id="cvs"></canvas>
 
 <!-- ═══════════════════════ TITLE ═══════════════════════ -->
+<!-- RESUME SCREEN -->
+<div id="resumeScreen" style="display:none;position:fixed;inset:0;z-index:1001;
+  background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">
+  <div style="font-size:3rem">🐾</div>
+  <div style="font-family:Baloo 2,cursive;font-size:1.4rem;font-weight:800;color:#ffe040;text-align:center">
+    Welcome back,<br><span id="resumeName"></span>!
+  </div>
+  <div style="background:rgba(255,255,255,.08);border:2px solid rgba(255,224,64,.3);
+    border-radius:20px;padding:24px;width:100%;max-width:320px;
+    display:flex;flex-direction:column;gap:12px;text-align:center">
+    <div style="font-family:Baloo 2,cursive;font-size:.8rem;font-weight:800;color:#4dcf8a">
+      You have saved progress this week!
+    </div>
+    <div style="font-size:.75rem;font-weight:800;color:white" id="resumeWords"></div>
+    <div style="font-size:.65rem;color:#aac4ff" id="resumeScore"></div>
+    <button id="resumeBtn" style="font-family:Baloo 2,cursive;font-size:.9rem;font-weight:800;
+      background:linear-gradient(135deg,#4dcf8a,#2299cc);border:none;border-radius:12px;
+      padding:14px;color:white;cursor:pointer;width:100%">
+      ▶ Continue where I left off
+    </button>
+    <button id="freshBtn" style="font-family:Baloo 2,cursive;font-size:.75rem;font-weight:800;
+      background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:12px;
+      padding:12px;color:#aac4ff;cursor:pointer;width:100%">
+      🔄 Start fresh this week
+    </button>
+    <button onclick="_visitCreatures()" style="font-family:'Baloo 2',cursive;
+      font-size:.65rem;font-weight:800;background:none;border:none;
+      color:rgba(170,196,255,.5);cursor:pointer;padding:8px;margin-top:2px">
+      🐾 Just visiting my creatures
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════ ONBOARDING OVERLAY ═══════════════════ -->
+<div id="onboardOverlay" style="display:none;position:fixed;inset:0;z-index:1050;
+  background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;box-sizing:border-box">
+  <div style="max-width:340px;width:100%;text-align:center">
+    <!-- Slide indicators -->
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px">
+      <div class="ob-dot active" id="ob0"></div>
+      <div class="ob-dot" id="ob1"></div>
+      <div class="ob-dot" id="ob2"></div>
+    </div>
+    <!-- Slides -->
+    <div id="obSlide0">
+      <div style="font-size:4rem;margin-bottom:12px">✏️</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:#ffe040;margin-bottom:10px">Spell the Word!</div>
+      <div style="font-size:.72rem;color:#aac4ff;line-height:1.7">Each word comes with a definition and a clue sentence.<br><br>Type the word and press <b style="color:white">CHECK</b>.<br>Use <b style="color:#ffe040">HEAR IT</b> to listen or <b style="color:#ff88cc">HINT</b> if you're stuck!</div>
+    </div>
+    <div id="obSlide1" style="display:none">
+      <div style="font-size:4rem;margin-bottom:12px">🎯</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:#ffe040;margin-bottom:10px">Catch a Creature!</div>
+      <div style="font-size:.72rem;color:#aac4ff;line-height:1.7">Spell it right and a creature appears!<br><br>Swipe up to throw your Poké Ball and catch it.<br>The better you spell, the more <b style="color:#ffe040">✨ Shine Coins</b> you earn!</div>
+    </div>
+    <div id="obSlide2" style="display:none">
+      <div style="font-size:4rem;margin-bottom:12px">🐾</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:#ffe040;margin-bottom:10px">Build Your Team!</div>
+      <div style="font-size:.72rem;color:#aac4ff;line-height:1.7">Catch 20 different creatures and care for them!<br><br>Use your coins to buy accessories in the Shop.<br>Catch the same creature <b style="color:#ffe040">3 times</b> and it <b style="color:#ff88cc">evolves</b> into something amazing! ⚡</div>
+    </div>
+    <!-- Buttons -->
+    <button id="obNext" onclick="_obNext()" style="font-family:'Baloo 2',cursive;font-size:.9rem;
+      font-weight:800;background:linear-gradient(135deg,#9b5fd4,#4dcf8a);border:none;
+      border-radius:14px;padding:14px 32px;color:white;cursor:pointer;margin-top:28px;width:100%">
+      Next →
+    </button>
+  </div>
+</div>
+
 <!-- SPLASH OVERLAY - tap anywhere to dismiss -->
 <div id="splashOverlay" onclick="dismissSplash()" style="position:fixed;inset:0;z-index:999;
   background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);
@@ -610,6 +772,7 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
     </div>
     <div class="spell-topbar-right">
       <div class="hchip">⭐ <span id="scoreEl">0</span></div>
+      <div class="hchip" id="coinChip">✨ <span id="coinEl">0</span></div>
       <div class="hchip" id="heartsEl">❤️❤️❤️</div>
       <div class="hchip" id="streakEl" style="display:none">🔥 <span id="streakNum">0</span></div>
       <div class="hchip" id="wordNumEl">1/20</div>
@@ -716,13 +879,60 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 <!-- ═══════════════════════ WIN ═══════════════════════ -->
 <div class="screen off" id="sWin">
   <div class="win-title">🏆 Journey Complete!</div>
+  <div id="leaderboardTop3" style="width:100%;max-width:300px;margin:0 auto"></div>
   <div style="font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:#aac4ff;text-align:center;line-height:1.8">You caught all the creatures, Bella!<br>You are AMAZING! ⭐</div>
   <div class="dex-grid" id="dexGrid"></div>
   <div class="win-stats" id="winStats"></div>
+  <div id="coinWin" style="font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:800;
+    color:#ffe040;text-align:center;margin-top:4px;opacity:.85"></div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px">
     <button class="btn-continue" onclick="openDex()" style="background:linear-gradient(135deg,var(--purple),#6622aa);box-shadow:0 5px 0 #440088">📖 Pokédex</button>
     <button class="btn-continue" onclick="playAgain()">🔄 Play Again!</button>
+  <button id="recapBtn" onclick="showRecap()" style="display:none;
+    font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;
+    background:rgba(255,160,50,.2);border:2px solid rgba(255,160,50,.5);
+    border-radius:14px;padding:10px 24px;color:#ffaa44;cursor:pointer;margin-top:4px">
+    📖 Review Tricky Words
+  </button>
   </div>
+</div>
+
+<!-- ═══════════════════════ RECAP OVERLAY ═══════════════════ -->
+<div id="recapOverlay" style="display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,.92);overflow-y:auto;padding:24px;box-sizing:border-box">
+  <div style="max-width:480px;margin:0 auto">
+    <div style="font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;
+      color:#ffaa44;text-align:center;margin-bottom:6px">📖 Practice These Words</div>
+    <div style="font-size:.6rem;color:#aac4ff;text-align:center;margin-bottom:20px">
+      These took a few tries — one more look before you go!</div>
+    <div id="recapList" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button onclick="closeRecap()" style="font-family:'Baloo 2',cursive;font-size:.85rem;
+      font-weight:800;background:linear-gradient(135deg,#9b5fd4,#4dcf8a);border:none;
+      border-radius:14px;padding:14px;color:white;width:100%;cursor:pointer;margin-top:20px">
+      ✅ Got it! Back to my creatures
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ EVOLUTION OVERLAY ═══════════════════ -->
+<div id="evoOverlay" style="display:none;position:fixed;inset:0;z-index:900;
+  background:radial-gradient(ellipse at center,#1a0a3e,#0d0221);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px">
+  <div style="font-family:'Baloo 2',cursive;font-size:1.6rem;font-weight:800;color:#ffe040;
+    text-shadow:0 0 30px rgba(255,224,64,.8)">⚡ EVOLUTION! ⚡</div>
+  <div style="display:flex;align-items:center;gap:24px;margin:8px 0">
+    <div id="evoFrom" style="width:90px;height:90px;opacity:.5;filter:grayscale(1)"></div>
+    <div style="font-size:2rem;color:#ffe040;animation:goldPulse 1s infinite">→</div>
+    <div id="evoTo" style="width:90px;height:90px;animation:floatY 2s ease-in-out infinite"></div>
+  </div>
+  <div id="evoMsg" style="font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+    color:white;text-shadow:0 0 20px rgba(255,255,255,.5)"></div>
+  <div style="font-size:.65rem;color:#aac4ff;margin-top:4px">Your creature has evolved!</div>
+  <button onclick="closeEvoOverlay()" style="font-family:'Baloo 2',cursive;font-size:.85rem;
+    font-weight:800;background:linear-gradient(135deg,#ffe040,#ff9f43);border:none;
+    border-radius:14px;padding:14px 32px;color:#000;cursor:pointer;margin-top:8px">
+    ✨ Amazing! See my Pokédex
+  </button>
 </div>
 
 <!-- ═══════════════════════ CATCH OVERLAY ═══════════════════════ -->
@@ -746,7 +956,7 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;font-family:'
 // ═══════════════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════════════
-const WORDS=[
+const WORDS_DEFAULT=[
   {w:"names",      d:"More than one name — what we call people or things 🏷️",                     s:"She wrote all the names on the birthday cards."},
   {w:"named",      d:"Was given a name, or called something 📛",                                   s:"The puppy was named Biscuit because he was golden brown."},
   {w:"naming",     d:"The act of giving someone or something a name right now ✏️",                 s:"They were naming all the new kittens at the shelter."},
@@ -768,6 +978,8 @@ const WORDS=[
   {w:"driving",    d:"Controlling a car or vehicle to make it go somewhere 🚗",                   s:"Dad was driving us to school when it started to rain."},
   {w:"traded",     d:"Gave something and got something else in return 🔄",                        s:"She traded her apple for his crackers at lunch."}
 ];
+var WORDS=[...WORDS_DEFAULT]; // May be overridden by Firebase word list
+
 
 
 
@@ -779,6 +991,18 @@ const LOCATIONS=[
   {name:"🌋 Star Summit",    emoji:"🌋"}
 ];
 const NODE_PCT=[8,27,46,65,84];
+
+// Evolution map - 3 of same creature = evolve
+const EVOLUTION_MAP = {
+  Fluffkin:'Lumifur', Sparklox:'Emberfox', Puddlum:'Coralswim',
+  Fernbit:'Bloomhop', Glimcat:'Shadowpurr',
+  Coraluff:'Prismbear', Driftail:'Stormwing', Peppin:'Chompking',
+  Starwhirl:'Novaflare', Mossling:'Ancienshell',
+  Twinkow:'Galaxhorn', Boulbear:'Jadepaw',
+  Zipplet:'Thunderwing', Dazzlphin:'Tidalcrest', Flameow:'Infernokit',
+  Crystaloo:'Prismraccoon', Dewdrop:'Bloomlotl', Puffy:'Truffleking',
+  Shimmur:'Solarmane', Lunabelle:'Cosmowl',
+};
 
 const CREATURES=[
   {name:"Fluffkin", color:"#ffb3d9", fn:drawBunny,  furry:true,  food:"🥕 carrot",    sleepMsg:"Fluffkin curls into a fluffy ball 💤"},
@@ -835,6 +1059,12 @@ let wordOrder=[],wordIdx=0,score=0,hearts=3;
 let hintUsed=false,attempts=0,isPerfect=true;
 let caught=[],speaking=false,soundEnabled=true;
 let streak=0,bestStreak=0;
+let wordStats=[]; // per-word 
+let shineCoins=0; // Shine Coins currency
+let _wordStats=[]; // detailed per-word analytics
+let _wordStartTime=0; // word load timestamp
+let _wordTimerActive=false; // timer running flag
+let _sessionStartTime=Date.now(); // session timer
 let throwReady=false,throwLocked=false;
 let audioCtx=null,bgmGain=null,sfxGain=null,bgmPlaying=false,bgmNodes=[],bgmSched=null;
 
@@ -845,8 +1075,8 @@ let currentScreen='sTitle';
 function goTo(id,dir=''){
   const cur=document.getElementById(currentScreen);
   const nxt=document.getElementById(id);
-  cur.classList.add(dir==='left'?'off-left':dir==='right'?'off-right':'off');
-  nxt.classList.remove('off','off-left','off-right');
+  if(cur) cur.classList.add(dir==='left'?'off-left':dir==='right'?'off-right':'off');
+  if(nxt) nxt.classList.remove('off','off-left','off-right');
   currentScreen=id;
 }
 
@@ -1023,16 +1253,384 @@ function saveNickname(){
   if(entry) entry.nickname = val;
   inp.disabled = true;
   if(saved){ saved.style.display='block'; setTimeout(()=>saved.style.display='none',2000); }
+  _autoSave(); // Save nickname to Firebase
 }
 
 function getNickname(crName){
   return currentNicknames[crName] || crName;
 }
 
+// ── LOGIN SYSTEM ──
+var _pinEntry='';
+var _isSignup=false;
+var _currentUser=null;
+var WEEK_KEY='week_apr_2026';
+var _sessionStart=Date.now();
+
+function _setMsg(m,c){var e=document.getElementById('loginMsg');if(e){e.textContent=m;e.style.color=c||'#aac4ff';}}
+function _updateDots(){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.className='pin-dot'+(_pinEntry.length>i?' filled':'');}}
+function _pinPress(v){if(v==='DEL'){_pinEntry=_pinEntry.slice(0,-1);}else if(_pinEntry.length<4){_pinEntry+=v;}_updateDots();}
+function _hideLogin(){
+  var e=document.getElementById('sLogin');
+  if(e){
+    e.style.opacity='0';
+    e.style.transition='opacity .5s';
+    setTimeout(function(){e.style.display='none';},500);
+  }
+}
+function _guestPlay(){_currentUser={username:'Guest',isGuest:true};_hideLogin();}
+function _toggleSignup(){
+  _isSignup=!_isSignup;_pinEntry='';_updateDots();_setMsg('');
+  var b=document.getElementById('switchBtn');var h=document.getElementById('pinHint');var l=document.getElementById('loginBtn');
+  if(_isSignup){if(b)b.textContent='Already have an account? Log in';if(h)h.textContent='Choose a PIN you will remember';if(l)l.textContent='Create Account';}
+  else{if(b)b.textContent='New here? Create an account';if(h)h.textContent='Enter your 4-digit PIN';if(l)l.innerHTML='&#10024; Let&#39;s Go!';}
+}
+function _doLogin(){
+  var name=(document.getElementById('loginUsername')||{}).value||'';
+  // Normalize smart quotes, curly apostrophes, and hidden chars
+  name=name
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g,"'") // curly apostrophes -> straight
+    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g,'"') // curly quotes -> straight
+    .replace(/[\u200B-\u200D\uFEFF\u00A0]/g,'')              // zero-width & non-breaking spaces
+    .trim();
+  if(!name){_setMsg('Please enter your name!','#ffaa44');return;}
+  if(_pinEntry.length!==4){_setMsg('Please enter your 4-digit PIN!','#ffaa44');return;}
+  _setMsg('Looking up your account...','#aac4ff',true);
+  var fb=window._fb;
+  if(!fb||!fb.ready){_guestPlay();return;}
+  var id=name.toLowerCase();
+  fb.getDoc(fb.doc(fb.db,'students',id)).then(function(snap){
+    if(_isSignup){
+      if(snap.exists()){_setMsg('Name taken! Try adding your last initial.','#ff8888');return;}
+      return fb.setDoc(fb.doc(fb.db,'students',id),{username:name,pin:_pinEntry,createdAt:Date.now(),totalScore:0,totalCreatures:0,bestStreak:0,shineCoins:0,weeks:{}})
+        .then(function(){
+          _setMsg('Welcome '+name+'! ✨','#4dcf8a');
+          _currentUser={username:name,isGuest:false};
+          setTimeout(function(){ _showOnboarding(); },600);
+        });
+    } else {
+      if(!snap.exists()){_setMsg('Name not found. New here?','#ff8888');return;}
+      if(snap.data().pin!==_pinEntry){_setMsg('Wrong PIN!','#ff8888');_pinEntry='';_updateDots();return;}
+      _setMsg('Welcome back '+name+'!','#4dcf8a');setTimeout(function(){_loginOk(name);},600);
+    }
+  }).catch(function(e){
+    console.error('Firebase error:',e);
+    if(e.code==='permission-denied'){
+      _setMsg('Firebase rules need updating. Playing as guest.','#ffaa44');
+    } else {
+      _setMsg('Connection error. Playing as guest.','#ffaa44');
+    }
+    setTimeout(_guestPlay,1000);
+  });
+}
+function _loginOk(name){
+  _currentUser={username:name,isGuest:false};
+  // Load saved progress before hiding login
+  var fb=window._fb;
+  if(!fb||!fb.ready){ _hideLogin(); return; }
+  fb.getDoc(fb.doc(fb.db,'students',name.toLowerCase())).then(function(snap){
+    if(!snap.exists()){ _hideLogin(); return; }
+    var data=snap.data();
+    _savedUserData=data; // Store full user data first
+    // Load persistent user data
+    if(data.shineCoins){ shineCoins=data.shineCoins; updateCoinHUD(); }
+    var weekData=data.weeks&&data.weeks[WEEK_KEY];
+    if(weekData&&weekData.wordsDone>0){
+      // Has played this week - show resume screen
+      _savedWeekData=weekData;
+      _hideLogin();
+      _showResumeScreen(name, weekData);
+    } else {
+      // No progress yet this week
+      if(data.bestStreak) bestStreak=data.bestStreak;
+      _hideLogin();
+    }
+    // Daily login bonus - check if last login was a different day
+    var today=new Date().toDateString();
+    if(data.lastLoginDate!==today){
+      shineCoins=(data.shineCoins||0)+3;
+      updateCoinHUD();
+      setTimeout(function(){showCoinBurst(3,'Daily Bonus!');},800);
+      // Save login date and coins
+      var fb=window._fb;
+      if(fb&&fb.ready){
+        var upd={lastLoginDate:today,shineCoins:shineCoins};
+        fb.updateDoc(fb.doc(fb.db,'students',name.toLowerCase()),upd)
+          .catch(function(e){console.error(e);});
+      }
+    } else {
+      shineCoins=data.shineCoins||0;
+      updateCoinHUD();
+    }
+  }).catch(function(){ _hideLogin(); });
+}
+
+var _savedWeekData=null;
+var _savedUserData=null;
+
+function _showResumeScreen(name, weekData){
+  var el=document.getElementById('resumeScreen');
+  if(!el) return;
+  var done=weekData.wordsDone||0;
+  var completed=done>=20;
+  document.getElementById('resumeName').textContent=name;
+  document.getElementById('resumeWords').innerHTML=completed
+    ?'You finished all 20 words this week! ⭐'
+    :done+' of 20 words done';
+  var crCount=weekData.caughtData?weekData.caughtData.length:weekData.caught||0;
+  document.getElementById('resumeScore').innerHTML='Score: '+(weekData.score||0)+' pts &nbsp;|&nbsp; Creatures: '+crCount+' caught';
+  var rb=document.getElementById('resumeBtn');
+  if(rb) rb.innerHTML=completed?'Practice Again':'Continue where I left off';
+  el.style.display='flex';
+}
+
+
+function _visitCreatures(){
+  // Hide resume screen and go to win/dex screen with existing creatures
+  var rs=document.getElementById('resumeScreen');
+  if(rs) rs.style.display='none';
+  // Restore caught from saved data
+  caught=[];
+  var savedC=(_savedUserData&&_savedUserData.allCreatures)||[];
+  savedC.forEach(function(c){
+    var cr=null;
+    for(var i=0;i<CREATURES.length;i++){
+      if(CREATURES[i].name===c.name){cr=CREATURES[i];break;}
+    }
+    if(cr) caught.push({name:c.name,color:c.color,fn:cr.fn,word:c.word,
+      nickname:c.nickname||'',happiness:c.happiness||50,
+      caughtAt:c.caughtAt||Date.now(),evolved:c.evolved||false});
+  });
+  if(_savedUserData&&_savedUserData.shineCoins){
+    shineCoins=_savedUserData.shineCoins;updateCoinHUD();
+  }
+  showWin();
+}
+
+function _resumeGame(){
+  var el=document.getElementById('resumeScreen');
+  if(el) el.style.display='none';
+  if(!_savedWeekData) return;
+  // Restore persistent stats
+  if(_savedUserData&&_savedUserData.bestStreak) bestStreak=_savedUserData.bestStreak;
+  if(_savedUserData&&_savedUserData.shineCoins) { shineCoins=_savedUserData.shineCoins; updateCoinHUD(); }
+  // Restore game state
+  wordOrder=shuffle([...WORDS]);
+  score=_savedWeekData.score||0;
+  hearts=3;
+  isPerfect=false;
+  streak=0;
+  _wordStats=[];_wordTimerActive=false;_sessionStartTime=Date.now();
+  var _wasDone=(_savedWeekData.wordsDone||0)>=20;
+  // If they completed the week, restart from word 0 for practice
+  // If in progress, resume from where they left off
+  wordIdx=_wasDone?0:Math.min(_savedWeekData.wordsDone, WORDS.length-1);
+  isPerfect=false; // don't overwrite their score if practicing
+  // Restore caught creatures from allCreatures (top-level, persists across weeks)
+  caught=[];
+  var savedCaught=(_savedUserData&&_savedUserData.allCreatures)||_savedWeekData.caughtData||[];
+  savedCaught.forEach(function(c){
+    var cr=null;
+    for(var i=0;i<CREATURES.length;i++){
+      if(CREATURES[i].name===c.name){cr=CREATURES[i];break;}
+    }
+    if(cr){
+      caught.push({name:c.name,color:c.color,fn:cr.fn,word:c.word,
+        nickname:c.nickname||'',happiness:c.happiness||50,
+        caughtAt:c.caughtAt||Date.now(),evolved:c.evolved||false});
+    }
+  });
+  // Start game at saved position
+  unlockAudio();
+  initAudio();
+  startBGM();
+  buildMapNodes();
+  updateHUD();
+  initKeyboardHandler();
+  goTo('sSpell');
+  loadWord();
+}
+
+function _freshStart(){
+  var el=document.getElementById('resumeScreen');
+  if(el) el.style.display='none';
+  startGame();
+}
+function _autoSave(){
+  if(!_currentUser||_currentUser.isGuest||!window._fb||!window._fb.ready)return;
+
+  // Serialize caught this session (strip fn functions)
+  var sessionCaught=caught.map(function(c){
+    return {name:c.name,color:c.color,word:c.word,
+      nickname:c.nickname||'',happiness:c.happiness||50,
+      caughtAt:c.caughtAt||Date.now(),evolved:c.evolved||false};
+  });
+
+  // Build word analytics
+  var wordAnalytics={};
+  _wordStats.forEach(function(ws){
+    wordAnalytics[ws.word]={attempts:ws.attempts,hintUsed:ws.hintUsed,
+      skipped:ws.skipped,timeMs:ws.timeMs};
+  });
+
+  var sessionTime=Date.now()-_sessionStartTime;
+  var uid=_currentUser.username.toLowerCase();
+  var db=window._fb.db;
+
+  // First load existing allCreatures so we can merge (not overwrite)
+  window._fb.getDoc(window._fb.doc(db,'students',uid)).then(function(snap){
+    var existing=snap.exists()?snap.data():{};
+    var allCreatures=existing.allCreatures||[];
+
+    // Merge this session's catches into allCreatures (dedupe by caughtAt)
+    var existingTimes=new Set(allCreatures.map(function(c){return c.caughtAt;}));
+    sessionCaught.forEach(function(c){
+      if(!existingTimes.has(c.caughtAt)){
+        allCreatures.push(c);
+        existingTimes.add(c.caughtAt);
+      }
+    });
+
+    // Build creature counts for evolution tracking
+    var counts={};
+    allCreatures.forEach(function(c){counts[c.name]=(counts[c.name]||0)+1;});
+
+    var upd={
+      totalScore:score,
+      totalCreatures:allCreatures.length,
+      bestStreak:bestStreak,
+      allCreatures:allCreatures,
+      creatureCounts:counts,
+      shineCoins:shineCoins,
+      lastSession:Date.now()
+    };
+    // Merge wordAnalytics with existing — keep best attempts per word
+    var existingWeek=(existing.weeks&&existing.weeks[WEEK_KEY])||{};
+    var existingWA=existingWeek.wordAnalytics||{};
+    var mergedWA={};
+    // Start with all existing data
+    Object.keys(existingWA).forEach(function(w){ mergedWA[w]=existingWA[w]; });
+    // Merge in this session — keep best (lowest) attempts per word
+    Object.keys(wordAnalytics).forEach(function(w){
+      var curr=wordAnalytics[w];
+      var prev=mergedWA[w];
+      if(!prev){
+        mergedWA[w]=curr;
+      } else {
+        // Keep best attempt count; if tied keep the one without hint
+        var bestAttempts=Math.min(curr.attempts||1, prev.attempts||1);
+        var useBest=(curr.attempts||1)<=(prev.attempts||1)?curr:prev;
+        mergedWA[w]={
+          attempts:bestAttempts,
+          hintUsed:bestAttempts===(curr.attempts||1)?curr.hintUsed:prev.hintUsed,
+          skipped:useBest.skipped||false,
+          timeMs:useBest.timeMs||0,
+          plays:(prev.plays||1)+1  // track how many times played
+        };
+      }
+    });
+
+    // Best score across all plays of this word list
+    var bestScore=Math.max(score, existingWeek.score||0);
+    // Total words ever reached this word list
+    var maxWordsDone=Math.max(wordIdx, existingWeek.wordsDone||0);
+
+    upd['weeks.'+WEEK_KEY]={
+      score:bestScore,
+      caught:sessionCaught.length,
+      wordsDone:maxWordsDone,
+      lastPlayed:Date.now(),
+      wordAnalytics:mergedWA,
+      sessionTimeMs:(existingWeek.sessionTimeMs||0)+sessionTime,
+      playCount:(existingWeek.playCount||0)+1
+    };
+    return window._fb.updateDoc(window._fb.doc(db,'students',uid),upd);
+  }).catch(function(e){console.error('save:',e);});
+}
+
+// ── SHINE COINS ──
+function updateCoinHUD(){
+  var el=document.getElementById('coinEl');
+  if(el) el.textContent=shineCoins;
+}
+
+function earnCoins(amount, reason){
+  shineCoins+=amount;
+  updateCoinHUD();
+  // Show floating coin burst
+  showCoinBurst(amount, reason);
+}
+
+function showCoinBurst(amount, reason){
+  // Main coin message
+  var el=document.createElement('div');
+  var msgs={
+    'First Try!':['PERFECT! ⭐','AMAZING! 🌟','BRILLIANT! 💫','NAILED IT! 🎯','SUPERSTAR! ⭐'],
+    'Streak Bonus!':['STREAK BONUS! 🔥','ON FIRE! 🔥','UNSTOPPABLE! ⚡'],
+    'Perfect!':['PERFECT GAME! 🏆','ALL 20! 🌟'],
+    'Daily Bonus!':['WELCOME BACK! 🌸']
+  };
+  var msgList=msgs[reason]||['GREAT JOB! ✨'];
+  var msg=msgList[Math.floor(Math.random()*msgList.length)];
+
+  el.style.cssText='position:fixed;top:28%;left:50%;'
+    +'z-index:600;font-family:Baloo 2,cursive;font-weight:800;'
+    +'color:#ffe040;text-shadow:0 0 20px rgba(255,224,64,.9),0 3px 6px rgba(0,0,0,.9);'
+    +'pointer-events:none;text-align:center;white-space:nowrap;'
+    +'transform:translateX(-50%) scale(0);'
+    +'font-size:clamp(1.4rem,5vw,2rem);'
+    +'animation:coinMsgAnim 1.1s cubic-bezier(.17,.67,.35,1.5) forwards;';
+  el.textContent=msg;
+  document.body.appendChild(el);
+
+  // Coin amount badge
+  var badge=document.createElement('div');
+  badge.style.cssText='position:fixed;top:42%;left:50%;'
+    +'z-index:600;font-family:Baloo 2,cursive;font-size:1.3rem;font-weight:800;'
+    +'color:white;background:rgba(255,180,0,.95);'
+    +'border-radius:999px;padding:6px 18px;'
+    +'box-shadow:0 0 20px rgba(255,200,0,.6);'
+    +'pointer-events:none;white-space:nowrap;'
+    +'transform:translateX(-50%) scale(0);'
+    +'animation:coinBadgeAnim 1.1s cubic-bezier(.17,.67,.35,1.5) .15s forwards;';
+  badge.textContent='+'+amount+' ✨ Shine Coins!';
+  document.body.appendChild(badge);
+
+  // Scatter a few coin emojis around
+  for(var i=0;i<Math.min(amount,6);i++){
+    (function(i){
+      var coin=document.createElement('div');
+      var x=30+Math.random()*40; // 30-70% of screen width
+      var delay=i*0.08;
+      coin.style.cssText='position:fixed;left:'+x+'%;top:50%;z-index:599;'
+        +'font-size:'+( 1.2+Math.random()*.6)+'rem;pointer-events:none;'
+        +'animation:coinRain 1.2s ease-out '+delay+'s forwards;';
+      coin.textContent='✨';
+      document.body.appendChild(coin);
+      setTimeout(function(){coin.remove();},1400);
+    })(i);
+  }
+
+  setTimeout(function(){el.remove();},1200);
+  setTimeout(function(){badge.remove();},1400);
+}
+
+function spendCoins(amount){
+  if(shineCoins<amount) return false;
+  shineCoins-=amount;
+  updateCoinHUD();
+  return true;
+}
+
+function canAfford(amount){ return shineCoins>=amount; }
+
 function startGame(){
   unlockAudio(); // iOS requires audio unlock on direct user gesture
   wordOrder=shuffle([...WORDS]);
   wordIdx=0;score=0;hearts=3;caught=[];isPerfect=true;streak=0;bestStreak=0;
+  // Note: shineCoins NOT reset here - they persist across games
+  _wordStats=[];_wordTimerActive=false;_sessionStartTime=Date.now();
+  _sessionStart=Date.now();_wordStats=[];wordStats=[];
   initAudio();startBGM();
   initKeyboardHandler();
   buildMapNodes();
@@ -1093,6 +1691,7 @@ function showMapTransition(cb){
 function loadWord(){
   if(wordIdx>=20||hearts<=0){endGame();return}
   hintUsed=false;attempts=0;throwReady=false;throwLocked=false;
+  _wordStartTime=Date.now(); // start word timer
 
   const w=wordOrder[wordIdx];
   const cr=CREATURES[wordIdx%CREATURES.length];
@@ -1196,12 +1795,21 @@ function checkSpell(){
   if(val===w.w){
     inp.disabled=true;
     sfxCorrect();
+    // Record word analytics
+    var _elapsed=_wordTimerActive?Date.now()-_wordStartTime:0;
+    _wordTimerActive=false;
+    _wordStats.push({word:w.w,attempts:attempts,hintUsed:hintUsed,skipped:false,timeMs:_elapsed});
     // Update streak
     streak++;
     if(streak>bestStreak) bestStreak=streak;
     updateStreakHUD();
     // Show streak burst if on a roll
     if(streak>=2) showStreakBurst(streak);
+    // Streak coin bonus - first-try streaks earn bonus coins
+    if(attempts===1 && !hintUsed && streak>=3){
+      var streakBonus=streak>=7?10:streak>=5?6:streak>=3?3:0;
+      if(streakBonus>0) earnCoins(streakBonus,'Streak Bonus!');
+    }
     // Small confetti on correct
     confettiBurst(10);
     // Transition to throw screen after brief pause
@@ -1229,16 +1837,67 @@ function checkSpell(){
 function useHint(){
   hintUsed=true;isPerfect=false;
   const w=wordOrder[wordIdx];
-  const h=w.w[0].toUpperCase()+' _ '.repeat(w.w.length-2).trim()+' '+w.w[w.w.length-1].toUpperCase();
   const hb=document.getElementById('hintBox');
   hb.style.display='block';
-  hb.textContent='💡 '+h+' ('+w.w.length+' letters)';
-  // Refocus the hidden input
+
+  // Try pattern hint for verb endings
+  var patternHint=_getPatternHint(w.w);
+  if(patternHint){
+    hb.innerHTML='💡 '+patternHint;
+  } else {
+    const h=w.w[0].toUpperCase()+' _ '.repeat(w.w.length-2).trim()+' '+w.w[w.w.length-1].toUpperCase();
+    hb.textContent='💡 '+h+' ('+w.w.length+' letters)';
+  }
   document.getElementById('spellInp').focus();
 }
 
-function skipWord(){isPerfect=false;skipToNext()}
+function _getPatternHint(word){
+  // Detect common verb ending patterns and show base + suffix
+  var patterns=[
+    {suffix:'ing', check: function(w){return w.endsWith('ing')&&w.length>4;},
+     hint: function(w){
+       var base=w.slice(0,-3);
+       // double consonant: running -> run + ning
+       if(base.length>=2&&base[base.length-1]===base[base.length-2])
+         return '<b>'+base.slice(0,-1)+'</b> + <b>'+base[base.length-1]+'ing</b>';
+       // drop e: dancing -> danc + ing
+       return '<b>'+base+'</b> + <b>ing</b>';
+     }},
+    {suffix:'ed', check: function(w){return w.endsWith('ed')&&w.length>3;},
+     hint: function(w){
+       var base=w.slice(0,-2);
+       if(base.length>=2&&base[base.length-1]===base[base.length-2])
+         return '<b>'+base.slice(0,-1)+'</b> + <b>'+base[base.length-1]+'ed</b>';
+       return '<b>'+base+'</b> + <b>ed</b>';
+     }},
+    {suffix:'s', check: function(w){return w.endsWith('s')&&!w.endsWith('ss')&&w.length>3;},
+     hint: function(w){return '<b>'+w.slice(0,-1)+'</b> + <b>s</b>';}},
+    {suffix:'es', check: function(w){return w.endsWith('es')&&w.length>3;},
+     hint: function(w){return '<b>'+w.slice(0,-2)+'</b> + <b>es</b>';}},
+  ];
+  for(var i=0;i<patterns.length;i++){
+    if(patterns[i].check(word)){
+      return '&#128161; Pattern: '+patterns[i].hint(word)+
+        ' <span style="font-size:.5rem;color:rgba(255,255,255,.5)">('+word.length+' letters)</span>';
+    }
+  }
+  return null;
+}
+
+function skipWord(){
+  isPerfect=false;
+  const w=wordOrder[wordIdx];
+  if(w) _wordStats.push({word:w.w,attempts:attempts,hintUsed:hintUsed,
+    skipped:true,timeMs:Date.now()-_wordStartTime});
+  skipToNext();
+}
 function skipToNext(){
+  if(_wordTimerActive){
+    var w2=wordOrder[wordIdx];
+    var _elapsed=Date.now()-_wordStartTime;
+    _wordStats.push({word:w2?w2.w:'?',attempts:attempts,hintUsed:hintUsed,skipped:true,timeMs:_elapsed});
+    _wordTimerActive=false;
+  }
   wordIdx++;
   if(wordIdx>=20||hearts<=0){endGame();return}
   // Show map briefly then next word
@@ -1611,7 +2270,21 @@ function showCatch(throwBonus=0){
   const cr=CREATURES[wordIdx%CREATURES.length];
   const pts=(hintUsed?5:(attempts===1?10:7))+throwBonus;
   score+=pts;
-  caught.push({name:cr.name,color:cr.color,fn:cr.fn,word:w.w});
+  // Award Shine Coins based on performance
+  var coinAward=0;
+  if(attempts===1&&!hintUsed){ coinAward=8; } // first try, no hint
+  else if(attempts===2){ coinAward=3; }        // second try
+  else { coinAward=1; }                         // third try or hint
+  coinAward+=1; // +1 for catching the creature
+  earnCoins(coinAward, attempts===1&&!hintUsed?'First Try!':'');
+  // Record word analytics
+  _wordStats.push({word:w.w,attempts:attempts,hintUsed:hintUsed,
+    skipped:false,timeMs:Date.now()-_wordStartTime,firstTry:attempts===1});
+  caught.push({
+    name:cr.name, color:cr.color, fn:cr.fn, word:w.w,
+    nickname:'', happiness:50, caughtAt:Date.now(),
+    evolved:false
+  });
   sfxCatch();
   confettiBurst(22);
 
@@ -1632,9 +2305,11 @@ function showCatch(throwBonus=0){
   if(ni){ni.value='';ni.disabled=false;}
   if(ns) ns.style.display='none';
   updateHUD();
+  _autoSave(); // Save progress after each catch
 }
 
 function afterCatch(){
+  _autoSave();
   stopRing();
   document.getElementById('oCatch').classList.remove('show');
   wordIdx++;
@@ -1649,6 +2324,7 @@ function afterCatch(){
 function updateHUD(){
   document.getElementById('scoreEl').textContent=score;
   document.getElementById('heartsEl').textContent='❤️'.repeat(hearts)+'🖤'.repeat(Math.max(0,3-hearts));
+  updateCoinHUD();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1667,10 +2343,104 @@ function endGame(){
   }
 }
 
+
+function showRecap(){
+  var trickyWords=_wordStats.filter(function(ws){return (ws.attempts>=3||ws.hintUsed||ws.skipped);});
+  var list=document.getElementById('recapList');
+  if(!list) return;
+  list.innerHTML=trickyWords.map(function(ws){
+    var wordObj=WORDS.find(function(w){return w.w===ws.word;})||{d:'',s:''};
+    var tag=ws.skipped?'⏭️ Skipped':ws.attempts>=3?'🔄 '+ws.attempts+' tries':'💡 Used hint';
+    var tagColor=ws.skipped?'#888':ws.attempts>=3?'#ff8888':'#ffaa44';
+    return '<div style="background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);'
+      +'border-radius:14px;padding:16px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div style="font-family:Baloo 2,cursive;font-size:1.1rem;font-weight:800;color:white;'
+          +'letter-spacing:.05em">'+ws.word.toUpperCase()+'</div>'
+        +'<div style="font-size:.52rem;font-weight:800;color:'+tagColor+';background:rgba(255,255,255,.08);'
+          +'border-radius:999px;padding:3px 10px">'+tag+'</div>'
+      +'</div>'
+      +(wordObj.d?'<div style="font-size:.62rem;color:#aac4ff;margin-bottom:6px">'+wordObj.d+'</div>':'')
+      +(wordObj.s?'<div style="font-size:.6rem;color:rgba(255,255,255,.6);font-style:italic">"'+wordObj.s+'"</div>':'')
+      +'</div>';
+  }).join('');
+  document.getElementById('recapOverlay').style.display='block';
+}
+
+function closeRecap(){
+  document.getElementById('recapOverlay').style.display='none';
+}
+
+
+// ── EVOLUTION ──
+function doEvolve(creatureName){
+  var evoName = EVOLUTION_MAP[creatureName];
+  if(!evoName){ alert('No evolution found for '+creatureName); return; }
+
+  // Show evolution overlay
+  var overlay = document.getElementById('evoOverlay');
+  var evoFrom = document.getElementById('evoFrom');
+  var evoTo = document.getElementById('evoTo');
+  var evoMsg = document.getElementById('evoMsg');
+  if(!overlay) return;
+
+  // Find creature SVG builders
+  var fromCr = CREATURES.find(function(c){return c.name===creatureName;});
+  if(!fromCr) return;
+
+  if(evoFrom) evoFrom.innerHTML = fromCr.fn(fromCr.color);
+  // Show sparkle/question for evolved form (full design is in creature care)
+  if(evoTo) evoTo.innerHTML = '<div style="font-size:3.5rem;animation:floatY 2s ease-in-out infinite">✨</div>';
+  if(evoMsg) evoMsg.textContent = creatureName + ' → ' + evoName + '!';
+
+  overlay.style.display = 'flex';
+  confettiBurst(40);
+  setTimeout(function(){ confettiBurst(40); }, 800);
+  setTimeout(function(){ confettiBurst(30); }, 1600);
+
+  // Mark as evolved in caught array and allCreatures
+  caught.forEach(function(c){
+    if(c.name === creatureName) c.evolved = true;
+  });
+
+  // Save to Firebase
+  if(_currentUser && !_currentUser.isGuest && window._fb && window._fb.ready){
+    var uid = _currentUser.username.toLowerCase();
+    // Update allCreatures evolved flag
+    var fb = window._fb;
+    fb.getDoc(fb.doc(fb.db,'students',uid)).then(function(snap){
+      if(!snap.exists()) return;
+      var data = snap.data();
+      var allC = data.allCreatures || [];
+      allC.forEach(function(c){ if(c.name===creatureName) c.evolved=true; });
+      fb.updateDoc(fb.doc(fb.db,'students',uid),{allCreatures:allC});
+    });
+  }
+
+  sfxVictory();
+}
+
+function closeEvoOverlay(){
+  var overlay = document.getElementById('evoOverlay');
+  if(overlay) overlay.style.display='none';
+  // Refresh dex to show evolved state
+  if(currentScreen==='sWin') showWin();
+  else if(currentScreen==='sDex') buildDexGrid();
+}
+
 function showWin(){
   goTo('sWin');
   setTimeout(sfxVictory,300);
-  // Show best streak
+  // Perfect game coin bonus
+  if(isPerfect){ earnCoins(25,'Perfect!'); }
+  _autoSave(); // Final save on win
+  // Show recap button if any words were tricky
+  var trickyWords=_wordStats.filter(function(ws){return (ws.attempts>=3||ws.hintUsed||ws.skipped);});
+  var rb=document.getElementById('recapBtn');
+  if(rb) rb.style.display=trickyWords.length>0?'block':'none';
+  // Show coin balance on win screen
+  var coinWin=document.getElementById('coinWin');
+  if(coinWin) coinWin.textContent='✨ '+shineCoins+' Shine Coins';
   if(bestStreak>=2){
     const bsEl=document.getElementById('winStreakEl');
     const bsNum=document.getElementById('winBestStreak');
@@ -1679,14 +2449,54 @@ function showWin(){
   confettiBurst(30);
   const dex=document.getElementById('dexGrid');
   dex.innerHTML='';
+  // Build creature counts from allCreatures (top level) if available
+  // otherwise fall back to caught this session
+  var allCreaturesData = (_currentUser && !_currentUser.isGuest && _savedUserData && _savedUserData.allCreatures)
+    ? _savedUserData.allCreatures : caught;
+  var crCounts={};
+  allCreaturesData.forEach(function(c){ crCounts[c.name]=(crCounts[c.name]||0)+1; });
+
+  // Deduplicate caught for display (show each creature once)
+  var seen={};
   caught.forEach(c=>{
+    if(seen[c.name]) return;
+    seen[c.name]=true;
     const crIdx=CREATURES.findIndex(cr=>cr.name===c.name);
     const el=document.createElement('div');
-    el.className='dex-card';
+    const count=crCounts[c.name]||1;
+    const evolveReady=count>=3;
+    el.className='dex-card'+(evolveReady?' evolve-ready':'');
     el.style.cursor='pointer';
-    const nick = c.nickname ? `<div style="font-size:.5rem;color:#ffe040;font-weight:800;margin-top:1px">"${c.nickname}"</div>` : '';
-    el.innerHTML=`<div style="width:52px;height:52px">${c.fn(c.color)}</div><div class="dex-word">${c.word}</div>${nick}<div style="font-size:.5rem;color:#aac4ff;margin-top:2px">🤚 Care</div>`;
-    el.onclick=()=>openCare(crIdx,c);
+    const nick = c.nickname ? `<div style="font-size:.48rem;color:#ffe040;font-weight:800;margin-top:1px">"${c.nickname}"</div>` : '';
+    // Count badge
+    const countBadge = count>1
+      ? `<div class="cr-count-badge ${evolveReady?'evolve-badge':''}">${count>1?'×'+count:''}</div>`
+      : '';
+    // Evolution progress bar (show when count >= 1)
+    const prog=Math.min(count,3);
+    const progBar=`<div class="evo-bar-wrap" title="${count}/3 to evolve">
+      <div class="evo-bar-fill" style="width:${prog/3*100}%;background:${evolveReady?'#ffe040':'#9b5fd4'}"></div>
+    </div>`;
+    const evoName = EVOLUTION_MAP[c.name]||'???';
+    const evolveLabel = evolveReady
+      ? `<div class="evolve-label">&#9889; Evolves to ${evoName}!</div>`
+      : `<div style="font-size:.42rem;color:#666;margin-top:1px">${count}/3 → ${evoName}</div>`;
+    el.innerHTML=`
+      <div style="position:relative;width:52px;height:52px">
+        ${c.fn(c.color)}
+        ${countBadge}
+      </div>
+      <div class="dex-word">${c.word}</div>
+      ${nick}
+      ${progBar}
+      ${evolveLabel}
+      <div style="font-size:.45rem;color:#aac4ff;margin-top:2px">🤚 Care</div>`;
+    if(evolveReady){
+      var eb=document.createElement('button');
+      eb.className='evolve-now-btn';eb.textContent='⚡ EVOLVE!';
+      eb.onclick=function(e){e.stopPropagation();doEvolve(c.name);};
+      el.appendChild(eb);el.onclick=function(){};
+    } else { el.onclick=function(){openCare(crIdx,c);}; }
     dex.appendChild(el);
   });
   document.getElementById('winStats').innerHTML=`
@@ -1867,32 +2677,77 @@ function openCreatureCare(crIdx, caughtEntry){
 
   // Load the care page
   frame.src = './creature_care.html';
+  frame.dataset.crName = cr.name;
   overlay.classList.add('show');
 
-  // Once loaded, send creature data
+  // Once loaded, send creature data including coins and purchases
   frame.onload = () => {
+    // Get purchased accessories and positions for this creature
+    var purchased = _currentUser && !_currentUser.isGuest && _savedUserData
+      ? (_savedUserData.purchasedAccs||{}) : {};
+    var positions = _currentUser && !_currentUser.isGuest && _savedUserData
+      ? (_savedUserData.accPositions||{}) : {};
     frame.contentWindow.postMessage({
-      type:'initCreature',
+      type:'initCare',
       name:cr.name,
       color:cr.color,
-      word:caughtEntry.word,
-      happiness:happiness,
+      word:caughtEntry ? caughtEntry.word : cr.name,
+      happy:happiness,
+      coins:shineCoins,
+      purchasedAccs:purchased,
+      accPositions:positions[cr.name]||{}
     }, '*');
   };
 }
 
 // Listen for messages back from care iframe
-window.addEventListener('message', e => {
-  if(e.data && e.data.type === 'closeCare'){
-    // Save happiness
+window.addEventListener('message', function(e) {
+  if(!e.data) return;
+
+  if(e.data.type === 'closeCare'){
     if(e.data.name) creatureHappiness[e.data.name] = e.data.happiness || 50;
     const overlay = document.getElementById('careOverlay');
     const frame   = document.getElementById('careFrame');
     overlay.classList.remove('show');
-    setTimeout(()=>{ frame.src=''; }, 400);
-    // Rebuild dex if on win screen
+    setTimeout(function(){ frame.src=''; }, 400);
     if(currentScreen === 'sWin') showWin();
     if(currentScreen === 'sDex') buildDexGrid();
+  }
+
+  // Save coins spent in shop
+  if(e.data.type === 'saveCoins'){
+    shineCoins = e.data.coins || 0;
+    updateCoinHUD();
+    // Save purchasedAccs to user data and Firebase
+    if(_currentUser && !_currentUser.isGuest){
+      if(!_savedUserData) _savedUserData={};
+      _savedUserData.purchasedAccs = e.data.purchasedAccs || {};
+      if(window._fb && window._fb.ready){
+        var upd={shineCoins:shineCoins, purchasedAccs:_savedUserData.purchasedAccs};
+        window._fb.updateDoc(
+          window._fb.doc(window._fb.db,'students',_currentUser.username.toLowerCase()),upd
+        ).catch(function(err){console.error('saveCoins:',err);});
+      }
+    }
+  }
+
+  // Save accessory positions
+  if(e.data.type === 'saveAccPositions'){
+    if(_currentUser && !_currentUser.isGuest){
+      if(!_savedUserData) _savedUserData={};
+      if(!_savedUserData.accPositions) _savedUserData.accPositions={};
+      const frame = document.getElementById('careFrame');
+      const crName = frame ? frame.dataset.crName : null;
+      if(crName){
+        _savedUserData.accPositions[crName] = e.data.accPositions || {};
+      }
+      if(window._fb && window._fb.ready){
+        var upd={accPositions:_savedUserData.accPositions};
+        window._fb.updateDoc(
+          window._fb.doc(window._fb.db,'students',_currentUser.username.toLowerCase()),upd
+        ).catch(function(err){console.error('savePositions:',err);});
+      }
+    }
   }
 });
 
@@ -1976,7 +2831,12 @@ function buildDexGrid(){
     return;
   }
 
-  // Show all 20 slots — caught ones are interactive, rest are locked
+  // Build creature counts from allCreatures (persisted) or session caught
+  var allCreaturesData = (_currentUser && !_currentUser.isGuest && _savedUserData && _savedUserData.allCreatures)
+    ? _savedUserData.allCreatures : caught;
+  var crCounts={};
+  allCreaturesData.forEach(function(c){ crCounts[c.name]=(crCounts[c.name]||0)+1; });
+
   CREATURES.forEach((cr, i) => {
     const caughtEntry = caught.find(c => c.name === cr.name);
     const card = document.createElement('div');
@@ -1984,15 +2844,41 @@ function buildDexGrid(){
     const happyEmoji = happiness >= 80 ? '😄' : happiness >= 50 ? '🙂' : '😔';
 
     if(caughtEntry){
-      card.className = 'dex-care-card';
+      const count = crCounts[cr.name] || 1;
+      const evolveReady = count >= 3;
+      const evoName = EVOLUTION_MAP[cr.name] || '???';
+      const prog = Math.min(count, 3);
+      const progBar = `<div class="evo-bar-wrap" title="${count}/3 to evolve" style="width:80%;margin:3px auto 0">
+        <div class="evo-bar-fill" style="width:${prog/3*100}%;background:${evolveReady?'#ffe040':'#9b5fd4'}"></div>
+      </div>`;
+      const countBadge = count > 1
+        ? `<div class="cr-count-badge ${evolveReady?'evolve-badge':''}" style="position:absolute;top:-4px;right:-4px">×${count}</div>`
+        : '';
+      const evolveLabel = evolveReady
+        ? `<div class="evolve-label" style="font-size:.42rem">⚡ Evolves to ${evoName}!</div>`
+        : `<div style="font-size:.38rem;color:#666;margin-top:1px">${count}/3 → ${evoName}</div>`;
+      const nick = caughtEntry.nickname
+        ? `<div style="font-size:.42rem;color:#ffe040;font-weight:800">"${caughtEntry.nickname}"</div>` : '';
+
+      card.className = 'dex-care-card' + (evolveReady ? ' evolve-ready' : '');
       card.innerHTML = `
         <div class="dcc-happy">${happyEmoji}</div>
-        <div style="width:64px;height:64px">${cr.fn(cr.color)}</div>
+        <div style="position:relative;width:64px;height:64px">
+          ${cr.fn(cr.color)}
+          ${countBadge}
+        </div>
         <div class="dcc-name">${cr.name}</div>
         <div class="dcc-word">${caughtEntry.word}</div>
-      `;
-      card.onclick = () => openCare(i, caughtEntry);
-    } else {
+        ${nick}
+        ${progBar}
+        ${evolveLabel}
+        <div style="font-size:.38rem;color:#aac4ff;margin-top:2px">🤚 Care</div>`;
+      if(evolveReady){
+        var eb2=document.createElement('button');
+        eb2.className='evolve-now-btn';eb2.textContent='⚡ EVOLVE!';
+        eb2.onclick=function(e){e.stopPropagation();doEvolve(cr.name);};
+        card.appendChild(eb2);card.onclick=function(){};
+      } else { card.onclick=function(){openCare(i,caughtEntry);}; }  } else {
       card.className = 'dex-care-card locked';
       card.innerHTML = `
         <div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:1.8rem">❓</div>
@@ -2002,6 +2888,7 @@ function buildDexGrid(){
     grid.appendChild(card);
   });
 }
+
 
 function openCare(creatureIdx, caughtEntry){
   openCreatureCare(creatureIdx, caughtEntry);
@@ -2173,6 +3060,157 @@ function openCareFromWin(creatureIdx){
 //  BOOT
 // ═══════════════════════════════════════════════════════════
 initTitle();
+
+
+// ── ONBOARDING ──
+var _obSlide=0;
+function _showOnboarding(){
+  // Hide login screen first
+  var login=document.getElementById('sLogin');
+  if(login){ login.style.display='none'; }
+  var el=document.getElementById('onboardOverlay');
+  if(el){ el.style.display='flex'; _obSlide=0; _updateObSlide(); }
+}
+function _obNext(){
+  _obSlide++;
+  if(_obSlide>=3){ _closeOnboarding(); return; }
+  _updateObSlide();
+  var btn=document.getElementById('obNext');
+  if(btn) btn.textContent=_obSlide===2?"Let's Go! 🎉":"Next →";
+}
+function _updateObSlide(){
+  [0,1,2].forEach(function(i){
+    var s=document.getElementById('obSlide'+i);
+    var d=document.getElementById('ob'+i);
+    if(s) s.style.display=i===_obSlide?'block':'none';
+    if(d) d.className='ob-dot'+(i===_obSlide?' active':'');
+  });
+}
+function _closeOnboarding(){
+  var el=document.getElementById('onboardOverlay');
+  if(el) el.style.display='none';
+  // Login is already hidden at this point - just start the game
+  goTo('sTitle');
+}
+
+// ── WIRE LOGIN BUTTONS ──
+// ── CUSTOM USERNAME DROPDOWN ──
+var _allUsernames=[];
+
+function _loadUsernameSuggestions(){
+  var fb=window._fb;
+  if(!fb||!fb.ready) return;
+  fb.getDocs(fb.collection(fb.db,'students')).then(function(snap){
+    _allUsernames=[];
+    snap.forEach(function(d){
+      _allUsernames.push(d.data().username||d.id);
+    });
+    _allUsernames.sort();
+  }).catch(function(e){console.log('Could not load suggestions:',e);});
+}
+document.addEventListener('fbReady', _loadUsernameSuggestions);
+document.addEventListener('fbReady', function(){
+  // Load this week's word list from Firebase
+  var fb=window._fb;
+  if(!fb||!fb.ready) return;
+  fb.getDoc(fb.doc(fb.db,'wordLists',WEEK_KEY)).then(function(snap){
+    if(snap.exists()&&snap.data().words&&snap.data().words.length){
+      WORDS=snap.data().words;
+      console.log('Loaded '+WORDS.length+' words from Firebase');
+    }
+  }).catch(function(){ console.log('Using default word list'); });
+});
+
+function _showDropdown(filter){
+  var dd=document.getElementById('usernameDropdown');
+  if(!dd) return;
+  var matches=filter
+    ?_allUsernames.filter(function(n){return n.toLowerCase().startsWith(filter.toLowerCase());})
+    :_allUsernames;
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML='';
+  matches.forEach(function(name){
+    var item=document.createElement('div');
+    item.textContent=name;
+    item.style.cssText='padding:12px 16px;font-family:Nunito,sans-serif;font-size:16px;'
+      +'font-weight:700;color:white;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08);'
+      +'transition:background .15s;-webkit-tap-highlight-color:rgba(255,224,64,.2);';
+    item.addEventListener('touchstart',function(){item.style.background='rgba(255,224,64,.15)';},{passive:true});
+    item.addEventListener('touchend',function(){
+      item.style.background='';
+      _selectUsername(name);
+    },{passive:true});
+    item.addEventListener('mousedown',function(e){
+      e.preventDefault(); // prevent blur before click registers
+      _selectUsername(name);
+    });
+    dd.appendChild(item);
+  });
+  dd.style.display='block';
+}
+
+function _hideDropdown(){
+  var dd=document.getElementById('usernameDropdown');
+  if(dd) dd.style.display='none';
+}
+
+function _selectUsername(name){
+  var inp=document.getElementById('loginUsername');
+  if(inp){ inp.value=name; inp.focus(); }
+  _hideDropdown();
+}
+
+window.addEventListener('load', function(){
+  ['1','2','3','4','5','6','7','8','9','0'].forEach(function(k){
+    var b=document.getElementById('pk'+k);
+    if(b) b.addEventListener('click', function(){ _pinPress(k); });
+  });
+  var del=document.getElementById('pkDel');
+  if(del) del.addEventListener('click', function(){ _pinPress('DEL'); });
+
+  var lb=document.getElementById('loginBtn');
+  if(lb) lb.addEventListener('click', _doLogin);
+
+  var sb=document.getElementById('switchBtn');
+  if(sb) sb.addEventListener('click', _toggleSignup);
+
+  var gb=document.getElementById('guestBtn');
+  if(gb) gb.addEventListener('click', _guestPlay);
+
+  var ab=document.getElementById('adminBtn');
+  if(ab) ab.addEventListener('click', function(){ window.location.href='admin.html'; });
+
+  var ui=document.getElementById('loginUsername');
+  if(ui){
+    ui.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ _hideDropdown(); _doLogin(); }
+      if(e.key==='Escape') _hideDropdown();
+    });
+    ui.addEventListener('input', function(){
+      _showDropdown(ui.value.trim());
+    });
+    ui.addEventListener('focus', function(){
+      _showDropdown(ui.value.trim());
+    });
+    ui.addEventListener('blur', function(){
+      // Small delay so tap on item registers first
+      setTimeout(_hideDropdown, 200);
+    });
+    // Arrow indicator toggles dropdown on tap
+    var arrow=document.getElementById('dropArrow');
+    if(arrow) arrow.addEventListener('click', function(){
+      var dd=document.getElementById('usernameDropdown');
+      if(dd&&dd.style.display==='none') _showDropdown('');
+      else _hideDropdown();
+    });
+  }
+
+  var rb=document.getElementById('resumeBtn');
+  if(rb) rb.addEventListener('click', _resumeGame);
+
+  var fb2=document.getElementById('freshBtn');
+  if(fb2) fb2.addEventListener('click', _freshStart);
+});
 </script>
 
 <!-- ═══════════════════════ POKÉDEX CARE SCREEN ═══════════════════════ -->
@@ -2236,6 +3274,54 @@ initTitle();
 <div id="careOverlay">
   <iframe id="careFrame" src="" allow="autoplay"></iframe>
 </div>
+
+
+<!-- LOGIN SCREEN -->
+<div id="sLogin" style="position:fixed;inset:0;z-index:1100;background:linear-gradient(160deg,#0d0221,#1a0a3e,#0d1a4a);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:16px;padding:env(safe-area-inset-top,24px) 24px 60px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;">
+  <div style="font-size:2.8rem">🐾</div>
+  <div style="font-family:Baloo 2,cursive;font-size:1.6rem;font-weight:800;color:#ffe040;text-align:center;line-height:1.2">Bella's Spelling<br>Adventure!</div>
+  <div style="background:rgba(255,255,255,.08);border:2px solid rgba(255,224,64,.3);border-radius:20px;padding:24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px">
+    <div id="loginMsg" style="font-size:.7rem;font-weight:800;color:#aac4ff;text-align:center;min-height:18px"></div>
+    <div style="position:relative;width:100%"><div style="position:relative;width:100%">
+    <input id="loginUsername" type="text" maxlength="30" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="text" placeholder="Your name (e.g. BellaM)"
+      style="font-family:Nunito,sans-serif;font-size:16px;font-weight:800;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:12px;padding:12px 44px 12px 16px;color:white;width:100%;outline:none;box-sizing:border-box"/>
+    <div id="dropArrow" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:rgba(255,224,64,.6);font-size:1rem;pointer-events:none">▾</div>
+    <div id="usernameDropdown" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#150830;border:2px solid rgba(255,224,64,.4);border-radius:12px;overflow:hidden;z-index:9999;max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 8px 32px rgba(0,0,0,.6)"></div>
+    </div>
+    <div style="font-size:.55rem;color:rgba(170,196,255,.6);text-align:center;margin-top:-8px">Suggestion: first name + last initial (e.g. BellaM)</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div style="font-size:.58rem;color:rgba(170,196,255,.6);text-align:center" id="pinHint">Enter your 4-digit PIN</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px">
+      <button class="pin-key" id="pk1">1</button><button class="pin-key" id="pk2">2</button><button class="pin-key" id="pk3">3</button>
+      <button class="pin-key" id="pk4">4</button><button class="pin-key" id="pk5">5</button><button class="pin-key" id="pk6">6</button>
+      <button class="pin-key" id="pk7">7</button><button class="pin-key" id="pk8">8</button><button class="pin-key" id="pk9">9</button>
+      <button class="pin-key" style="visibility:hidden">-</button><button class="pin-key" id="pk0">0</button><button class="pin-key" id="pkDel">&#9003;</button>
+    </div>
+    <button id="loginBtn" style="font-family:Baloo 2,cursive;font-size:.9rem;font-weight:800;background:linear-gradient(135deg,#9b5fd4,#4dcf8a);border:none;border-radius:12px;padding:14px;color:white;cursor:pointer;margin-top:4px;width:100%">&#10024; Let's Go!</button>
+    <!-- New Here button - more noticeable -->
+    <button id="switchBtn" style="font-family:Nunito,sans-serif;font-size:.72rem;
+      font-weight:800;color:#ffe040;background:rgba(255,224,64,.12);
+      border:2px solid rgba(255,224,64,.4);border-radius:12px;
+      cursor:pointer;padding:10px 16px;width:100%;margin-top:2px;
+      transition:all .2s;">&#10024; New here? Create an account</button>
+  </div>
+  <!-- Below card buttons -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;
+    margin-top:12px;padding-bottom:20px;width:100%;max-width:340px">
+    <button id="guestBtn" style="font-family:Nunito,sans-serif;font-size:.58rem;
+      font-weight:800;color:rgba(170,196,255,.5);background:none;border:none;
+      cursor:pointer">Play without saving progress</button>
+    <!-- Admin button - subtle but reachable on mobile -->
+    <button id="adminBtn" style="font-family:Nunito,sans-serif;font-size:.6rem;
+      font-weight:800;color:rgba(255,255,255,.35);background:rgba(255,255,255,.06);
+      border:1.5px solid rgba(255,255,255,.2);border-radius:10px;
+      cursor:pointer;padding:8px 20px;letter-spacing:.05em;min-height:36px;min-width:80px">&#9881; Admin</button>
+  </div>
+</div>
+
 
 </body>
 </html>

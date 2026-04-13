@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Spelling Adventure — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Firebase -->
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {getFirestore,collection,getDocs,doc,getDoc,setDoc,updateDoc,deleteDoc,query,orderBy,where,Timestamp}
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+const cfg={
+  apiKey:"AIzaSyCuuUtfqRCjaVffIVj_8ey_6kBmGXPxIro",
+  authDomain:"bella-spelling.firebaseapp.com",
+  projectId:"bella-spelling",
+  storageBucket:"bella-spelling.firebasestorage.app",
+  messagingSenderId:"109241910702",
+  appId:"1:109241910702:web:425b48cf1e24408568343f"
+};
+const app=initializeApp(cfg);
+const db=getFirestore(app);
+window._fb={db,collection,getDocs,getDoc,doc,setDoc,updateDoc,deleteDoc,query,orderBy,ready:true};
+document.dispatchEvent(new Event('fbReady'));
+</script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0118;--surface:rgba(255,255,255,.06);--border:rgba(255,255,255,.12);
+  --yellow:#ffe040;--green:#4dcf8a;--red:#ff5252;--blue:#4a8fff;--purple:#9b5fd4;
+  --text:white;--muted:#aac4ff;--card-bg:rgba(255,255,255,.07);
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 20%,rgba(100,30,180,.15) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 80%,rgba(30,100,200,.1) 0%,transparent 60%);}
+
+/* ── LOGIN ── */
+#adminLogin{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;gap:20px;padding:24px;}
+.login-logo{font-size:3rem;animation:float 2.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.login-title{font-family:'Baloo 2',cursive;font-size:1.8rem;font-weight:800;color:var(--yellow);
+  text-align:center;text-shadow:0 0 30px rgba(255,224,64,.3);}
+.login-sub{font-size:.7rem;color:var(--muted);text-align:center;}
+.login-card{background:var(--card-bg);border:2px solid rgba(255,224,64,.25);border-radius:20px;
+  padding:28px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px;}
+.login-inp{font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;
+  background:rgba(255,255,255,.08);border:2px solid var(--border);border-radius:12px;
+  padding:12px 16px;color:white;width:100%;outline:none;transition:border-color .2s;}
+.login-inp:focus{border-color:rgba(255,224,64,.5);}
+.login-inp::placeholder{color:rgba(255,255,255,.3);}
+.login-btn{font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:800;
+  background:linear-gradient(135deg,var(--purple),var(--green));border:none;
+  border-radius:12px;padding:14px;color:white;cursor:pointer;transition:opacity .2s;}
+.login-btn:hover{opacity:.85;}
+.login-err{font-size:.65rem;font-weight:800;color:var(--red);text-align:center;min-height:16px;}
+
+/* ── DASHBOARD ── */
+#adminDash{display:none;max-width:1100px;margin:0 auto;padding:24px;}
+.dash-header{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.dash-title{font-family:'Baloo 2',cursive;font-size:1.6rem;font-weight:800;color:var(--yellow);}
+.dash-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.btn-sm{font-family:'Nunito',sans-serif;font-size:.65rem;font-weight:800;border:none;
+  border-radius:10px;padding:8px 16px;cursor:pointer;transition:opacity .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:white;}
+.btn-ghost{background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--muted);}
+.btn-sm:hover{opacity:.8;}
+.last-refresh{font-size:.5rem;color:rgba(255,255,255,.3);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,.05);border-radius:14px;
+  padding:4px;margin-bottom:24px;overflow-x:auto;}
+.tab{font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:800;
+  padding:10px 20px;border-radius:10px;cursor:pointer;color:var(--muted);
+  border:none;background:none;transition:all .2s;white-space:nowrap;}
+.tab.active{background:linear-gradient(135deg,var(--purple),var(--blue));color:white;
+  box-shadow:0 4px 16px rgba(100,60,200,.3);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:16px;
+  padding:18px;text-align:center;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,var(--accent-a,.1),var(--accent-b,.05));pointer-events:none;}
+.stat-num{font-family:'Baloo 2',cursive;font-size:2.2rem;font-weight:800;
+  background:linear-gradient(135deg,var(--yellow),#ff9f43);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;line-height:1;}
+.stat-lbl{font-size:.55rem;font-weight:800;color:var(--muted);margin-top:6px;
+  text-transform:uppercase;letter-spacing:.05em;}
+.stat-icon{font-size:1.4rem;margin-bottom:6px;}
+
+/* ── PODIUM ── */
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:12px;
+  margin-bottom:28px;flex-wrap:wrap;}
+.podium-slot{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.podium-bar{border-radius:12px 12px 0 0;display:flex;align-items:center;
+  justify-content:center;font-size:1.8rem;min-width:80px;}
+.podium-bar.gold{height:90px;background:linear-gradient(180deg,rgba(255,215,0,.3),rgba(255,165,0,.1));
+  border:2px solid rgba(255,215,0,.5);}
+.podium-bar.silver{height:70px;background:linear-gradient(180deg,rgba(192,192,192,.3),rgba(160,160,160,.1));
+  border:2px solid rgba(192,192,192,.4);}
+.podium-bar.bronze{height:55px;background:linear-gradient(180deg,rgba(205,127,50,.3),rgba(180,100,30,.1));
+  border:2px solid rgba(205,127,50,.4);}
+.podium-name{font-family:'Baloo 2',cursive;font-size:.65rem;font-weight:800;color:white;
+  text-align:center;max-width:80px;word-break:break-all;}
+.podium-score{font-size:.52rem;color:var(--muted);}
+
+/* ── SECTION ── */
+.section-title{font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;
+  color:var(--yellow);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── CHART CONTAINERS ── */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;margin-bottom:24px;}
+.chart-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:16px;
+  padding:20px;}
+.chart-title{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;
+  color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+.chart-wrap{position:relative;height:200px;}
+
+/* ── WORD TABLE ── */
+.toggle-row{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.toggle-btn{font-family:'Nunito',sans-serif;font-size:.65rem;font-weight:800;
+  background:rgba(255,255,255,.06);border:1.5px solid var(--border);
+  border-radius:999px;padding:7px 16px;color:var(--muted);cursor:pointer;transition:all .2s;}
+.toggle-btn.on{background:rgba(255,224,64,.15);border-color:var(--yellow);color:var(--yellow);}
+.word-table{width:100%;border-collapse:collapse;}
+.word-table th{font-size:.52rem;font-weight:800;color:var(--muted);text-align:left;
+  padding:8px 12px;border-bottom:2px solid var(--border);text-transform:uppercase;
+  letter-spacing:.04em;}
+.word-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.65rem;font-weight:700;vertical-align:middle;}
+.word-table tr:hover td{background:rgba(255,255,255,.03);}
+.diff-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;
+  min-width:60px;}
+.diff-fill{height:100%;border-radius:3px;transition:width .5s;}
+.badge{border-radius:999px;padding:3px 10px;font-size:.5rem;font-weight:800;}
+.badge-easy{background:rgba(77,207,138,.2);color:var(--green);border:1px solid rgba(77,207,138,.35);}
+.insight-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:14px;padding:16px;position:relative;}
+.insight-card.warn{border-color:rgba(255,200,50,.4);background:rgba(255,200,50,.06);}
+.insight-card.danger{border-color:rgba(255,80,80,.4);background:rgba(255,80,80,.06);}
+.insight-card.good{border-color:rgba(77,207,138,.4);background:rgba(77,207,138,.06);}
+.insight-icon{font-size:1.6rem;margin-bottom:6px;}
+.insight-label{font-size:.52rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.insight-val{font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:white;line-height:1.2;}
+.insight-sub{font-size:.5rem;color:var(--muted);margin-top:4px;line-height:1.5;}
+.attention-item{background:var(--card-bg);border:1.5px solid rgba(255,160,50,.3);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.attention-icon{font-size:1.2rem;}
+.attention-text{font-size:.62rem;font-weight:700;color:white;line-height:1.6;}
+.attention-sub{font-size:.52rem;color:var(--muted);}
+.mastery-bar-wrap{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;min-width:80px;}
+.mastery-seg{height:100%;float:left;}
+.profile-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+.profile-name{font-family:'Baloo 2',cursive;font-size:.75rem;font-weight:800;color:white;}
+.profile-stat{font-size:.55rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;}
+.profile-stat span{color:white;font-weight:800;}
+.engage-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:4px;overflow:hidden;}
+.engage-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#4dcf8a,#4a8fff);}
+.badge-med{background:rgba(255,224,64,.2);color:var(--yellow);border:1px solid rgba(255,224,64,.35);}
+.badge-hard{background:rgba(255,82,82,.2);color:var(--red);border:1px solid rgba(255,82,82,.35);}
+.badge-skip{background:rgba(150,150,150,.2);color:#aaa;border:1px solid rgba(150,150,150,.3);}
+
+/* ── STUDENT TABLE ── */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.search-inp{font-family:'Nunito',sans-serif;font-size:.75rem;font-weight:700;
+  background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:10px;
+  padding:8px 14px;color:white;outline:none;width:200px;font-size:16px;}
+.filter-pill{font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:800;
+  background:rgba(255,255,255,.06);border:1.5px solid var(--border);
+  border-radius:999px;padding:6px 14px;color:var(--muted);cursor:pointer;transition:all .2s;}
+.filter-pill.on{background:rgba(100,180,255,.15);border-color:var(--blue);color:var(--blue);}
+.stu-table{width:100%;border-collapse:collapse;}
+.stu-table th{font-size:.52rem;font-weight:800;color:var(--muted);text-align:left;
+  padding:8px 12px;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.04em;}
+.stu-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.65rem;font-weight:700;vertical-align:middle;}
+.stu-table tr.stu-row{cursor:pointer;}
+.stu-table tr.stu-row:hover td{background:rgba(255,255,255,.03);}
+.stu-detail{background:rgba(255,255,255,.03);display:none;}
+.stu-detail td{padding:12px 16px;}
+.stu-word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.stu-word-card{background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;
+  border:1px solid var(--border);}
+.stu-word-name{font-family:'Baloo 2',cursive;font-size:.68rem;font-weight:800;color:white;
+  margin-bottom:4px;}
+.stu-word-stat{font-size:.52rem;color:var(--muted);line-height:1.6;}
+.action-btn{font-family:'Nunito',sans-serif;font-size:.5rem;font-weight:800;
+  border-radius:8px;padding:4px 10px;cursor:pointer;border:none;transition:opacity .2s;}
+.action-btn:hover{opacity:.75;}
+.btn-reset-pin{background:rgba(255,160,50,.2);color:#ffaa44;border:1px solid rgba(255,160,50,.35);}
+.btn-del{background:rgba(255,80,80,.2);color:var(--red);border:1px solid rgba(255,80,80,.35);}
+.btn-edit{background:rgba(50,180,255,.2);color:#88ddff;border:1px solid rgba(50,180,255,.35);}
+.word-editor-row{background:var(--card-bg);border:1.5px solid var(--border);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 2fr 3fr auto;gap:8px;align-items:start;}
+@media(max-width:700px){.word-editor-row{grid-template-columns:1fr;}}
+.word-inp{font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 12px;color:white;width:100%;outline:none;box-sizing:border-box;resize:vertical;}
+.word-inp:focus{border-color:rgba(255,224,64,.5);}
+.word-num{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;color:var(--muted);
+  padding-top:8px;min-width:20px;}
+.btn-merge{background:rgba(100,220,100,.2);color:#88ffaa;border:1px solid rgba(100,220,100,.35);}
+.btn-edit{background:rgba(64,200,255,.2);color:#44ccff;border:1px solid rgba(64,200,255,.35);}
+.btn-merge{background:rgba(100,255,180,.2);color:#44ffaa;border:1px solid rgba(100,255,180,.35);}
+/* Analytics cards */
+.metric-card{background:var(--card-bg);border:1.5px solid var(--border);border-radius:14px;
+  padding:16px;margin-bottom:16px;}
+.metric-title{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:800;
+  color:var(--yellow);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.alert-chip{background:rgba(255,82,82,.18);border:1px solid rgba(255,82,82,.35);
+  color:#ff8888;border-radius:10px;padding:8px 14px;font-size:.62rem;font-weight:800;
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.alert-chip.warn{background:rgba(255,224,64,.15);border-color:rgba(255,224,64,.35);color:#ffe040;}
+.mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.mastery-word{font-family:'Baloo 2',cursive;font-size:.65rem;font-weight:800;
+  color:white;width:90px;flex-shrink:0;}
+.mastery-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
+.mastery-bar-fill{height:100%;border-radius:4px;transition:width .6s;}
+.mastery-pct{font-size:.55rem;font-weight:800;width:36px;text-align:right;}
+.stu-metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:8px;margin-top:10px;}
+.stu-metric{background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;
+  border:1px solid var(--border);}
+.stu-metric-val{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:#ffe040;}
+.stu-metric-lbl{font-size:.48rem;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;
+  align-items:center;justify-content:center;z-index:100;padding:20px;}
+.modal-bg.show{display:flex;}
+.modal{background:#180838;border:2px solid rgba(255,224,64,.35);border-radius:20px;
+  padding:28px;max-width:340px;width:100%;text-align:center;}
+.modal-title{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+  color:var(--yellow);margin-bottom:10px;}
+.modal-body{font-size:.65rem;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.modal-pin{font-family:'Baloo 2',cursive;font-size:2rem;font-weight:800;
+  color:var(--green);letter-spacing:10px;margin:14px 0;}
+.modal-actions{display:flex;gap:10px;justify-content:center;}
+
+/* ── NOT PLAYED ── */
+.not-played-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:8px;margin-bottom:20px;}
+.not-played-chip{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);
+  border-radius:10px;padding:8px 12px;font-size:.6rem;font-weight:800;color:#ff8888;
+  text-align:center;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .chart-grid{grid-template-columns:1fr;}
+  .tabs{gap:2px;}
+  .tab{padding:8px 12px;font-size:.62rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="adminLogin">
+  <div class="login-logo">🔐</div>
+  <div class="login-title">Admin Panel</div>
+  <div class="login-sub">Bella's Spelling Adventure</div>
+  <div class="login-card">
+    <input id="adminUser" class="login-inp" type="text" placeholder="Username" autocomplete="off" style="font-size:16px"/>
+    <input id="adminPass" class="login-inp" type="password" placeholder="Password" style="font-size:16px"/>
+    <button class="login-btn" id="adminLoginBtn">Enter Dashboard</button>
+    <div class="login-err" id="adminErr"></div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="adminDash">
+  <div class="dash-header">
+    <div class="dash-title">📊 Class Dashboard</div>
+    <div class="dash-actions">
+      <div class="last-refresh" id="lastRefresh"></div>
+      <button class="btn-sm btn-ghost" onclick="exportCSV()" title="Download class data as CSV">⬇ Export CSV</button>
+      <button class="btn-sm btn-primary" id="refreshBtn">↻ Refresh</button>
+      <button class="btn-sm btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">📊 Overview</button>
+    <button class="tab" data-tab="words">📖 Words</button>
+    <button class="tab" data-tab="students">👥 Students</button>
+    <button class="tab" data-tab="trends">📈 Trends</button>
+  <button class="tab" data-tab="insights">🧠 Insights</button>
+  <button class="tab" data-tab="words-edit">✏️ Word List</button>
+  </div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div class="tab-panel active" id="tab-overview">
+    <div id="midWeekAlert" style="display:none;background:rgba(255,160,50,.15);border:1.5px solid rgba(255,160,50,.4);
+      border-radius:12px;padding:12px 16px;font-size:.62rem;font-weight:700;color:#ffaa44;margin-bottom:16px"></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num" id="sTotal">-</div><div class="stat-lbl">Total Students</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-num" id="sPlayed">-</div><div class="stat-lbl">Played This Week</div></div>
+      <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-num" id="sPerfect">-</div><div class="stat-lbl">Perfect Scores</div></div>
+      <div class="stat-card"><div class="stat-icon">🐾</div><div class="stat-num" id="sCreatures">-</div><div class="stat-lbl">Creatures Caught</div></div>
+      <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-num" id="sAvgTime">-</div><div class="stat-lbl">Avg Session (min)</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-num" id="sBestStreak">-</div><div class="stat-lbl">Top Streak</div></div>
+    </div>
+
+    <!-- Podium -->
+    <div class="section-title">🏆 This Week's Top Spellers</div>
+    <div class="podium" id="podium"></div>
+
+    <!-- Not played -->
+    <div class="section-title">⚠️ Haven't Played This Week</div>
+    <div class="not-played-grid" id="notPlayed"></div>
+  </div>
+
+  <!-- ── WORD ANALYTICS TAB ── -->
+  <div class="tab-panel" id="tab-words">
+    <div class="toggle-row">
+      <span style="font-size:.6rem;font-weight:800;color:var(--muted)">View:</span>
+      <button class="toggle-btn on" id="twWeek" onclick="setWordView('week')">This Week</button>
+      <button class="toggle-btn" id="twAll" onclick="setWordView('all')">All Time</button>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Word Difficulty — Avg Attempts per Word</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="wordChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title">📋 Word Breakdown</div>
+    <div style="overflow-x:auto">
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Word</th><th>Difficulty</th><th>Avg Attempts</th>
+            <th>Hint Rate</th><th>Skip Rate</th><th>Avg Time</th><th>Students</th>
+          </tr>
+        </thead>
+        <tbody id="wordRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── STUDENTS TAB ── -->
+  <div class="tab-panel" id="tab-students">
+    <div class="toolbar">
+      <input class="search-inp" id="searchInp" placeholder="🔍 Search students..." oninput="filterStudents()" style="font-size:16px"/>
+      <button class="filter-pill on" id="fAll" onclick="setFilter('all')">All</button>
+      <button class="filter-pill" id="fPlayed" onclick="setFilter('played')">Played</button>
+      <button class="filter-pill" id="fNot" onclick="setFilter('not')">Not Played</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="stu-table">
+        <thead>
+          <tr>
+            <th></th><th>Name</th><th>This Week</th><th>Score</th>
+            <th>Creatures</th><th>Streak</th><th>Avg Attempts</th><th>Last Played</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── WORD LIST EDITOR TAB ── -->
+  <div class="tab-panel" id="tab-words-edit">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-family:'Baloo 2',cursive;font-size:.85rem;font-weight:800;color:#ffe040">
+          ✏️ Edit This Week's Word List
+        </div>
+        <div style="font-size:.55rem;color:var(--muted);margin-top:2px">
+          Changes save to Firebase instantly. Students see new words on next game start.
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm btn-primary" onclick="saveWordList()">💾 Save to Firebase</button>
+        <button class="btn-sm btn-ghost" onclick="resetWordList()">↩ Reset to Default</button>
+      </div>
+    </div>
+    <div style="font-size:.58rem;color:var(--muted);margin-bottom:12px">
+      Current week: <b style="color:#ffe040" id="currentWeekKey"></b>
+      &nbsp;|&nbsp;
+      <span id="wordCountLabel">20 words</span>
+    </div>
+    <div id="wordEditorGrid" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button onclick="addWordSlot()" class="btn-sm btn-ghost" style="margin-top:12px;width:100%">
+      + Add Word
+    </button>
+  </div>
+
+<!-- ── INSIGHTS TAB ── -->
+  <div class="tab-panel" id="tab-insights">
+    <div class="stat-grid" id="insightCards"></div>
+    <div class="section-title">⚠️ Needs Attention</div>
+    <div id="attentionList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+    <div class="section-title">📊 Class Mastery by Word</div>
+    <div style="overflow-x:auto;margin-bottom:20px">
+      <table class="word-table">
+        <thead><tr>
+          <th>Word</th><th>First Try ✅</th><th>With Hint 💡</th>
+          <th>Multi-Try 🔄</th><th>Skipped ⏭️</th><th>Mastery</th><th>Action</th>
+        </tr></thead>
+        <tbody id="masteryRows"></tbody>
+      </table>
+    </div>
+    <div class="section-title">👥 Student Profiles</div>
+    <div id="studentProfiles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px"></div>
+  </div>
+
+  <!-- ── TRENDS TAB ── -->
+
+
+<div class="tab-panel" id="tab-trends">
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Score Distribution</div>
+        <div class="chart-wrap"><canvas id="scoreChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Avg Attempts by Word (Class)</div>
+        <div class="chart-wrap" style="height:280px"><canvas id="attemptsChart"></canvas></div>
+      </div>
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Creatures Caught by Type</div>
+        <div class="chart-wrap"><canvas id="creaturesChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODALS ── -->
+<!-- Edit Username Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Username</div>
+    <div class="modal-body" id="editBody"></div>
+    <input id="editNameInp" class="login-inp" type="text" placeholder="New username"
+      style="font-size:16px;margin-bottom:12px;width:100%" autocapitalize="none" autocorrect="off"/>
+    <div class="modal-actions">
+      <button class="btn-sm btn-primary" id="confirmEditBtn">Save</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Merge Account Modal -->
+<div class="modal-bg" id="mergeModal">
+  <div class="modal">
+    <div class="modal-title">🔀 Merge Accounts</div>
+    <div class="modal-body" id="mergeBody"></div>
+    <div id="mergeSelect" style="display:flex;flex-direction:column;gap:10px;margin:14px 0"></div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-primary" id="confirmMergeBtn">Merge</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('mergeModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="resetModal">
+  <div class="modal">
+    <div class="modal-title">🔑 Reset PIN</div>
+    <div class="modal-body" id="resetBody"></div>
+    <div class="modal-pin" id="newPinEl"></div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-primary" id="confirmResetBtn">Confirm Reset</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('resetModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">🗑️ Delete Student</div>
+    <div class="modal-body" id="deleteBody"></div>
+    <div class="modal-actions">
+      <button class="btn-sm" style="background:rgba(255,80,80,.4);color:white" id="confirmDeleteBtn">Delete</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Word History Modal -->
+<div class="modal-bg" id="wordHistModal">
+  <div class="modal" style="max-width:520px;width:95%">
+    <div class="modal-title" id="wordHistTitle">📊 Word History</div>
+    <div id="wordHistBody" style="margin-bottom:16px"></div>
+    <canvas id="wordHistChart" height="120" style="width:100%;margin-bottom:12px"></canvas>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('wordHistModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="renameModal">
+  <div class="modal">
+    <div class="modal-title">✏️ Rename Student</div>
+    <div class="modal-body" id="renameBody"></div>
+    <input id="renameInp" class="login-inp" type="text" placeholder="New username" style="font-size:16px;margin:10px 0;width:100%"/>
+    <div class="modal-actions">
+      <button class="btn-sm btn-primary" id="confirmRenameBtn">Rename</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('renameModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+const ADMIN_USER='adamnichols59';
+const ADMIN_PASS='LoveBella';
+const WEEK_KEY='week_apr_2026';
+const WORDS=['names','named','naming','hopes','hoped','hoping','dances','danced','dancing',
+  'drops','dropped','dropping','wraps','wrapped','wrapping','basketball','airplane','birthday','driving','traded'];
+
+let allStudents=[];
+let currentFilter='all';
+let pendingAction=null;
+let wordView='week';
+let charts={};
+
+// ── UTILS ──
+function fmtTime(ms){if(!ms||ms<1000)return '-';var s=Math.round(ms/1000);return s<60?s+'s':(Math.floor(s/60)+'m '+(s%60)+'s');}
+function fmtMin(ms){if(!ms)return '-';return (ms/60000).toFixed(1);}
+function diffColor(avg){if(avg<=1.3)return '#4dcf8a';if(avg<=1.8)return '#ffe040';return '#ff5252';}
+function diffLabel(avg){if(avg<=1.3)return '<span class="badge badge-easy">Easy</span>';if(avg<=1.8)return '<span class="badge badge-med">Medium</span>';return '<span class="badge badge-hard">Hard</span>';}
+
+// ── LOGIN ──
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('adminLoginBtn').addEventListener('click',doAdminLogin);
+  document.getElementById('adminPass').addEventListener('keydown',function(e){if(e.key==='Enter')doAdminLogin();});
+  document.getElementById('refreshBtn').addEventListener('click',loadDashboard);
+  document.getElementById('logoutBtn').addEventListener('click',doLogout);
+  // Tabs
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){switchTab(t.dataset.tab);});
+  });
+  document.getElementById('confirmResetBtn').addEventListener('click',confirmReset);
+  document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);
+  document.getElementById('confirmRenameBtn').addEventListener('click',confirmRename);
+  document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);
+  document.getElementById('confirmMergeBtn').addEventListener('click',confirmMerge);
+  document.getElementById('confirmEditBtn').addEventListener('click',confirmEdit);
+});
+
+function doAdminLogin(){
+  var u=document.getElementById('adminUser').value.trim();
+  var p=document.getElementById('adminPass').value;
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminDash').style.display='block';
+    waitForFb();
+  } else {
+    document.getElementById('adminErr').textContent='Incorrect username or password.';
+  }
+}
+
+function doLogout(){
+  document.getElementById('adminLogin').style.display='flex';
+  document.getElementById('adminDash').style.display='none';
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPass').value='';
+}
+
+function waitForFb(){
+  if(window._fb&&window._fb.ready){loadDashboard();}
+  else{document.addEventListener('fbReady',loadDashboard);}
+}
+
+// ── TABS ──
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===name);});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.id==='tab-'+name);});
+  if(name==='words-edit') initWordEditor();
+  // Re-render analytics when tab opened to ensure fresh data
+  if(name==='analytics'&&allStudents.length) renderInsights();
+}
+
+// ── LOAD DATA ──
+async function loadDashboard(){
+  try {
+    var fb=window._fb;
+    var snap=await fb.getDocs(fb.query(fb.collection(fb.db,'students'),fb.orderBy('totalScore','desc')));
+    allStudents=[];
+    snap.forEach(function(d){allStudents.push(Object.assign({id:d.id},d.data()));});
+    renderOverview();
+    renderWordAnalytics();
+    renderStudents();
+    renderInsights();
+    renderTrends();
+    renderInsights();
+    document.getElementById('lastRefresh').textContent='Updated '+new Date().toLocaleTimeString();
+  } catch(e){console.error('Dashboard error:',e);}
+}
+
+// ── OVERVIEW ──
+function renderOverview(){
+  var played=allStudents.filter(function(s){return s.weeks&&s.weeks[WEEK_KEY];});
+  var perfect=played.filter(function(s){
+    var w=s.weeks[WEEK_KEY];return w&&w.wordsDone>=20&&w.score>=(20*10);});
+  var creatures=allStudents.reduce(function(a,s){return a+(s.totalCreatures||0);},0);
+  var avgTime=played.length?played.reduce(function(a,s){
+    var w=s.weeks[WEEK_KEY];return a+(w.sessionTimeMs||0);},0)/played.length:0;
+  var topStreak=allStudents.reduce(function(a,s){return Math.max(a,s.bestStreak||0);},0);
+
+  document.getElementById('sTotal').textContent=allStudents.length;
+  document.getElementById('sPlayed').textContent=played.length;
+  document.getElementById('sPerfect').textContent=perfect.length;
+  document.getElementById('sCreatures').textContent=creatures;
+  document.getElementById('sAvgTime').textContent=fmtMin(avgTime);
+  document.getElementById('sBestStreak').textContent=topStreak||'-';
+
+  // Podium
+  var top=allStudents.slice(0,3);
+  var medals=[{cl:'gold',icon:'🥇'},{cl:'silver',icon:'🥈'},{cl:'bronze',icon:'🥉'}];
+  var order=[1,0,2]; // silver left, gold center, bronze right
+  var podiumHTML='';
+  order.forEach(function(i){
+    if(!top[i])return;
+    var s=top[i];var w=s.weeks&&s.weeks[WEEK_KEY];
+    podiumHTML+='<div class="podium-slot">'
+      +'<div class="podium-name">'+s.username+'</div>'
+      +'<div class="podium-score">⭐'+( s.totalScore||0)+'</div>'
+      +'<div class="podium-bar '+medals[i].cl+'">'+medals[i].icon+'</div>'
+      +'</div>';
+  });
+  document.getElementById('podium').innerHTML=podiumHTML||'<div style="color:#666;font-size:.65rem">No students yet</div>';
+
+  // Not played
+  var notPlayed=allStudents.filter(function(s){return !s.weeks||!s.weeks[WEEK_KEY];});
+  // Mid-week alert
+  var alert=getMidWeekAlert();
+  var alertBanner=document.getElementById('midWeekAlert');
+  if(alertBanner){
+    if(alert&&alert.count>0&&alert.daysLeft<=2){
+      alertBanner.style.display='block';
+      alertBanner.innerHTML='⚠️ <b>'+alert.count+' student'+(alert.count>1?'s':'')+
+        ' haven\'t played yet</b> — only '+alert.daysLeft+' day'+(alert.daysLeft===1?'':'s')+
+        ' left this week! ('+alert.names.join(', ')+')';
+    } else { alertBanner.style.display='none'; }
+  }
+  document.getElementById('notPlayed').innerHTML=notPlayed.length
+    ?notPlayed.map(function(s){
+      return '<div class="not-played-chip" style="cursor:default">'+s.username+'</div>';
+    }).join('')
+    :'<div style="color:#4dcf8a;font-size:.65rem;font-weight:800">🎉 Everyone has played!</div>';
+}
+
+// ── WORD ANALYTICS ──
+function setWordView(v){
+  wordView=v;
+  document.getElementById('twWeek').classList.toggle('on',v==='week');
+  document.getElementById('twAll').classList.toggle('on',v==='all');
+  renderWordAnalytics();
+}
+
+function getWordStats(){
+  // Aggregate word stats from all students
+  var stats={};
+  WORDS.forEach(function(w){stats[w]={attempts:[],hintCount:0,skipCount:0,times:[],studentCount:0};});
+  allStudents.forEach(function(s){
+    var weeks=s.weeks||{};
+    var sources=wordView==='week'
+      ?(weeks[WEEK_KEY]?[weeks[WEEK_KEY]]:[])
+      :Object.values(weeks);
+    sources.forEach(function(wk){
+      if(!wk.wordAnalytics)return;
+      Object.keys(wk.wordAnalytics).forEach(function(word){
+        if(!stats[word])return;
+        var wa=wk.wordAnalytics[word];
+        stats[word].attempts.push(wa.attempts||1);
+        if(wa.hintUsed)stats[word].hintCount++;
+        if(wa.skipped)stats[word].skipCount++;
+        if(wa.timeMs)stats[word].times.push(wa.timeMs);
+        stats[word].studentCount++;
+      });
+    });
+  });
+  return stats;
+}
+
+function renderWordAnalytics(){
+  var stats=getWordStats();
+  var rows='';
+  var chartLabels=[],chartData=[],chartColors=[];
+
+  // Sort by avg attempts descending
+  var sorted=WORDS.slice().sort(function(a,b){
+    var aAvg=stats[a].attempts.length?stats[a].attempts.reduce(function(x,y){return x+y;},0)/stats[a].attempts.length:0;
+    var bAvg=stats[b].attempts.length?stats[b].attempts.reduce(function(x,y){return x+y;},0)/stats[b].attempts.length:0;
+    return bAvg-aAvg;
+  });
+
+  sorted.forEach(function(word,i){
+    var ws=stats[word];
+    var n=ws.attempts.length;
+    var avg=n?ws.attempts.reduce(function(a,b){return a+b;},0)/n:0;
+    var hintRate=ws.studentCount?(ws.hintCount/ws.studentCount*100):0;
+    var skipRate=ws.studentCount?(ws.skipCount/ws.studentCount*100):0;
+    var avgTime=ws.times.length?ws.times.reduce(function(a,b){return a+b;},0)/ws.times.length:0;
+    var fillW=Math.min(avg/3*100,100);
+    var col=diffColor(avg);
+
+    chartLabels.push(word);
+    chartData.push(avg?avg.toFixed(2):0);
+    chartColors.push(col+'cc');
+
+    rows+='<tr>'
+      +'<td style="color:#666">'+(i+1)+'</td>'
+      +'<td style="font-family:Baloo 2,cursive;font-weight:800;color:white">'+word+'</td>'
+      +'<td>'+diffLabel(avg)+'</td>'
+      +'<td>'+(avg?avg.toFixed(2):'-')+'<div class="diff-bar"><div class="diff-fill" style="width:'+fillW+'%;background:'+col+'"></div></div></td>'
+      +'<td>'+(hintRate?hintRate.toFixed(0)+'%':'-')+'</td>'
+      +'<td>'+(skipRate?skipRate.toFixed(0)+'%':'-')+'</td>'
+      +'<td style="color:#aac4ff">'+fmtTime(avgTime)+'</td>'
+      +'<td style="color:#aac4ff">'+ws.studentCount+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('wordRows').innerHTML=rows||'<tr><td colspan="8" style="text-align:center;color:#666;padding:20px">No data yet</td></tr>';
+
+  // Chart
+  if(charts.word)charts.word.destroy();
+  var ctx=document.getElementById('wordChart').getContext('2d');
+  charts.word=new Chart(ctx,{
+    type:'bar',
+    data:{labels:chartLabels,datasets:[{label:'Avg Attempts',data:chartData,
+      backgroundColor:chartColors,borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return 'Avg attempts: '+c.raw;}}}},
+      scales:{x:{ticks:{color:'#aac4ff',font:{size:9},maxRotation:55,minRotation:45,autoSkip:false},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{ticks:{color:'#aac4ff',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}}}
+  });
+}
+
+// ── STUDENTS ──
+function setFilter(f){
+  currentFilter=f;
+  ['All','Played','Not'].forEach(function(id){
+    var el=document.getElementById('f'+id);
+    if(el)el.classList.toggle('on',id.toLowerCase()===f||(id==='Not'&&f==='not'));
+  });
+  filterStudents();
+}
+
+function renderStudentsFiltered(search){
+  var filtered=allStudents.filter(function(s){
+    if(search&&!s.username.toLowerCase().includes(search))return false;
+    var played=s.weeks&&s.weeks[WEEK_KEY];
+    if(currentFilter==='played')return played;
+    if(currentFilter==='not')return !played;
+    return true;
+  });
+  var rows='';
+  filtered.forEach(function(s){
+    var w=s.weeks&&s.weeks[WEEK_KEY];
+    var played=!!w;
+    var last=w&&w.lastPlayed?new Date(w.lastPlayed).toLocaleDateString():'-';
+    var avgAtt='-';
+    if(w&&w.wordAnalytics){
+      var atts=Object.values(w.wordAnalytics).map(function(wa){return wa.attempts||1;});
+      if(atts.length)avgAtt=(atts.reduce(function(a,b){return a+b;},0)/atts.length).toFixed(1);
+    }
+    var playedBadge=played
+      ?'<span class="badge badge-easy">&#10003; Played</span>'
+      :'<span class="badge badge-skip">Not yet</span>';
+    rows+='<tr class="stu-row" data-sid="'+s.id+'">'
+      +'<td style="color:#666;font-size:.6rem">&#9658;</td>'
+      +'<td style="font-family:Baloo 2,cursive;font-weight:800;color:white">'+s.username+'</td>'
+      +'<td>'+playedBadge+'</td>'
+      +'<td style="color:#ffe040">&#11088; '+(s.totalScore||0)+'</td>'
+      +'<td>&#128062; '+(s.totalCreatures||0)+'</td>'
+      +'<td>&#128293; '+(s.bestStreak||0)+'</td>'
+      +'<td style="color:#aac4ff">'+avgAtt+'</td>'
+      +'<td style="color:#666">'+last+'</td>'
+      +'<td>'
+        +'<button class="action-btn btn-edit" data-eid="'+s.id+'" data-ename="'+s.username+'">Rename</button> '
+        +'<button class="action-btn btn-merge" data-mid="'+s.id+'" data-mname="'+s.username+'">Merge</button> '
+        +'<button class="action-btn btn-reset-pin" data-rid="'+s.id+'" data-rname="'+s.username+'">Reset PIN</button> '
+        +'<button class="action-btn btn-del" data-did="'+s.id+'" data-dname="'+s.username+'">Delete</button>'
+      +'</td>'
+      +'</tr>'
+      +'<tr class="stu-detail" id="detail-'+s.id+'">'
+        +'<td colspan="9">'+buildStuDetail(s)+'</td>'
+      +'</tr>';
+  });
+  var tbody=document.getElementById('studentRows');
+  tbody.innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#666;padding:20px">No students found</td></tr>';
+  // Wire click events via delegation
+  tbody.querySelectorAll('tr.stu-row').forEach(function(tr){
+    tr.addEventListener('click',function(e){
+      if(e.target.tagName==='BUTTON')return;
+      toggleStuDetail(tr.dataset.sid);
+    });
+  });
+  tbody.querySelectorAll('[data-rid]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openReset(btn.dataset.rid,btn.dataset.rname);
+    });
+  });
+  tbody.querySelectorAll('[data-did]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openDelete(btn.dataset.did,btn.dataset.dname);
+    });
+  });
+  tbody.querySelectorAll('[data-eid]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openRename(btn.dataset.eid,btn.dataset.ename);
+    });
+  });
+  tbody.querySelectorAll('[data-mid]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openMerge(btn.dataset.mid,btn.dataset.mname);
+    });
+  });
+  tbody.querySelectorAll('[data-eid]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openEdit(btn.dataset.eid,btn.dataset.ename);
+    });
+  });
+  tbody.querySelectorAll('[data-mid]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openMerge(btn.dataset.mid,btn.dataset.mname);
+    });
+  });
+}
+
+
+// ── RENAME STUDENT ──
+function openRename(id, name){
+  pendingAction={type:'rename',id:id,name:name};
+  document.getElementById('renameBody').textContent='Rename "'+name+'" to:';
+  document.getElementById('renameInp').value=name;
+  document.getElementById('renameModal').classList.add('show');
+  setTimeout(function(){document.getElementById('renameInp').focus();},100);
+}
+
+async function confirmRename(){
+  if(!pendingAction||pendingAction.type!=='rename') return;
+  var newName=document.getElementById('renameInp').value.trim();
+  if(!newName){alert('Please enter a new username.');return;}
+  var newId=newName.toLowerCase();
+  var oldId=pendingAction.id;
+  if(newId===oldId){closeModal('renameModal');return;}
+  try{
+    // Get old document
+    var oldSnap=await window._fb.getDoc(window._fb.doc(window._fb.db,'students',oldId));
+    if(!oldSnap.exists()){alert('Student not found.');return;}
+    var data=oldSnap.data();
+    data.username=newName;
+    // Create new document
+    await window._fb.setDoc(window._fb.doc(window._fb.db,'students',newId),data);
+    // Delete old document
+    await window._fb.deleteDoc(window._fb.doc(window._fb.db,'students',oldId));
+    closeModal('renameModal');
+    alert('"'+pendingAction.name+'" has been renamed to "'+newName+'".');
+    loadDashboard();
+  }catch(e){alert('Error renaming: '+e.message);}
+}
+
+// ── MERGE ACCOUNTS ──
+function openMerge(id, name){
+  pendingAction={type:'merge',sourceId:id,sourceName:name};
+  document.getElementById('mergeBody').textContent='Merge "'+name+'" into another account. All data will be combined.';
+  // Populate target dropdown
+  var sel=document.getElementById('mergeTarget');
+  sel.innerHTML='';
+  allStudents.filter(function(s){return s.id!==id;}).forEach(function(s){
+    var opt=document.createElement('option');
+    opt.value=s.id;
+    opt.textContent=s.username+' (Score: '+(s.totalScore||0)+', Creatures: '+(s.totalCreatures||0)+')';
+    sel.appendChild(opt);
+  });
+  document.getElementById('mergeModal').classList.add('show');
+}
+
+async function confirmMerge(){
+  if(!pendingAction||pendingAction.type!=='merge') return;
+  var targetId=document.getElementById('mergeTarget').value;
+  var sourceId=pendingAction.sourceId;
+  var sourceName=pendingAction.sourceName;
+  if(!targetId){alert('Please select a target account.');return;}
+  try{
+    var fb=window._fb;
+    var sourceSnap=await fb.getDoc(fb.doc(fb.db,'students',sourceId));
+    var targetSnap=await fb.getDoc(fb.doc(fb.db,'students',targetId));
+    if(!sourceSnap.exists()||!targetSnap.exists()){alert('Account not found.');return;}
+    var src=sourceSnap.data();
+    var tgt=targetSnap.data();
+
+    // Merge allCreatures (dedupe by caughtAt)
+    var srcCreatures=src.allCreatures||[];
+    var tgtCreatures=tgt.allCreatures||[];
+    var existingTimes=new Set(tgtCreatures.map(function(c){return c.caughtAt;}));
+    srcCreatures.forEach(function(c){
+      if(!existingTimes.has(c.caughtAt)){tgtCreatures.push(c);existingTimes.add(c.caughtAt);}
+    });
+
+    // Merge creature counts
+    var srcCounts=src.creatureCounts||{};
+    var tgtCounts=tgt.creatureCounts||{};
+    Object.keys(srcCounts).forEach(function(k){
+      tgtCounts[k]=(tgtCounts[k]||0)+srcCounts[k];
+    });
+
+    // Merge purchased accessories
+    var srcAccs=src.purchasedAccs||{};
+    var tgtAccs=tgt.purchasedAccs||{};
+    Object.keys(srcAccs).forEach(function(k){
+      if(!tgtAccs[k]) tgtAccs[k]=[];
+      srcAccs[k].forEach(function(a){if(!tgtAccs[k].includes(a))tgtAccs[k].push(a);});
+    });
+
+    // Merge weeks - keep best score per week
+    var srcWeeks=src.weeks||{};
+    var tgtWeeks=tgt.weeks||{};
+    Object.keys(srcWeeks).forEach(function(wk){
+      if(!tgtWeeks[wk]||(srcWeeks[wk].score||0)>(tgtWeeks[wk].score||0)){
+        tgtWeeks[wk]=srcWeeks[wk];
+      }
+    });
+
+    var merged={
+      totalScore:Math.max(src.totalScore||0,tgt.totalScore||0),
+      totalCreatures:tgtCreatures.length,
+      bestStreak:Math.max(src.bestStreak||0,tgt.bestStreak||0),
+      shineCoins:(src.shineCoins||0)+(tgt.shineCoins||0),
+      allCreatures:tgtCreatures,
+      creatureCounts:tgtCounts,
+      purchasedAccs:tgtAccs,
+      weeks:tgtWeeks,
+      lastSession:Date.now()
+    };
+
+    await fb.updateDoc(fb.doc(fb.db,'students',targetId),merged);
+    await fb.deleteDoc(fb.doc(fb.db,'students',sourceId));
+    closeModal('mergeModal');
+    alert('"'+sourceName+'" has been merged. Source account deleted.');
+    loadDashboard();
+  }catch(e){alert('Error merging: '+e.message);}
+}
+
+
+// ── INSIGHTS & ENHANCED ANALYTICS ──
+function renderInsights(){
+  var played=allStudents.filter(function(s){return s.weeks&&s.weeks[WEEK_KEY];});
+  var ws=getWordStats();
+
+  // ── Compute class-wide metrics ──
+  var totalWords=played.length*WORDS.length||1;
+  var firstTryCount=0, hintCount=0, skipCount=0, multiTryCount=0;
+  var totalAttempts=0, totalSessionMs=0;
+  var hintHeavy=[], struggling=[], rushing=[];
+
+  played.forEach(function(s){
+    var wk=s.weeks[WEEK_KEY];
+    var wa=wk.wordAnalytics||{};
+    var sessMs=wk.sessionTimeMs||0;
+    totalSessionMs+=sessMs;
+    var stuAttempts=[],stuHints=0,stuSkips=0,stuFirst=0;
+    WORDS.forEach(function(word){
+      var w=wa[word];
+      if(!w) return;
+      var att=w.attempts||1;
+      stuAttempts.push(att);
+      totalAttempts+=att;
+      if(att===1&&!w.hintUsed) stuFirst++;
+      if(w.hintUsed) { stuHints++; hintCount++; }
+      if(w.skipped) { stuSkips++; skipCount++; }
+      if(att===1&&!w.hintUsed) firstTryCount++;
+      else if(att>=3) multiTryCount++;
+    });
+    var avgAtt=stuAttempts.length?stuAttempts.reduce(function(a,b){return a+b;},0)/stuAttempts.length:0;
+    var firstRate=WORDS.length?stuFirst/WORDS.length*100:0;
+    var hintRate=WORDS.length?stuHints/WORDS.length*100:0;
+    var skipRate=WORDS.length?stuSkips/WORDS.length*100:0;
+    var sessMin=sessMs/60000;
+    // Flag students
+    if(avgAtt>2.2) struggling.push({name:s.username,avg:avgAtt.toFixed(1)});
+    if(hintRate>40) hintHeavy.push({name:s.username,rate:hintRate.toFixed(0)});
+    if(sessMin<2&&(wk.wordsDone||0)>5) rushing.push({name:s.username,min:sessMin.toFixed(1)});
+  });
+
+  var classFirstRate=played.length?firstTryCount/(played.length*WORDS.length)*100:0;
+  var classHintRate=played.length?hintCount/(played.length*WORDS.length)*100:0;
+  var avgSession=played.length?totalSessionMs/played.length/60000:0;
+  var avgAttemptClass=played.length?totalAttempts/(played.length*WORDS.length):0;
+
+  // ── Insight Cards ──
+  var cards=[
+    {icon:'🎯',label:'Class First-Try Rate',val:classFirstRate.toFixed(0)+'%',
+     sub:'Words spelled correctly first try, no hints',
+     cls:classFirstRate>=70?'good':classFirstRate>=50?'warn':'danger'},
+    {icon:'💡',label:'Hint Dependency Rate',val:classHintRate.toFixed(0)+'%',
+     sub:'% of answers used a hint',
+     cls:classHintRate<=20?'good':classHintRate<=40?'warn':'danger'},
+    {icon:'⏱️',label:'Avg Session Time',val:avgSession.toFixed(1)+' min',
+     sub:'How long students spend per session',
+     cls:avgSession>=4?'good':avgSession>=2?'warn':'danger'},
+    {icon:'🔄',label:'Avg Attempts/Word',val:avgAttemptClass.toFixed(2),
+     sub:'Lower is better — 1.0 = perfect',
+     cls:avgAttemptClass<=1.3?'good':avgAttemptClass<=1.8?'warn':'danger'},
+    {icon:'⚠️',label:'Struggling Students',val:struggling.length,
+     sub:'Avg >2.2 attempts per word',
+     cls:struggling.length===0?'good':struggling.length<=2?'warn':'danger'},
+    {icon:'🏃',label:'Rushing Students',val:rushing.length,
+     sub:'Session <2 min with >5 words done',
+     cls:rushing.length===0?'good':'warn'},
+  ];
+
+  var cardsHTML=cards.map(function(c){
+    return '<div class="insight-card '+c.cls+'">'
+      +'<div class="insight-icon">'+c.icon+'</div>'
+      +'<div class="insight-label">'+c.label+'</div>'
+      +'<div class="insight-val">'+c.val+'</div>'
+      +'<div class="insight-sub">'+c.sub+'</div>'
+      +'</div>';
+  }).join('');
+  document.getElementById('insightCards').innerHTML=cardsHTML;
+
+  // ── Needs Attention ──
+  var attn=[];
+  // Words needing reteach
+  WORDS.forEach(function(word){
+    var w=ws[word];
+    if(!w.attempts.length) return;
+    var avg=w.attempts.reduce(function(a,b){return a+b;},0)/w.attempts.length;
+    var skipRate=w.studentCount?w.skipCount/w.studentCount*100:0;
+    if(avg>=2.5) attn.push({icon:'📖',text:'Reteach recommended: "'+word+'"',
+      sub:'Class avg '+avg.toFixed(1)+' attempts — most students are struggling with this word'});
+    if(skipRate>=40) attn.push({icon:'⏭️',text:'High skip rate: "'+word+'"',
+      sub:skipRate.toFixed(0)+'% of students skipped this word — may need pre-teaching'});
+  });
+  struggling.forEach(function(s){
+    attn.push({icon:'🆘',text:s.name+' needs support',
+      sub:'Averaging '+s.avg+' attempts per word — consider one-on-one review'});
+  });
+  hintHeavy.forEach(function(s){
+    attn.push({icon:'💡',text:s.name+' is hint-reliant',
+      sub:s.rate+'% of answers used hints — may be guessing rather than decoding'});
+  });
+  rushing.forEach(function(s){
+    attn.push({icon:'🏃',text:s.name+' may be rushing',
+      sub:'Session completed in '+s.min+' minutes — check for quality of responses'});
+  });
+
+  var attnHTML=attn.length
+    ?attn.map(function(a){
+      return '<div class="attention-item">'
+        +'<div class="attention-icon">'+a.icon+'</div>'
+        +'<div><div class="attention-text">'+a.text+'</div>'
+        +'<div class="attention-sub">'+a.sub+'</div></div>'
+        +'</div>';
+    }).join('')
+    :'<div style="color:#4dcf8a;font-size:.65rem;font-weight:800;padding:12px">✅ No major concerns this week!</div>';
+  document.getElementById('attentionList').innerHTML=attnHTML;
+
+  // ── Mastery Table ──
+  var masteryRows='';
+  var sortedWords=WORDS.slice().sort(function(a,b){
+    var wa2=ws[a],wb=ws[b];
+    var avgA=wa2.attempts.length?wa2.attempts.reduce(function(x,y){return x+y;},0)/wa2.attempts.length:0;
+    var avgB=wb.attempts.length?wb.attempts.reduce(function(x,y){return x+y;},0)/wb.attempts.length:0;
+    return avgB-avgA;
+  });
+
+  sortedWords.forEach(function(word){
+    var w=ws[word];
+    var n=w.studentCount||1;
+    var firstTry=w.attempts.filter(function(a){return a===1;}).length;
+    var withHint=w.hintCount;
+    var multi=w.attempts.filter(function(a){return a>=3;}).length;
+    var skips=w.skipCount;
+    var masteryPct=n?firstTry/n*100:0;
+    var hintPct=n?withHint/n*100:0;
+    var multiPct=n?multi/n*100:0;
+    var skipPct=n?skips/n*100:0;
+    var action=masteryPct>=80?'<span class="badge badge-easy">✅ Mastered</span>'
+      :masteryPct>=50?'<span class="badge badge-med">🔄 Reinforce</span>'
+      :'<span class="badge badge-hard">📖 Reteach</span>';
+    var masScore=masteryPct.toFixed(0)+'%';
+
+    masteryRows+='<tr>'
+      +'<td style="font-family:Baloo 2,cursive;font-weight:800;color:white">'+word+'</td>'
+      +'<td><span style="color:#4dcf8a;font-weight:800">'+firstTry+'</span>'
+        +'<span style="color:#666;font-size:.52rem"> /'+n+'</span></td>'
+      +'<td><span style="color:#ffaa44;font-weight:800">'+withHint+'</span>'
+        +'<span style="color:#666;font-size:.52rem"> /'+n+'</span></td>'
+      +'<td><span style="color:#ff5252;font-weight:800">'+multi+'</span>'
+        +'<span style="color:#666;font-size:.52rem"> /'+n+'</span></td>'
+      +'<td><span style="color:#888;font-weight:800">'+skips+'</span>'
+        +'<span style="color:#666;font-size:.52rem"> /'+n+'</span></td>'
+      +'<td>'
+        +'<div class="mastery-bar-wrap">'
+          +'<div class="mastery-seg" style="width:'+masteryPct.toFixed(0)+'%;background:#4dcf8a"></div>'
+          +'<div class="mastery-seg" style="width:'+hintPct.toFixed(0)+'%;background:#ffaa44"></div>'
+          +'<div class="mastery-seg" style="width:'+multiPct.toFixed(0)+'%;background:#ff5252"></div>'
+        +'</div>'
+        +'<div style="font-size:.48rem;color:#aac4ff;margin-top:2px">'+masScore+' first-try</div>'
+      +'</td>'
+      +'<td>'+action+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('masteryRows').innerHTML=masteryRows||
+    '<tr><td colspan="7" style="text-align:center;color:#666;padding:16px">No data yet</td></tr>';
+
+  // ── Student Profiles ──
+  var profilesHTML=played.map(function(s){
+    var wk=s.weeks[WEEK_KEY];
+    var wa=wk.wordAnalytics||{};
+    var atts=[],hints=0,skips=0,firsts=0;
+    WORDS.forEach(function(word){
+      var w=wa[word];
+      if(!w) return;
+      atts.push(w.attempts||1);
+      if(w.hintUsed) hints++;
+      if(w.skipped) skips++;
+      if((w.attempts||1)===1&&!w.hintUsed) firsts++;
+    });
+    var avgAtt=atts.length?atts.reduce(function(a,b){return a+b;},0)/atts.length:0;
+    var firstRate=WORDS.length?firsts/WORDS.length*100:0;
+    var hintRate=WORDS.length?hints/WORDS.length*100:0;
+    var sessMin=(wk.sessionTimeMs||0)/60000;
+    // Engagement score (0-100): firstRate*.5 + streak*.1 + sessTime*.4
+    var engScore=Math.min(100,firstRate*.5+(s.bestStreak||0)*2+Math.min(sessMin/10*40,40));
+    var engColor=engScore>=70?'#4dcf8a':engScore>=40?'#ffe040':'#ff5252';
+
+    return '<div class="profile-card">'
+      +'<div class="profile-name">'+s.username+'</div>'
+      +'<div class="profile-stat">First-try rate <span style="color:'+
+        (firstRate>=70?'#4dcf8a':firstRate>=50?'#ffe040':'#ff5252')+'">'+firstRate.toFixed(0)+'%</span></div>'
+      +'<div class="profile-stat">Avg attempts <span>'+avgAtt.toFixed(1)+'</span></div>'
+      +'<div class="profile-stat">Hint usage <span style="color:'+(hintRate>40?'#ffaa44':'#aac4ff')+'">'+hintRate.toFixed(0)+'%</span></div>'
+      +'<div class="profile-stat">Skipped <span style="color:'+(skips>3?'#ff8888':'#aac4ff')+'">'+skips+'</span></div>'
+      +'<div class="profile-stat">Session time <span>'+sessMin.toFixed(1)+' min</span></div>'
+      +'<div class="profile-stat">Creatures <span>🐾 '+(s.totalCreatures||0)+'</span></div>'
+      +'<div class="profile-stat">Engagement</div>'
+      +'<div class="engage-bar"><div class="engage-fill" style="width:'+engScore.toFixed(0)+'%;background:'+engColor+'"></div></div>'
+      +'<div style="font-size:.48rem;color:#666;margin-top:2px">'+engScore.toFixed(0)+'/100'
+        +(engScore>=70?' — Great!':(engScore>=40?' — Moderate':' — Low'))+'</div>'
+      +'</div>';
+  }).join('');
+  document.getElementById('studentProfiles').innerHTML=profilesHTML||
+    '<div style="color:#666;font-size:.65rem">No students have played this week yet</div>';
+}
+
+
+// ── WORD LIST EDITOR ──
+var _editWords=[];
+
+function initWordEditor(){
+  document.getElementById('currentWeekKey').textContent=WEEK_KEY;
+  // Try to load from Firebase first
+  var fb=window._fb;
+  if(!fb||!fb.ready){buildWordEditor(WORDS);return;}
+  fb.getDoc(fb.doc(fb.db,'wordLists',WEEK_KEY)).then(function(snap){
+    if(snap.exists()&&snap.data().words&&snap.data().words.length){
+      buildWordEditor(snap.data().words);
+    } else {
+      buildWordEditor(WORDS.map(function(w){return {w:w,d:'',s:''};}));
+    }
+  }).catch(function(){buildWordEditor(WORDS.map(function(w){return {w:w,d:'',s:''};} ));});
+}
+
+function buildWordEditor(wordList){
+  _editWords=wordList.map(function(w){
+    return typeof w==='string'?{w:w,d:'',s:''}:{w:w.w||'',d:w.d||'',s:w.s||''};
+  });
+  renderWordEditor();
+}
+
+function renderWordEditor(){
+  var grid=document.getElementById('wordEditorGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  _editWords.forEach(function(wd,i){
+    var row=document.createElement('div');
+    row.className='word-editor-row';
+    row.innerHTML='<div class="word-num">#'+(i+1)+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:4px">'
+        +'<div style="font-size:.48rem;font-weight:800;color:var(--muted);text-transform:uppercase">Word</div>'
+        +'<input class="word-inp" data-idx="'+i+'" data-field="w" value="'+escHtml(wd.w)+'" placeholder="Word" style="height:36px"/>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:4px">'
+        +'<div style="font-size:.48rem;font-weight:800;color:var(--muted);text-transform:uppercase">Definition</div>'
+        +'<input class="word-inp" data-idx="'+i+'" data-field="d" value="'+escHtml(wd.d)+'" placeholder="Definition (shown to student)"/>'
+        +'<div style="font-size:.48rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-top:4px">Example Sentence</div>'
+        +'<input class="word-inp" data-idx="'+i+'" data-field="s" value="'+escHtml(wd.s)+'" placeholder="Example sentence"/>'
+      +'</div>'
+      +'<button onclick="removeWordSlot('+i+')" style="font-size:.8rem;background:rgba(255,80,80,.2);'
+        +'border:1px solid rgba(255,80,80,.35);color:#ff8888;border-radius:8px;padding:6px 10px;'
+        +'cursor:pointer;align-self:center">✕</button>';
+    grid.appendChild(row);
+  });
+  // Wire change events
+  grid.querySelectorAll('.word-inp').forEach(function(inp){
+    inp.addEventListener('input',function(){
+      var idx=parseInt(inp.dataset.idx);
+      var field=inp.dataset.field;
+      if(_editWords[idx]) _editWords[idx][field]=inp.value;
+      document.getElementById('wordCountLabel').textContent=_editWords.length+' words';
+    });
+  });
+  document.getElementById('wordCountLabel').textContent=_editWords.length+' words';
+}
+
+function escHtml(str){
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addWordSlot(){
+  _editWords.push({w:'',d:'',s:''});
+  renderWordEditor();
+}
+
+function removeWordSlot(i){
+  _editWords.splice(i,1);
+  renderWordEditor();
+}
+
+async function saveWordList(){
+  var valid=_editWords.filter(function(w){return w.w.trim();});
+  if(valid.length<1){alert('Please add at least one word.');return;}
+  try{
+    await window._fb.setDoc(window._fb.doc(window._fb.db,'wordLists',WEEK_KEY),{
+      words:valid,updatedAt:Date.now(),updatedBy:'admin'
+    });
+    alert('✅ Word list saved! '+valid.length+' words. Students will see these on their next game.');
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+function resetWordList(){
+  if(!confirm('Reset to the hardcoded default word list?')) return;
+  buildWordEditor(WORDS.map(function(w){return {w:w,d:'',s:''};} ));
+}
+
+// ── CSV EXPORT ──
+function exportCSV(){
+  var rows=[['Student','Score','Words Done','Creatures','Best Streak','Avg Attempts','Hint Rate %','Skip Rate %','Session Min','Last Played']];
+  allStudents.forEach(function(s){
+    var wk=s.weeks&&s.weeks[WEEK_KEY];
+    var wa=wk&&wk.wordAnalytics||{};
+    var atts=[],hints=0,skips=0;
+    WORDS.forEach(function(word){
+      var w=wa[word]; if(!w) return;
+      atts.push(w.attempts||1);
+      if(w.hintUsed) hints++;
+      if(w.skipped) skips++;
+    });
+    var avgAtt=atts.length?(atts.reduce(function(a,b){return a+b;},0)/atts.length).toFixed(2):'-';
+    var hintRate=atts.length?(hints/atts.length*100).toFixed(0)+'%':'-';
+    var skipRate=atts.length?(skips/atts.length*100).toFixed(0)+'%':'-';
+    var sessMin=wk?(wk.sessionTimeMs/60000).toFixed(1):'-';
+    var last=wk&&wk.lastPlayed?new Date(wk.lastPlayed).toLocaleDateString():'-';
+    rows.push([
+      s.username,s.totalScore||0,wk?wk.wordsDone||0:0,
+      s.totalCreatures||0,s.bestStreak||0,
+      avgAtt,hintRate,skipRate,sessMin,last
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='spelling_class_'+WEEK_KEY+'.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// ── PRINTABLE STUDENT REPORT ──
+function printStudentReport(id,name){
+  var s=allStudents.find(function(st){return st.id===id;});
+  if(!s){alert('Student not found.');return;}
+  var wk=s.weeks&&s.weeks[WEEK_KEY];
+  var wa=wk&&wk.wordAnalytics||{};
+  var wordRows=WORDS.map(function(word){
+    var w=wa[word];
+    if(!w) return '<tr><td>'+word+'</td><td>—</td><td>—</td><td>—</td><td>Not reached</td></tr>';
+    var status=w.skipped?'Skipped':w.attempts>=3?'Needs Practice':w.hintUsed?'With Hint':'✅ Mastered';
+    var color=w.skipped?'#888':w.attempts>=3?'#cc0000':w.hintUsed?'#cc7700':'#007700';
+    return '<tr><td><b>'+word+'</b></td><td>'+w.attempts+'</td><td>'+(w.hintUsed?'Yes':'No')+'</td><td>'+(w.skipped?'Yes':'No')+'</td>'
+      +'<td style="color:'+color+';font-weight:bold">'+status+'</td></tr>';
+  }).join('');
+  
+  var html='<!DOCTYPE html><html><head><title>Spelling Report - '+name+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;padding:24px;color:#111;max-width:700px;margin:0 auto}'
+    +'h1{color:#4a00a0;border-bottom:2px solid #4a00a0;padding-bottom:8px}'
+    +'h2{color:#666;font-size:1rem;font-weight:normal;margin-top:0}'
+    +'table{width:100%;border-collapse:collapse;margin-top:16px}'
+    +'th{background:#4a00a0;color:white;padding:8px 12px;text-align:left}'
+    +'td{padding:7px 12px;border-bottom:1px solid #eee}'
+    +'tr:nth-child(even) td{background:#f9f9f9}'
+    +'.stat{display:inline-block;background:#f0e6ff;border-radius:8px;padding:10px 16px;margin:6px;text-align:center}'
+    +'.stat-num{font-size:1.6rem;font-weight:bold;color:#4a00a0}'
+    +'.stat-lbl{font-size:.7rem;color:#666}</style></head><body>'
+    +'<h1>📚 Spelling Adventure Report</h1>'
+    +'<h2>Student: '+name+' &nbsp;|&nbsp; Week: '+WEEK_KEY+'</h2>'
+    +'<div>'
+      +'<div class="stat"><div class="stat-num">'+(s.totalScore||0)+'</div><div class="stat-lbl">Total Score</div></div>'
+      +'<div class="stat"><div class="stat-num">'+(wk?wk.wordsDone||0:0)+'</div><div class="stat-lbl">Words Done</div></div>'
+      +'<div class="stat"><div class="stat-num">'+(s.totalCreatures||0)+'</div><div class="stat-lbl">Creatures</div></div>'
+      +'<div class="stat"><div class="stat-num">'+(s.bestStreak||0)+'</div><div class="stat-lbl">Best Streak</div></div>'
+    +'</div>'
+    +'<table><thead><tr><th>Word</th><th>Attempts</th><th>Hint Used</th><th>Skipped</th><th>Result</th></tr></thead>'
+    +'<tbody>'+wordRows+'</tbody></table>'
+    +'<p style="margin-top:20px;color:#999;font-size:.7rem">Generated '+new Date().toLocaleDateString()+' from Bella\'s Spelling Adventure</p>'
+    +'</body></html>';
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.print();
+}
+
+// ── MID-WEEK ALERT ──
+function getMidWeekAlert(){
+  var notPlayed=allStudents.filter(function(s){return !s.weeks||!s.weeks[WEEK_KEY];});
+  if(!notPlayed.length) return null;
+  var today=new Date();
+  var day=today.getDay(); // 0=Sun,1=Mon...5=Fri
+  var daysLeft=day<=5?5-day:0;
+  return {count:notPlayed.length, daysLeft:daysLeft, names:notPlayed.map(function(s){return s.username;})};
+}
+
+
+// ── WORD HISTORY MODAL ──
+var _wordHistChart=null;
+
+function openWordHistory(stuId, word, weekKey){
+  weekKey=weekKey||WEEK_KEY;
+  var s=allStudents.find(function(st){return st.id===stuId;});
+  if(!s) return;
+  // Build history across ALL word lists that contained this word
+  var history=[];
+  Object.keys(s.weeks||{}).sort().forEach(function(wk){
+    var wa=(s.weeks[wk].wordAnalytics||{})[word];
+    if(wa) history.push({weekKey:wk,attempts:wa.attempts||1,
+      hintUsed:wa.hintUsed||false,skipped:wa.skipped||false,
+      timeMs:wa.timeMs||0,plays:wa.plays||1});
+  });
+  
+  document.getElementById('wordHistTitle').innerHTML='📊 <b style="color:#ffe040">'+word+'</b> — '+s.username;
+  
+  if(!history.length){
+    document.getElementById('wordHistBody').innerHTML=
+      '<div style="color:#666;font-size:.65rem;text-align:center;padding:20px">No history for this word yet.</div>';
+    document.getElementById('wordHistChart').style.display='none';
+    document.getElementById('wordHistModal').classList.add('show');
+    return;
+  }
+  
+  // Build history table
+  var rows=history.map(function(h,i){
+    var col=diffColor(h.attempts);
+    var weekLabel=h.weekKey.replace('week_','').replace(/_/g,' ')+(h.weekKey===WEEK_KEY?' (current)':'');
+    var result=h.skipped?'<span style="color:#ff6666">Skipped</span>'
+      :h.attempts===1&&!h.hintUsed?'<span style="color:#4dcf8a">✅ First try!</span>'
+      :h.hintUsed?'<span style="color:#ffaa44">💡 With hint</span>'
+      :'<span style="color:'+col+'">'+h.attempts+' tries</span>';
+    var playsNote=h.plays>1?'<span style="color:#666"> (best of '+h.plays+')</span>':'';
+    return '<tr>'
+      +'<td style="color:#aac4ff;font-size:.58rem">'+weekLabel+'</td>'
+      +'<td style="font-size:.6rem;font-weight:800;color:'+col+'">'+h.attempts+playsNote+'</td>'
+      +'<td style="font-size:.58rem">'+result+'</td>'
+      +'<td style="font-size:.52rem;color:#666">'+(h.timeMs?fmtTime(h.timeMs):'-')+'</td>'
+      +'</tr>';
+  }).join('');
+  
+  document.getElementById('wordHistBody').innerHTML=
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
+    +'<thead><tr>'
+      +'<th style="font-size:.5rem;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)">Week</th>'
+      +'<th style="font-size:.5rem;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)">Tries</th>'
+      +'<th style="font-size:.5rem;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)">Result</th>'
+      +'<th style="font-size:.5rem;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)">Time</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table>';
+    
+  // Build trend chart
+  var canvas=document.getElementById('wordHistChart');
+  canvas.style.display='block';
+  if(_wordHistChart){ _wordHistChart.destroy(); _wordHistChart=null; }
+  
+  var labels=history.map(function(h){
+    return h.weekKey.replace('week_','').replace(/_/g,' ');
+  });
+  var data=history.map(function(h){ return h.attempts; });
+  var colors=data.map(function(a){
+    return a===1?'#4dcf8a':a===2?'#ffe040':'#ff5252';
+  });
+  
+  _wordHistChart=new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'Attempts',
+        data:data,
+        borderColor:'#9b5fd4',
+        backgroundColor:'rgba(155,95,212,.15)',
+        pointBackgroundColor:colors,
+        pointBorderColor:colors,
+        pointRadius:6,
+        pointHoverRadius:8,
+        tension:.3,
+        fill:true
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:function(c){
+            var h=history[c.dataIndex];
+            var extra=h.hintUsed?' (hint)':h.skipped?' (skipped)':'';
+            return c.raw+' attempt'+(c.raw>1?'s':'')+extra;
+          }
+        }}
+      },
+      scales:{
+        y:{
+          min:0,max:Math.max(4,...data)+.5,
+          ticks:{color:'#aac4ff',font:{size:10},stepSize:1},
+          grid:{color:'rgba(255,255,255,.05)'},
+          title:{display:true,text:'Attempts',color:'#666',font:{size:9}}
+        },
+        x:{
+          ticks:{color:'#aac4ff',font:{size:9},maxRotation:30},
+          grid:{color:'rgba(255,255,255,.05)'}
+        }
+      }
+    }
+  });
+  
+  document.getElementById('wordHistModal').classList.add('show');
+}
+
+
+function renderStudents(){renderStudentsFiltered('');}
+// ── EDIT USERNAME ──
+function openEdit(id, name){
+  pendingAction={type:'edit',id:id,name:name};
+  document.getElementById('editBody').textContent='Rename "'+name+'" to:';
+  document.getElementById('editNameInp').value=name;
+  document.getElementById('editModal').classList.add('show');
+}
+
+async function confirmEdit(){
+  if(!pendingAction||pendingAction.type!=='edit') return;
+  var newName=document.getElementById('editNameInp').value.trim();
+  if(!newName){alert('Please enter a name.');return;}
+  var newId=newName.toLowerCase();
+  var oldId=pendingAction.id;
+  if(newId===oldId){closeModal('editModal');return;}
+  try{
+    var fb=window._fb;
+    // Get old doc
+    var snap=await fb.getDoc(fb.doc(fb.db,'students',oldId));
+    if(!snap.exists()){alert('Student not found.');return;}
+    var data=snap.data();
+    // Write to new id
+    data.username=newName;
+    await fb.setDoc(fb.doc(fb.db,'students',newId),data);
+    // Delete old
+    await fb.deleteDoc(fb.doc(fb.db,'students',oldId));
+    closeModal('editModal');
+    alert(pendingAction.name+' renamed to '+newName+'!');
+    loadDashboard();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ── MERGE ACCOUNTS ──
+var _mergeSource=null;
+
+function openMerge(id, name){
+  pendingAction={type:'merge',id:id,name:name};
+  _mergeSource={id:id,name:name};
+  document.getElementById('mergeBody').textContent=
+    'Merge "'+name+'" INTO which account? ('+name+' will be deleted)';
+  // Build list of other students
+  var sel=document.getElementById('mergeSelect');
+  sel.innerHTML='';
+  allStudents.forEach(function(s){
+    if(s.id===id) return;
+    var btn=document.createElement('button');
+    btn.className='btn-sm btn-primary';
+    btn.style.cssText='width:100%;margin-bottom:6px;text-align:left;padding:10px 14px;';
+    btn.textContent='→ '+s.username+' (Score: '+(s.totalScore||0)+')';
+    btn.dataset.tid=s.id;
+    btn.dataset.tname=s.username;
+    btn.onclick=function(){
+      document.querySelectorAll('#mergeSelect .btn-sm').forEach(function(b){
+        b.style.outline='none';
+      });
+      btn.style.outline='2px solid #4dcf8a';
+      pendingAction.targetId=btn.dataset.tid;
+      pendingAction.targetName=btn.dataset.tname;
+    };
+    sel.appendChild(btn);
+  });
+  document.getElementById('mergeModal').classList.add('show');
+}
+
+async function confirmMerge(){
+  if(!pendingAction||pendingAction.type!=='merge'||!pendingAction.targetId){
+    alert('Please select a target account.');return;
+  }
+  var srcId=pendingAction.id, tgtId=pendingAction.targetId;
+  var srcName=pendingAction.name, tgtName=pendingAction.targetName;
+  try{
+    var fb=window._fb;
+    var srcSnap=await fb.getDoc(fb.doc(fb.db,'students',srcId));
+    var tgtSnap=await fb.getDoc(fb.doc(fb.db,'students',tgtId));
+    if(!srcSnap.exists()||!tgtSnap.exists()){alert('Account not found.');return;}
+    var src=srcSnap.data(), tgt=tgtSnap.data();
+
+    // Merge allCreatures - dedupe by caughtAt
+    var allC=(tgt.allCreatures||[]).concat(src.allCreatures||[]);
+    var seen=new Set();
+    var mergedC=allC.filter(function(c){
+      var k=c.caughtAt+'_'+c.name;
+      if(seen.has(k)) return false;
+      seen.add(k);return true;
+    });
+
+    // Merge creature counts
+    var counts={};
+    mergedC.forEach(function(c){counts[c.name]=(counts[c.name]||0)+1;});
+
+    // Merge purchased accessories
+    var mergedAccs=Object.assign({},tgt.purchasedAccs||{});
+    Object.keys(src.purchasedAccs||{}).forEach(function(crName){
+      if(!mergedAccs[crName]) mergedAccs[crName]=[];
+      (src.purchasedAccs[crName]||[]).forEach(function(id){
+        if(!mergedAccs[crName].includes(id)) mergedAccs[crName].push(id);
+      });
+    });
+
+    // Merge weeks - keep best score per week
+    var mergedWeeks=Object.assign({},tgt.weeks||{});
+    Object.keys(src.weeks||{}).forEach(function(wk){
+      if(!mergedWeeks[wk]||(src.weeks[wk].score||0)>(mergedWeeks[wk].score||0)){
+        mergedWeeks[wk]=src.weeks[wk];
+      }
+    });
+
+    var merged={
+      username:tgt.username,
+      pin:tgt.pin,
+      createdAt:tgt.createdAt||src.createdAt,
+      totalScore:(tgt.totalScore||0)+(src.totalScore||0),
+      totalCreatures:mergedC.length,
+      bestStreak:Math.max(tgt.bestStreak||0,src.bestStreak||0),
+      shineCoins:(tgt.shineCoins||0)+(src.shineCoins||0),
+      allCreatures:mergedC,
+      creatureCounts:counts,
+      purchasedAccs:mergedAccs,
+      accPositions:Object.assign({},src.accPositions||{},tgt.accPositions||{}),
+      weeks:mergedWeeks,
+      lastSession:Date.now()
+    };
+
+    await fb.setDoc(fb.doc(fb.db,'students',tgtId),merged);
+    await fb.deleteDoc(fb.doc(fb.db,'students',srcId));
+    closeModal('mergeModal');
+    alert('Merged '+srcName+' into '+tgtName+'!\n'
+      +'Combined score: '+merged.totalScore+'\n'
+      +'Total creatures: '+merged.totalCreatures);
+    loadDashboard();
+  }catch(e){alert('Merge error: '+e.message);}
+}
+
+// ── RENDER ANALYTICS TAB ──
+function renderAnalytics(){
+  var wordStats=getWordStats();
+  var played=allStudents.filter(function(s){return s.weeks&&s.weeks[WEEK_KEY];});
+
+  // ── Mastery by word ──
+  var masteryHTML='';
+  var reteachHTML='';
+  var wordsNeedReteach=[];
+
+  WORDS.forEach(function(word){
+    var ws=wordStats[word];
+    var total=ws.studentCount||0;
+    if(!total){
+      masteryHTML+='<div class="mastery-row">'
+        +'<div class="mastery-word">'+word+'</div>'
+        +'<div style="font-size:.52rem;color:#444">No data</div></div>';
+      return;
+    }
+    // First try, no hint = mastery
+    var mastered=0;
+    played.forEach(function(s){
+      var wk=s.weeks&&s.weeks[WEEK_KEY];
+      if(!wk||!wk.wordAnalytics||!wk.wordAnalytics[word]) return;
+      var wa=wk.wordAnalytics[word];
+      if((wa.attempts||1)===1&&!wa.hintUsed&&!wa.skipped) mastered++;
+    });
+    var pct=total?Math.round(mastered/total*100):0;
+    var col=pct>=80?'#4dcf8a':pct>=50?'#ffe040':'#ff5252';
+    if(pct<50&&total>=2) wordsNeedReteach.push({word:word,pct:pct,total:total});
+
+    masteryHTML+='<div class="mastery-row">'
+      +'<div class="mastery-word">'+word+'</div>'
+      +'<div class="mastery-bar-wrap"><div class="mastery-bar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'
+      +'<div class="mastery-pct" style="color:'+col+'">'+pct+'%</div>'
+      +'</div>';
+  });
+  document.getElementById('masteryList').innerHTML=masteryHTML;
+
+  // Reteach words
+  wordsNeedReteach.sort(function(a,b){return a.pct-b.pct;});
+  if(wordsNeedReteach.length===0){
+    reteachHTML='<div style="color:#4dcf8a;font-size:.65rem;font-weight:800">🎉 All words above 50% mastery!</div>';
+  } else {
+    wordsNeedReteach.forEach(function(w){
+      reteachHTML+='<div class="alert-chip">'
+        +'<span>📖 '+w.word+'</span>'
+        +'<span>'+w.pct+'% mastery ('+w.total+' students)</span>'
+        +'</div>';
+    });
+  }
+  document.getElementById('reteachList').innerHTML=reteachHTML;
+
+  // ── Struggling students alert ──
+  var alertHTML='';
+  allStudents.forEach(function(s){
+    var wk=s.weeks&&s.weeks[WEEK_KEY];
+    if(!wk||!wk.wordAnalytics) return;
+    var atts=Object.values(wk.wordAnalytics).map(function(wa){return wa.attempts||1;});
+    var avg=atts.length?atts.reduce(function(a,b){return a+b;},0)/atts.length:0;
+    var hintCount=Object.values(wk.wordAnalytics).filter(function(wa){return wa.hintUsed;}).length;
+    var skipCount=Object.values(wk.wordAnalytics).filter(function(wa){return wa.skipped;}).length;
+    var alerts=[];
+    if(avg>=2.5) alerts.push('Avg '+avg.toFixed(1)+' attempts per word');
+    if(hintCount>=(Object.keys(wk.wordAnalytics).length*.6)) alerts.push('Used hints on '+hintCount+' words');
+    if(skipCount>=4) alerts.push('Skipped '+skipCount+' words');
+    if(alerts.length){
+      alertHTML+='<div class="alert-chip '+(avg>=3?'':'warn')+'">'
+        +'<span style="font-weight:800">'+s.username+'</span>'
+        +'<span style="font-size:.5rem;color:#aaa">'+alerts.join(' · ')+'</span>'
+        +'</div>';
+    }
+  });
+  document.getElementById('alertList').innerHTML=alertHTML||
+    '<div style="color:#4dcf8a;font-size:.65rem;font-weight:800">✅ No students flagged!</div>';
+
+  // ── Class engagement metrics ──
+  var sessions=played.map(function(s){return (s.weeks[WEEK_KEY].sessionTimeMs||0)/60000;});
+  var avgSession=sessions.length?sessions.reduce(function(a,b){return a+b;},0)/sessions.length:0;
+
+  var allWA=[];
+  played.forEach(function(s){
+    var wk=s.weeks[WEEK_KEY];
+    if(wk&&wk.wordAnalytics) Object.values(wk.wordAnalytics).forEach(function(wa){allWA.push(wa);});
+  });
+  var firstTryCount=allWA.filter(function(wa){return (wa.attempts||1)===1&&!wa.hintUsed;}).length;
+  var hintCount2=allWA.filter(function(wa){return wa.hintUsed;}).length;
+  var skipCount2=allWA.filter(function(wa){return wa.skipped;}).length;
+  var firstTryPct=allWA.length?Math.round(firstTryCount/allWA.length*100):0;
+  var hintPct=allWA.length?Math.round(hintCount2/allWA.length*100):0;
+  var skipPct=allWA.length?Math.round(skipCount2/allWA.length*100):0;
+
+  document.getElementById('aAvgSession').textContent=avgSession?avgSession.toFixed(1)+' min':'-';
+  document.getElementById('aAvgFirstTry').textContent=firstTryPct+'%';
+  document.getElementById('aAvgHint').textContent=hintPct+'%';
+  document.getElementById('aAvgSkip').textContent=skipPct+'%';
+
+  // ── Per-student metrics ──
+  var stuHTML='';
+  allStudents.forEach(function(s){
+    var wk=s.weeks&&s.weeks[WEEK_KEY];
+    if(!wk) return;
+    var wa=wk.wordAnalytics||{};
+    var waVals=Object.values(wa);
+    var att=waVals.map(function(w){return w.attempts||1;});
+    var avgAtt=att.length?att.reduce(function(a,b){return a+b;},0)/att.length:0;
+    var ft=waVals.filter(function(w){return (w.attempts||1)===1&&!w.hintUsed;}).length;
+    var ftPct=waVals.length?Math.round(ft/waVals.length*100):0;
+    var hints=waVals.filter(function(w){return w.hintUsed;}).length;
+    var skips=waVals.filter(function(w){return w.skipped;}).length;
+    var times=waVals.filter(function(w){return w.timeMs;}).map(function(w){return w.timeMs;});
+    var avgTime=times.length?times.reduce(function(a,b){return a+b;},0)/times.length:0;
+    // Engagement score: firstTryPct*.4 + streak*.1 + (1-hintRate)*.3 + (1-skipRate)*.2
+    var hintRate=waVals.length?hints/waVals.length:0;
+    var skipRate=waVals.length?skips/waVals.length:0;
+    var engScore=Math.round(ftPct*.4+(s.bestStreak||0)*2+(1-hintRate)*30+(1-skipRate)*20);
+    engScore=Math.min(100,Math.max(0,engScore));
+    var engCol=engScore>=70?'#4dcf8a':engScore>=40?'#ffe040':'#ff5252';
+
+    stuHTML+='<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);'
+      +'border-radius:12px;padding:14px;margin-bottom:10px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        +'<div style="font-family:Baloo 2,cursive;font-size:.75rem;font-weight:800;color:white">'+s.username+'</div>'
+        +'<div style="font-family:Baloo 2,cursive;font-size:.65rem;font-weight:800;color:'+engCol+'">'
+          +'Engagement: '+engScore+'/100</div>'
+      +'</div>'
+      +'<div class="stu-metric-grid">'
+        +'<div class="stu-metric"><div class="stu-metric-val">'+ftPct+'%</div>'
+          +'<div class="stu-metric-lbl">First Try Rate</div></div>'
+        +'<div class="stu-metric"><div class="stu-metric-val">'+avgAtt.toFixed(1)+'</div>'
+          +'<div class="stu-metric-lbl">Avg Attempts</div></div>'
+        +'<div class="stu-metric"><div class="stu-metric-val">'+hints+'</div>'
+          +'<div class="stu-metric-lbl">Hints Used</div></div>'
+        +'<div class="stu-metric"><div class="stu-metric-val">'+skips+'</div>'
+          +'<div class="stu-metric-lbl">Words Skipped</div></div>'
+        +'<div class="stu-metric"><div class="stu-metric-val">'+(avgTime?Math.round(avgTime/1000)+'s':'-')+'</div>'
+          +'<div class="stu-metric-lbl">Avg Time/Word</div></div>'
+        +'<div class="stu-metric"><div class="stu-metric-val">🔥'+(s.bestStreak||0)+'</div>'
+          +'<div class="stu-metric-lbl">Best Streak</div></div>'
+      +'</div>'
+      +'</div>';
+  });
+  document.getElementById('stuMetricList').innerHTML=stuHTML||
+    '<div style="color:#666;font-size:.65rem">No student data yet</div>';
+}
+
+
+function renderTrends(){
+  // Score distribution
+  var buckets={'0-49':0,'50-99':0,'100-149':0,'150-199':0,'200+':0};
+  allStudents.forEach(function(s){
+    var sc=s.totalScore||0;
+    if(sc<50)buckets['0-49']++;
+    else if(sc<100)buckets['50-99']++;
+    else if(sc<150)buckets['100-149']++;
+    else if(sc<200)buckets['150-199']++;
+    else buckets['200+']++;
+  });
+  if(charts.score)charts.score.destroy();
+  var ctx1=document.getElementById('scoreChart');
+  if(ctx1){
+    charts.score=new Chart(ctx1.getContext('2d'),{
+      type:'bar',
+      data:{labels:Object.keys(buckets),datasets:[{label:'Students',
+        data:Object.values(buckets),backgroundColor:'rgba(100,180,255,.7)',borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:'#aac4ff',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{ticks:{color:'#aac4ff',font:{size:10},stepSize:1},
+            grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}}}
+    });
+  }
+
+  // Avg attempts by word
+  var wordStats=getWordStats();
+  var attLabels=[],attData=[],attColors=[];
+  WORDS.forEach(function(w){
+    var ws=wordStats[w];
+    var avg=ws.attempts.length
+      ?ws.attempts.reduce(function(a,b){return a+b;},0)/ws.attempts.length:0;
+    attLabels.push(w);
+    attData.push(parseFloat(avg.toFixed(2)));
+    attColors.push(diffColor(avg)+'cc');
+  });
+  if(charts.attempts)charts.attempts.destroy();
+  var ctx2=document.getElementById('attemptsChart');
+  if(ctx2){
+    charts.attempts=new Chart(ctx2.getContext('2d'),{
+      type:'bar',
+      data:{labels:attLabels,datasets:[{label:'Avg Attempts',
+        data:attData,backgroundColor:attColors,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:'#aac4ff',font:{size:9},maxRotation:55,minRotation:45,autoSkip:false},
+          grid:{color:'rgba(255,255,255,.05)'}},
+          y:{ticks:{color:'#aac4ff',font:{size:10}},
+            grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}}}
+    });
+  }
+
+  // Creatures caught by type
+  var crCounts={};
+  allStudents.forEach(function(s){
+    if(!s.creatureCounts) return;
+    Object.keys(s.creatureCounts).forEach(function(k){
+      crCounts[k]=(crCounts[k]||0)+s.creatureCounts[k];
+    });
+  });
+  var crNames=Object.keys(crCounts)
+    .sort(function(a,b){return crCounts[b]-crCounts[a];})
+    .slice(0,15);
+  var crPalette=['#ff6eb4','#ffd700','#4dcf8a','#b3f0ff','#9b5fd4',
+    '#ff5252','#ffe040','#4a8fff','#ff8844','#4dcf8a',
+    '#ff7eb3','#aac4ff','#ffb3d9','#88ccff','#ffdd88'];
+  if(charts.creatures)charts.creatures.destroy();
+  var ctx3=document.getElementById('creaturesChart');
+  if(ctx3){
+    charts.creatures=new Chart(ctx3.getContext('2d'),{
+      type:'bar',
+      data:{labels:crNames,datasets:[{label:'Times Caught',
+        data:crNames.map(function(n){return crCounts[n];}),
+        backgroundColor:crPalette,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:'#aac4ff',font:{size:10}},
+          grid:{color:'rgba(255,255,255,.05)'}},
+          y:{ticks:{color:'#aac4ff',font:{size:10},stepSize:1},
+            grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}}}
+    });
+  }
+}
+
+
+// ── MISSING FUNCTIONS ──
+
+function filterStudents(){
+  var search=(document.getElementById('searchInp').value||'').toLowerCase();
+  renderStudentsFiltered(search);
+}
+
+function toggleStuDetail(id){
+  var el=document.getElementById('detail-'+id);
+  if(!el) return;
+  if(el.style.display==='table-row'){
+    el.style.display='none';
+  } else {
+    el.style.display='table-row';
+    var s=allStudents.find(function(st){return st.id===id;});
+    if(s){
+      var td=el.querySelector('td');
+      if(td) td.innerHTML=buildStuDetail(s,_stuDetailWeek[id]||WEEK_KEY);
+    }
+  }
+}
+
+function _getStuWordHistory(s,word){
+  var history=[];
+  Object.keys(s.weeks||{}).sort().forEach(function(wk){
+    var wa=(s.weeks[wk].wordAnalytics||{})[word];
+    if(wa) history.push({weekKey:wk,attempts:wa.attempts||1,
+      hintUsed:wa.hintUsed||false,skipped:wa.skipped||false,timeMs:wa.timeMs||0});
+  });
+  return history;
+}
+
+function buildStuDetail(s,weekKey){
+  weekKey=weekKey||WEEK_KEY;
+  var stuId=s.id;
+  var w=s.weeks&&s.weeks[weekKey];
+  var wa=w&&w.wordAnalytics||{};
+  var allWeeks=Object.keys(s.weeks||{}).sort().reverse();
+
+  var html='<div style="padding:4px 0 10px">';
+
+  // Week selector dropdown (only if multiple word lists exist)
+  if(allWeeks.length>1){
+    var weekOpts=allWeeks.map(function(wk){
+      var label=wk.replace('week_','').replace(/_/g,' ');
+      var curr=wk===WEEK_KEY;
+      return '<option value="'+wk+'"'+(wk===weekKey?' selected':'')+'>'
+        +(curr?'📅 ':'')+label+(curr?' (current)':'')+'</option>';
+    }).join('');
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">'
+      +'<span style="font-size:.52rem;font-weight:800;color:var(--muted)">Word List:</span>'
+      +'<select data-sid="'+stuId+'" onchange="rebuildStuDetail(this.dataset.sid,this.value)" '
+        +'style="font-family:Nunito,sans-serif;font-size:.55rem;font-weight:700;'
+        +'background:rgba(255,255,255,.08);border:1.5px solid var(--border);'
+        +'border-radius:8px;padding:4px 8px;color:white;cursor:pointer">'
+        +weekOpts+'</select>'
+      +(w&&w.playCount>1?'<span style="font-size:.48rem;color:#666">'+w.playCount+' plays this list</span>':'')
+      +'</div>';
+  }
+
+  // Stats summary for selected word list
+  if(w){
+    html+='<div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">'
+      +'<div style="font-size:.52rem;color:#aac4ff">⭐ Best: <b style="color:white">'+(w.score||0)+'</b></div>'
+      +'<div style="font-size:.52rem;color:#aac4ff">📖 Reached: <b style="color:white">'+(w.wordsDone||0)+'/20</b></div>'
+      +(w.playCount?'<div style="font-size:.52rem;color:#aac4ff">🔄 Plays: <b style="color:white">'+w.playCount+'</b></div>':'')
+      +'</div>';
+  }
+
+  if(!w||!Object.keys(wa).length){
+    html+='<div style="color:#555;font-size:.6rem;padding:8px">No data for this word list.</div></div>';
+    return html;
+  }
+
+  html+='<div style="font-size:.42rem;color:#555;margin-bottom:6px">Click any word for details across all plays</div>';
+  html+='<div class="stu-word-grid">';
+
+  WORDS.forEach(function(word){
+    var d=wa[word];
+    if(!d){
+      html+='<div class="stu-word-card" style="opacity:.2;cursor:default">'
+        +'<div class="stu-word-name">'+word+'</div>'
+        +'<div class="stu-word-stat" style="color:#444">Not reached</div></div>';
+      return;
+    }
+    var att=d.attempts||1;
+    var col=diffColor(att);
+    var icon=d.skipped?'⏭':att===1&&!d.hintUsed?'✅':'🔄';
+    html+='<div class="stu-word-card" '
+      +'data-sid="'+stuId+'" data-word="'+word+'" data-wk="'+weekKey+'" '
+      +'onclick="openWordHistory(this.dataset.sid,this.dataset.word,this.dataset.wk)" '
+      +'style="border-color:'+col+'55;cursor:pointer;transition:background .15s">'
+      +'<div class="stu-word-name" style="color:'+col+'">'+icon+' '+word+'</div>'
+      +'<div class="stu-word-stat">'
+        +'<b style="color:white">'+att+'</b> try'+(att>1?'s':'')+'<br>'
+        +(d.hintUsed?'<span style="color:#ffaa44">💡</span> ':'')
+        +(d.skipped?'<span style="color:#ff6666">⏭</span>':'')
+        +(d.timeMs?'<br>⏱ '+fmtTime(d.timeMs):'')
+      +'</div>'
+      +(d.plays>1?'<div style="font-size:.4rem;color:#666;margin-top:2px">best of '+d.plays+'</div>':'')
+      +'</div>';
+  });
+
+  html+='</div></div>';
+  return html;
+}
+
+var _stuDetailWeek={};
+function rebuildStuDetail(stuId,weekKey){
+  _stuDetailWeek[stuId]=weekKey;
+  var s=allStudents.find(function(st){return st.id===stuId;});
+  if(!s) return;
+  var el=document.getElementById('detail-'+stuId);
+  if(!el) return;
+  var td=el.querySelector('td');
+  if(td) td.innerHTML=buildStuDetail(s,weekKey);
+}
+// ── RESET PIN ──
+function openReset(id, name){
+  pendingAction={type:'reset', id:id, name:name};
+  var newPin=Math.floor(1000+Math.random()*9000).toString();
+  pendingAction.newPin=newPin;
+  document.getElementById('resetBody').textContent='Reset PIN for "'+name+'"?';
+  document.getElementById('newPinEl').textContent='New PIN: '+newPin;
+  document.getElementById('resetModal').classList.add('show');
+}
+
+async function confirmReset(){
+  if(!pendingAction||pendingAction.type!=='reset') return;
+  try{
+    await window._fb.updateDoc(
+      window._fb.doc(window._fb.db,'students',pendingAction.id),
+      {pin:pendingAction.newPin}
+    );
+    closeModal('resetModal');
+    alert('PIN for "'+pendingAction.name+'" reset to: '+pendingAction.newPin);
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+
+// ── MODAL UTILITIES ──
+function closeModal(id){
+  var el=document.getElementById(id);
+  if(el) el.classList.remove('show');
+  pendingAction=null;
+}
+
+// ── DELETE STUDENT ──
+function openDelete(id, name){
+  pendingAction={type:'delete', id:id, name:name};
+  document.getElementById('deleteBody').textContent='Permanently delete "'+name+'" and all their data?';
+  document.getElementById('deleteModal').classList.add('show');
+}
+
+async function confirmDelete(){
+  if(!pendingAction||pendingAction.type!=='delete') return;
+  try{
+    await window._fb.deleteDoc(window._fb.doc(window._fb.db,'students',pendingAction.id));
+    closeModal('deleteModal');
+    loadDashboard();
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+
+</script>
+</body>
+</html>
